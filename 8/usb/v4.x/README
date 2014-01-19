@@ -1,0 +1,46 @@
+########################################################################
+#                                                                      #
+#	Pinguino USB Bootloader v4.x                                       #
+#	8-bit USB Bootloader                                               #
+#	Author:	Régis Blanchot <rblanchot@gmail.com>                       #
+#           André Gentric                                              #
+#			                                                           #
+#	This file is part of Pinguino Project (http://www.pinguino.cc)     #
+#	Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
+#                                                                      #
+########################################################################
+
+This code provides a USB Bootloader for 8-bit (c) Microchip microcontrollers
+with built-in USB module such as PIC18Fx550, PIC18Fx6J50 or PIC18Fx7J53.
+
+A bootloader is a piece of code that is executed once the system is booted.
+
+Typically, this small program (< 3K) running inside the microcontroller
+is responsible for transferring your application from your PC to the
+microcontroller memory and handing over the control to this program afterwards.
+
+The code has been written for SDCC (Small Device C Compiler) a freeware
+ANSI-C compiler so make sure SDCC and GPUTILS are installed on your computer.
+You can get the latest sources by running the build-sdcc-v3.sh script.
+
+To compile the bootloader, first open and edit Makefile to suit your needs
+and then type make in a terminal. This project also implements Wiztiti.py,
+a graphical frontends using Python.
+
+To load your PIC with the .hex file produced during the build process, you
+need a programmer and its interface such as PicKit / MPLABX (www.microchip.com/mplabx)
+or Wisp648 / Wisp (www.voti.nl/wisp648/).
+ 
+Once loaded, you should see the led blinking. Your PIC is now in bootloader mode
+and wait for your PC to send him your application.
+
+Compile one of the example and load it into your PIC using Pinguino IDE.
+You can also use the bootloader without the Pinguino IDE, use then uploader.py
+to load your application in the PIC.
+
+Please let me know if you make any change, addition or improvement in
+this code.
+
+Thank you.
+Régis Blanchot
+rblanchot@gmail.com

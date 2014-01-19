@@ -1,0 +1,2290 @@
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;--------------------------------------------------------
+                      00002 ; File Created by SDCC : free open source ANSI-C Compiler
+                      00003 ; Version 3.3.1 #8894 (Oct 11 2013) (Linux)
+                      00004 ; This file was generated Tue Dec 17 16:05:28 2013
+                      00005 ;--------------------------------------------------------
+                      00006 ; PIC16 port for the Microchip 16-bit core micros
+                      00007 ;--------------------------------------------------------
+                      00008         list    p=18f26j50
+                      00009         radix   dec
+                      00010 
+                      00011 
+                      00012 ;--------------------------------------------------------
+                      00013 ; public variables in this module
+                      00014 ;--------------------------------------------------------
+  0000                00015         global  _deviceAddress
+  0000                00016         global  _selfPowered
+  0000                00017         global  _EnableUSBModule
+  0000                00018         global  _ProcessUSBTransactions
+  0000                00019         global  _deviceState
+  0000                00020         global  _currentConfiguration
+  0000                00021         global  _ctrlTransferStage
+  0000                00022         global  _requestHandled
+  0000                00023         global  _outPtr
+  0000                00024         global  _inPtr
+  0000                00025         global  _wCount
+  0000                00026         global  _ep_bdt
+  0000                00027         global  _SetupPacket
+  0000                00028         global  _controlTransferBuffer
+  0000                00029         global  _bootCmd
+  0000                00030         global  _InDataStage
+  0000                00031         global  _WaitForSetupStage
+  0000                00032         global  _device_descriptor
+  0000                00033         global  _configuration_descriptor
+  0000                00034         global  _lang
+  0000                00035         global  _manu
+  0000                00036         global  _prod
+  0000                00037         global  _string_descriptor
+                      00038 
+                      00039 ;--------------------------------------------------------
+                      00040 ; extern variables in this module
+                      00041 ;--------------------------------------------------------
+  0000                00042         extern  __gptrget1
+  0000                00043         extern  __gptrput1
+  0000                00044         extern  _PPSCONbits
+  0000                00045         extern  _UEP0bits
+  0000                00046         extern  _UEP1bits
+  0000                00047         extern  _UEP2bits
+  0000                00048         extern  _UEP3bits
+  0000                00049         extern  _UEP4bits
+  0000                00050         extern  _UEP5bits
+  0000                00051         extern  _UEP6bits
+  0000                00052         extern  _UEP7bits
+  0000                00053         extern  _UEP8bits
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00054         extern  _UEP9bits
+  0000                00055         extern  _UEP10bits
+  0000                00056         extern  _UEP11bits
+  0000                00057         extern  _UEP12bits
+  0000                00058         extern  _UEP13bits
+  0000                00059         extern  _UEP14bits
+  0000                00060         extern  _UEP15bits
+  0000                00061         extern  _UIEbits
+  0000                00062         extern  _UEIEbits
+  0000                00063         extern  _UADDRbits
+  0000                00064         extern  _UCFGbits
+  0000                00065         extern  _PADCFG1bits
+  0000                00066         extern  _REFOCONbits
+  0000                00067         extern  _RTCCALbits
+  0000                00068         extern  _RTCCFGbits
+  0000                00069         extern  _ODCON3bits
+  0000                00070         extern  _ODCON2bits
+  0000                00071         extern  _ODCON1bits
+  0000                00072         extern  _ANCON0bits
+  0000                00073         extern  _ANCON1bits
+  0000                00074         extern  _DSWAKELbits
+  0000                00075         extern  _DSWAKEHbits
+  0000                00076         extern  _DSCONLbits
+  0000                00077         extern  _DSCONHbits
+  0000                00078         extern  _TCLKCONbits
+  0000                00079         extern  _CVRCONbits
+  0000                00080         extern  _UFRMLbits
+  0000                00081         extern  _UFRMHbits
+  0000                00082         extern  _UIRbits
+  0000                00083         extern  _UEIRbits
+  0000                00084         extern  _USTATbits
+  0000                00085         extern  _UCONbits
+  0000                00086         extern  _CMSTATbits
+  0000                00087         extern  _CMSTATUSbits
+  0000                00088         extern  _SSP2CON2bits
+  0000                00089         extern  _SSP2CON1bits
+  0000                00090         extern  _SSP2STATbits
+  0000                00091         extern  _SSP2ADDbits
+  0000                00092         extern  _T4CONbits
+  0000                00093         extern  _T3CONbits
+  0000                00094         extern  _BAUDCON2bits
+  0000                00095         extern  _BAUDCONbits
+  0000                00096         extern  _BAUDCON1bits
+  0000                00097         extern  _BAUDCTLbits
+  0000                00098         extern  _PORTAbits
+  0000                00099         extern  _PORTBbits
+  0000                00100         extern  _PORTCbits
+  0000                00101         extern  _HLVDCONbits
+  0000                00102         extern  _DMACON2bits
+  0000                00103         extern  _DMACON1bits
+  0000                00104         extern  _LATAbits
+  0000                00105         extern  _LATBbits
+  0000                00106         extern  _LATCbits
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00107         extern  _ALRMRPTbits
+  0000                00108         extern  _ALRMCFGbits
+  0000                00109         extern  _TRISAbits
+  0000                00110         extern  _TRISBbits
+  0000                00111         extern  _TRISCbits
+  0000                00112         extern  _T3GCONbits
+  0000                00113         extern  _T1GCONbits
+  0000                00114         extern  _OSCTUNEbits
+  0000                00115         extern  _RCSTA2bits
+  0000                00116         extern  _PIE1bits
+  0000                00117         extern  _PIR1bits
+  0000                00118         extern  _IPR1bits
+  0000                00119         extern  _PIE2bits
+  0000                00120         extern  _PIR2bits
+  0000                00121         extern  _IPR2bits
+  0000                00122         extern  _PIE3bits
+  0000                00123         extern  _PIR3bits
+  0000                00124         extern  _IPR3bits
+  0000                00125         extern  _EECON1bits
+  0000                00126         extern  _TXSTA2bits
+  0000                00127         extern  _RCSTAbits
+  0000                00128         extern  _RCSTA1bits
+  0000                00129         extern  _TXSTAbits
+  0000                00130         extern  _TXSTA1bits
+  0000                00131         extern  _CTMUICONbits
+  0000                00132         extern  _CTMUCONLbits
+  0000                00133         extern  _CTMUCONHbits
+  0000                00134         extern  _CCP2CONbits
+  0000                00135         extern  _ECCP2CONbits
+  0000                00136         extern  _ECCP2DELbits
+  0000                00137         extern  _PWM2CONbits
+  0000                00138         extern  _ECCP2ASbits
+  0000                00139         extern  _PSTR2CONbits
+  0000                00140         extern  _CCP1CONbits
+  0000                00141         extern  _ECCP1CONbits
+  0000                00142         extern  _ECCP1DELbits
+  0000                00143         extern  _PWM1CONbits
+  0000                00144         extern  _ECCP1ASbits
+  0000                00145         extern  _PSTR1CONbits
+  0000                00146         extern  _WDTCONbits
+  0000                00147         extern  _ADCON1bits
+  0000                00148         extern  _ADCON0bits
+  0000                00149         extern  _SSP1CON2bits
+  0000                00150         extern  _SSPCON2bits
+  0000                00151         extern  _SSP1CON1bits
+  0000                00152         extern  _SSPCON1bits
+  0000                00153         extern  _SSP1STATbits
+  0000                00154         extern  _SSPSTATbits
+  0000                00155         extern  _SSP1ADDbits
+  0000                00156         extern  _SSPADDbits
+  0000                00157         extern  _T2CONbits
+  0000                00158         extern  _T1CONbits
+  0000                00159         extern  _RCONbits
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00160         extern  _CM2CONbits
+  0000                00161         extern  _CM2CON1bits
+  0000                00162         extern  _CM1CONbits
+  0000                00163         extern  _CM1CON1bits
+  0000                00164         extern  _OSCCONbits
+  0000                00165         extern  _T0CONbits
+  0000                00166         extern  _STATUSbits
+  0000                00167         extern  _INTCON3bits
+  0000                00168         extern  _INTCON2bits
+  0000                00169         extern  _INTCONbits
+  0000                00170         extern  _STKPTRbits
+  0000                00171         extern  _RPOR0
+  0000                00172         extern  _RPOR1
+  0000                00173         extern  _RPOR2
+  0000                00174         extern  _RPOR3
+  0000                00175         extern  _RPOR4
+  0000                00176         extern  _RPOR5
+  0000                00177         extern  _RPOR6
+  0000                00178         extern  _RPOR7
+  0000                00179         extern  _RPOR8
+  0000                00180         extern  _RPOR9
+  0000                00181         extern  _RPOR10
+  0000                00182         extern  _RPOR11
+  0000                00183         extern  _RPOR12
+  0000                00184         extern  _RPOR13
+  0000                00185         extern  _RPOR17
+  0000                00186         extern  _RPOR18
+  0000                00187         extern  _RPINR1
+  0000                00188         extern  _RPINR2
+  0000                00189         extern  _RPINR3
+  0000                00190         extern  _RPINR4
+  0000                00191         extern  _RPINR6
+  0000                00192         extern  _RPINR7
+  0000                00193         extern  _RPINR8
+  0000                00194         extern  _RPINR12
+  0000                00195         extern  _RPINR13
+  0000                00196         extern  _RPINR16
+  0000                00197         extern  _RPINR17
+  0000                00198         extern  _RPINR21
+  0000                00199         extern  _RPINR22
+  0000                00200         extern  _RPINR23
+  0000                00201         extern  _RPINR24
+  0000                00202         extern  _PPSCON
+  0000                00203         extern  _UEP0
+  0000                00204         extern  _UEP1
+  0000                00205         extern  _UEP2
+  0000                00206         extern  _UEP3
+  0000                00207         extern  _UEP4
+  0000                00208         extern  _UEP5
+  0000                00209         extern  _UEP6
+  0000                00210         extern  _UEP7
+  0000                00211         extern  _UEP8
+  0000                00212         extern  _UEP9
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00213         extern  _UEP10
+  0000                00214         extern  _UEP11
+  0000                00215         extern  _UEP12
+  0000                00216         extern  _UEP13
+  0000                00217         extern  _UEP14
+  0000                00218         extern  _UEP15
+  0000                00219         extern  _UIE
+  0000                00220         extern  _UEIE
+  0000                00221         extern  _UADDR
+  0000                00222         extern  _UCFG
+  0000                00223         extern  _PADCFG1
+  0000                00224         extern  _REFOCON
+  0000                00225         extern  _RTCCAL
+  0000                00226         extern  _RTCCFG
+  0000                00227         extern  _ODCON3
+  0000                00228         extern  _ODCON2
+  0000                00229         extern  _ODCON1
+  0000                00230         extern  _ANCON0
+  0000                00231         extern  _ANCON1
+  0000                00232         extern  _DSWAKEL
+  0000                00233         extern  _DSWAKEH
+  0000                00234         extern  _DSCONL
+  0000                00235         extern  _DSCONH
+  0000                00236         extern  _DSGPR0
+  0000                00237         extern  _DSGPR1
+  0000                00238         extern  _TCLKCON
+  0000                00239         extern  _CVRCON
+  0000                00240         extern  _UFRM
+  0000                00241         extern  _UFRML
+  0000                00242         extern  _UFRMH
+  0000                00243         extern  _UIR
+  0000                00244         extern  _UEIR
+  0000                00245         extern  _USTAT
+  0000                00246         extern  _UCON
+  0000                00247         extern  _DMABCH
+  0000                00248         extern  _DMABCL
+  0000                00249         extern  _RXADDRH
+  0000                00250         extern  _RXADDRL
+  0000                00251         extern  _TXADDRH
+  0000                00252         extern  _TXADDRL
+  0000                00253         extern  _CMSTAT
+  0000                00254         extern  _CMSTATUS
+  0000                00255         extern  _SSP2CON2
+  0000                00256         extern  _SSP2CON1
+  0000                00257         extern  _SSP2STAT
+  0000                00258         extern  _SSP2ADD
+  0000                00259         extern  _SSP2BUF
+  0000                00260         extern  _T4CON
+  0000                00261         extern  _PR4
+  0000                00262         extern  _TMR4
+  0000                00263         extern  _T3CON
+  0000                00264         extern  _TMR3
+  0000                00265         extern  _TMR3L
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00266         extern  _TMR3H
+  0000                00267         extern  _BAUDCON2
+  0000                00268         extern  _SPBRGH2
+  0000                00269         extern  _BAUDCON
+  0000                00270         extern  _BAUDCON1
+  0000                00271         extern  _BAUDCTL
+  0000                00272         extern  _SPBRGH
+  0000                00273         extern  _SPBRGH1
+  0000                00274         extern  _PORTA
+  0000                00275         extern  _PORTB
+  0000                00276         extern  _PORTC
+  0000                00277         extern  _HLVDCON
+  0000                00278         extern  _DMACON2
+  0000                00279         extern  _DMACON1
+  0000                00280         extern  _LATA
+  0000                00281         extern  _LATB
+  0000                00282         extern  _LATC
+  0000                00283         extern  _ALRMVALL
+  0000                00284         extern  _ALRMVALH
+  0000                00285         extern  _ALRMRPT
+  0000                00286         extern  _ALRMCFG
+  0000                00287         extern  _TRISA
+  0000                00288         extern  _TRISB
+  0000                00289         extern  _TRISC
+  0000                00290         extern  _T3GCON
+  0000                00291         extern  _RTCVALL
+  0000                00292         extern  _RTCVALH
+  0000                00293         extern  _T1GCON
+  0000                00294         extern  _OSCTUNE
+  0000                00295         extern  _RCSTA2
+  0000                00296         extern  _PIE1
+  0000                00297         extern  _PIR1
+  0000                00298         extern  _IPR1
+  0000                00299         extern  _PIE2
+  0000                00300         extern  _PIR2
+  0000                00301         extern  _IPR2
+  0000                00302         extern  _PIE3
+  0000                00303         extern  _PIR3
+  0000                00304         extern  _IPR3
+  0000                00305         extern  _EECON1
+  0000                00306         extern  _EECON2
+  0000                00307         extern  _TXSTA2
+  0000                00308         extern  _TXREG2
+  0000                00309         extern  _RCREG2
+  0000                00310         extern  _SPBRG2
+  0000                00311         extern  _RCSTA
+  0000                00312         extern  _RCSTA1
+  0000                00313         extern  _TXSTA
+  0000                00314         extern  _TXSTA1
+  0000                00315         extern  _TXREG
+  0000                00316         extern  _TXREG1
+  0000                00317         extern  _RCREG
+  0000                00318         extern  _RCREG1
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00319         extern  _SPBRG
+  0000                00320         extern  _SPBRG1
+  0000                00321         extern  _CTMUICON
+  0000                00322         extern  _CTMUCONL
+  0000                00323         extern  _CTMUCONH
+  0000                00324         extern  _CCP2CON
+  0000                00325         extern  _ECCP2CON
+  0000                00326         extern  _CCPR2
+  0000                00327         extern  _CCPR2L
+  0000                00328         extern  _CCPR2H
+  0000                00329         extern  _ECCP2DEL
+  0000                00330         extern  _PWM2CON
+  0000                00331         extern  _ECCP2AS
+  0000                00332         extern  _PSTR2CON
+  0000                00333         extern  _CCP1CON
+  0000                00334         extern  _ECCP1CON
+  0000                00335         extern  _CCPR1
+  0000                00336         extern  _CCPR1L
+  0000                00337         extern  _CCPR1H
+  0000                00338         extern  _ECCP1DEL
+  0000                00339         extern  _PWM1CON
+  0000                00340         extern  _ECCP1AS
+  0000                00341         extern  _PSTR1CON
+  0000                00342         extern  _WDTCON
+  0000                00343         extern  _ADCON1
+  0000                00344         extern  _ADCON0
+  0000                00345         extern  _ADRES
+  0000                00346         extern  _ADRESL
+  0000                00347         extern  _ADRESH
+  0000                00348         extern  _SSP1CON2
+  0000                00349         extern  _SSPCON2
+  0000                00350         extern  _SSP1CON1
+  0000                00351         extern  _SSPCON1
+  0000                00352         extern  _SSP1STAT
+  0000                00353         extern  _SSPSTAT
+  0000                00354         extern  _SSP1ADD
+  0000                00355         extern  _SSPADD
+  0000                00356         extern  _SSP1BUF
+  0000                00357         extern  _SSPBUF
+  0000                00358         extern  _T2CON
+  0000                00359         extern  _PR2
+  0000                00360         extern  _TMR2
+  0000                00361         extern  _T1CON
+  0000                00362         extern  _TMR1
+  0000                00363         extern  _TMR1L
+  0000                00364         extern  _TMR1H
+  0000                00365         extern  _RCON
+  0000                00366         extern  _CM2CON
+  0000                00367         extern  _CM2CON1
+  0000                00368         extern  _CM1CON
+  0000                00369         extern  _CM1CON1
+  0000                00370         extern  _OSCCON
+  0000                00371         extern  _T0CON
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000                00372         extern  _TMR0
+  0000                00373         extern  _TMR0L
+  0000                00374         extern  _TMR0H
+  0000                00375         extern  _STATUS
+  0000                00376         extern  _FSR2L
+  0000                00377         extern  _FSR2H
+  0000                00378         extern  _PLUSW2
+  0000                00379         extern  _PREINC2
+  0000                00380         extern  _POSTDEC2
+  0000                00381         extern  _POSTINC2
+  0000                00382         extern  _INDF2
+  0000                00383         extern  _BSR
+  0000                00384         extern  _FSR1L
+  0000                00385         extern  _FSR1H
+  0000                00386         extern  _PLUSW1
+  0000                00387         extern  _PREINC1
+  0000                00388         extern  _POSTDEC1
+  0000                00389         extern  _POSTINC1
+  0000                00390         extern  _INDF1
+  0000                00391         extern  _WREG
+  0000                00392         extern  _FSR0L
+  0000                00393         extern  _FSR0H
+  0000                00394         extern  _PLUSW0
+  0000                00395         extern  _PREINC0
+  0000                00396         extern  _POSTDEC0
+  0000                00397         extern  _POSTINC0
+  0000                00398         extern  _INDF0
+  0000                00399         extern  _INTCON3
+  0000                00400         extern  _INTCON2
+  0000                00401         extern  _INTCON
+  0000                00402         extern  _PROD
+  0000                00403         extern  _PRODL
+  0000                00404         extern  _PRODH
+  0000                00405         extern  _TABLAT
+  0000                00406         extern  _TBLPTR
+  0000                00407         extern  _TBLPTRL
+  0000                00408         extern  _TBLPTRH
+  0000                00409         extern  _TBLPTRU
+  0000                00410         extern  _PC
+  0000                00411         extern  _PCL
+  0000                00412         extern  _PCLATH
+  0000                00413         extern  _PCLATU
+  0000                00414         extern  _STKPTR
+  0000                00415         extern  _TOS
+  0000                00416         extern  _TOSL
+  0000                00417         extern  _TOSH
+  0000                00418         extern  _TOSU
+  0000                00419         extern  _usb_ep_data_out_callback
+                      00420 
+                      00421 ;--------------------------------------------------------
+                      00422 ;       Equates to used internal registers
+                      00423 ;--------------------------------------------------------
+  00000FD8            00424 STATUS  equ     0xfd8
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  00000FE8            00425 WREG    equ     0xfe8
+  00000FF6            00426 TBLPTRL equ     0xff6
+  00000FF7            00427 TBLPTRH equ     0xff7
+  00000FF8            00428 TBLPTRU equ     0xff8
+  00000FF5            00429 TABLAT  equ     0xff5
+  00000FE9            00430 FSR0L   equ     0xfe9
+  00000FE6            00431 POSTINC1        equ     0xfe6
+  00000FE5            00432 POSTDEC1        equ     0xfe5
+  00000FE4            00433 PREINC1 equ     0xfe4
+  00000FF3            00434 PRODL   equ     0xff3
+  00000FF4            00435 PRODH   equ     0xff4
+                      00436 
+                      00437 
+                      00438 ; Internal registers
+                      00439 .registers      udata_ovr       0x0000
+000000                00440 r0x00   res     1
+000001                00441 r0x01   res     1
+000002                00442 r0x02   res     1
+000003                00443 r0x03   res     1
+000004                00444 r0x04   res     1
+000005                00445 r0x05   res     1
+000006                00446 r0x06   res     1
+000007                00447 r0x07   res     1
+000008                00448 r0x08   res     1
+000009                00449 r0x09   res     1
+00000A                00450 r0x0a   res     1
+                      00451 
+                      00452 
+                      00453 usbram5 udata
+000000                00454 _controlTransferBuffer  res     64
+000040                00455 _SetupPacket    res     64
+                      00456 
+                      00457 udata_picUSB_0  udata
+000000                00458 _selfPowered    res     1
+                      00459 
+                      00460 udata_picUSB_1  udata
+000000                00461 _deviceAddress  res     1
+                      00462 
+                      00463 udata_picUSB_2  udata
+000000                00464 _wCount res     2
+                      00465 
+                      00466 udata_picUSB_3  udata
+000000                00467 _inPtr  res     3
+                      00468 
+                      00469 udata_picUSB_4  udata
+000000                00470 _outPtr res     3
+                      00471 
+                      00472 udata_picUSB_5  udata
+000000                00473 _ctrlTransferStage      res     1
+                      00474 
+                      00475 udata_picUSB_6  udata
+000000                00476 _deviceState    res     1
+                      00477 
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00478 udata_picUSB_7  udata
+000000                00479 _currentConfiguration   res     1
+                      00480 
+                      00481 udata_picUSB_8  udata
+000000                00482 _requestHandled res     1
+                      00483 
+                      00484 udata_picUSB_9  udata
+000000                00485 _bootCmd        res     64
+                      00486 
+                      00487 
+                      00488 ustat_picUSB_00 udata   0X0400
+000400                00489 _ep_bdt         res     16
+                      00490 
+                      00491 ;--------------------------------------------------------
+                      00492 ; global & static initialisations
+                      00493 ;--------------------------------------------------------
+                      00494 ; I code from now on!
+                      00495 ; ; Starting pCode block
+                      00496 S_picUSB__ProcessUSBTransactions        code
+000000                00497 _ProcessUSBTransactions:
+                      00498 ;       .line   255; src/picUSB.c       void ProcessUSBTransactions()
+000000 C??? F???      00499         MOVFF   r0x00, POSTDEC1
+000004 C??? F???      00500         MOVFF   r0x01, POSTDEC1
+000008 C??? F???      00501         MOVFF   r0x02, POSTDEC1
+00000C C??? F???      00502         MOVFF   r0x03, POSTDEC1
+000010 C??? F???      00503         MOVFF   r0x04, POSTDEC1
+000014 C??? F???      00504         MOVFF   r0x05, POSTDEC1
+000018 C??? F???      00505         MOVFF   r0x06, POSTDEC1
+00001C C??? F???      00506         MOVFF   r0x07, POSTDEC1
+000020 C??? F???      00507         MOVFF   r0x08, POSTDEC1
+000024 C??? F???      00508         MOVFF   r0x09, POSTDEC1
+000028 C??? F???      00509         MOVFF   r0x0a, POSTDEC1
+                      00510 ; #     MOVF    _deviceState, W, B
+                      00511 ; #     BTFSS   STATUS, 2
+                      00512 ; #     GOTO    _00164_DS_
+                      00513 ; #     GOTO    _00267_DS_
+                      00514 ; #     BTFSS   _UIRbits, 2
+00002C ????           00515         BANKSEL _deviceState
+                      00516 ;       .line   258; src/picUSB.c       if(deviceState == DETACHED)
+00002E 51??           00517         MOVF    _deviceState, W, B
+                      00518 ;       .line   259; src/picUSB.c       return;
+000030 B4D8           00519         BTFSC   STATUS, 2
+                      00520 ;       .line   263; src/picUSB.c       if(UIRbits.ACTVIF && UIEbits.ACTVIE)
+000032 EF?? F0??      00521         GOTO    _00267_DS_
+000036 A4??           00522         BTFSS   _UIRbits, 2
+000038 D???           00523         BRA     _00166_DS_
+00003A ????           00524         BANKSEL _UIEbits
+00003C A5??           00525         BTFSS   _UIEbits, 2, B
+00003E D???           00526         BRA     _00166_DS_
+                      00527 ;       .line   265; src/picUSB.c       UCONbits.SUSPND = 0;
+000040 92??           00528         BCF     _UCONbits, 1
+                      00529 ; removed redundant BANKSEL
+                      00530 ;       .line   266; src/picUSB.c       UIEbits.ACTVIE = 0;
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000042 95??           00531         BCF     _UIEbits, 2, B
+                      00532 ;       .line   267; src/picUSB.c       UIRbits.ACTVIF = 0;
+000044 94??           00533         BCF     _UIRbits, 2
+000046                00534 _00166_DS_:
+                      00535 ;       .line   271; src/picUSB.c       if(UCONbits.SUSPND == 1)
+000046 6A??           00536         CLRF    r0x00
+000048 B2??           00537         BTFSC   _UCONbits, 1
+00004A 2A??           00538         INCF    r0x00, F
+00004C 50??           00539         MOVF    r0x00, W
+00004E 0A01           00540         XORLW   0x01
+000050 E1??           00541         BNZ     _00169_DS_
+                      00542 ;       .line   272; src/picUSB.c       return;
+000052 EF?? F0??      00543         GOTO    _00267_DS_
+000056                00544 _00169_DS_:
+                      00545 ;       .line   275; src/picUSB.c       if (UIRbits.URSTIF && UIEbits.URSTIE)
+000056 A0??           00546         BTFSS   _UIRbits, 0
+000058 D???           00547         BRA     _00174_DS_
+00005A ????           00548         BANKSEL _UIEbits
+00005C A1??           00549         BTFSS   _UIEbits, 0, B
+00005E D???           00550         BRA     _00174_DS_
+                      00551 ;       .line   277; src/picUSB.c       UEIR  = 0x00;
+000060 6A??           00552         CLRF    _UEIR
+                      00553 ;       .line   278; src/picUSB.c       UIR   = 0x00;
+000062 6A??           00554         CLRF    _UIR
+                      00555 ;       .line   280; src/picUSB.c       UEIE  = 0x9f; // 0b10011111
+000064 0E9F           00556         MOVLW   0x9f
+000066 ????           00557         BANKSEL _UEIE
+000068 6F??           00558         MOVWF   _UEIE, B
+                      00559 ;       .line   282; src/picUSB.c       UIE   = 0x7F; //0x7b; // 0b01111011
+00006A 0E7F           00560         MOVLW   0x7f
+00006C ????           00561         BANKSEL _UIE
+00006E 6F??           00562         MOVWF   _UIE, B
+000070 ????           00563         BANKSEL _UADDR
+                      00564 ;       .line   283; src/picUSB.c       UADDR = 0x00;
+000072 6B??           00565         CLRF    _UADDR, B
+                      00566 ;       .line   286; src/picUSB.c       UEP0 = EP_CTRL | HSHK_EN;
+000074 0E16           00567         MOVLW   0x16
+000076 ????           00568         BANKSEL _UEP0
+000078 6F??           00569         MOVWF   _UEP0, B
+00007A                00570 _00170_DS_:
+                      00571 ;       .line   289; src/picUSB.c       while (UIRbits.TRNIF == 1)
+00007A 6A??           00572         CLRF    r0x00
+00007C B6??           00573         BTFSC   _UIRbits, 3
+00007E 2A??           00574         INCF    r0x00, F
+000080 50??           00575         MOVF    r0x00, W
+000082 0A01           00576         XORLW   0x01
+000084 E1??           00577         BNZ     _00172_DS_
+                      00578 ;       .line   290; src/picUSB.c       UIRbits.TRNIF = 0;
+000086 96??           00579         BCF     _UIRbits, 3
+000088 D???           00580         BRA     _00170_DS_
+00008A                00581 _00172_DS_:
+                      00582 ;       .line   293; src/picUSB.c       UCONbits.PKTDIS = 0;
+00008A 98??           00583         BCF     _UCONbits, 4
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00584 ;       .line   296; src/picUSB.c       WaitForSetupStage();
+00008C EC?? F0??      00585         CALL    _WaitForSetupStage
+000090 ????           00586         BANKSEL _selfPowered
+                      00587 ;       .line   299; src/picUSB.c       selfPowered = 0;                      // Self powered is off by 
+                            default
+000092 6B??           00588         CLRF    _selfPowered, B
+000094 ????           00589         BANKSEL _currentConfiguration
+                      00590 ;       .line   300; src/picUSB.c       currentConfiguration = 0;             // Clear active configurat
+                            ion
+000096 6B??           00591         CLRF    _currentConfiguration, B
+                      00592 ;       .line   301; src/picUSB.c       deviceState = DEFAULT;
+000098 0E03           00593         MOVLW   0x03
+00009A ????           00594         BANKSEL _deviceState
+00009C 6F??           00595         MOVWF   _deviceState, B
+00009E                00596 _00174_DS_:
+                      00597 ;       .line   305; src/picUSB.c       if (UIRbits.IDLEIF && UIEbits.IDLEIE)
+00009E A8??           00598         BTFSS   _UIRbits, 4
+0000A0 D???           00599         BRA     _00177_DS_
+0000A2 ????           00600         BANKSEL _UIEbits
+0000A4 A9??           00601         BTFSS   _UIEbits, 4, B
+0000A6 D???           00602         BRA     _00177_DS_
+                      00603 ; removed redundant BANKSEL
+                      00604 ;       .line   307; src/picUSB.c       UIEbits.ACTVIE = 1;
+0000A8 85??           00605         BSF     _UIEbits, 2, B
+                      00606 ;       .line   308; src/picUSB.c       UIRbits.IDLEIF = 0;
+0000AA 98??           00607         BCF     _UIRbits, 4
+                      00608 ;       .line   309; src/picUSB.c       UCONbits.SUSPND = 1;
+0000AC 82??           00609         BSF     _UCONbits, 1
+                      00610 ;       .line   320; src/picUSB.c       PIR2bits.USBIF = 0;
+0000AE 98??           00611         BCF     _PIR2bits, 4
+                      00612 ;       .line   321; src/picUSB.c       INTCONbits.RBIF = 0;
+0000B0 90??           00613         BCF     _INTCONbits, 0
+                      00614 ;       .line   322; src/picUSB.c       PIE2bits.USBIE = 1;
+0000B2 88??           00615         BSF     _PIE2bits, 4
+                      00616 ;       .line   323; src/picUSB.c       INTCONbits.RBIE = 1;
+0000B4 86??           00617         BSF     _INTCONbits, 3
+0000B6                00618 _00177_DS_:
+                      00619 ;       .line   331; src/picUSB.c       if (UIRbits.SOFIF && UIEbits.SOFIE)
+0000B6 AC??           00620         BTFSS   _UIRbits, 6
+                      00621 ; #     GOTO    _00180_DS_
+                      00622 ; #     BTFSS   _UIEbits, 6, B
+                      00623 ; #     GOTO    _00180_DS_
+                      00624 ; #     BCF     _UIRbits, 6
+                      00625 ; #     BTFSS   _UIRbits, 5
+                      00626 ;       .line   333; src/picUSB.c       UIRbits.SOFIF = 0;
+0000B8 D???           00627         BRA     _00180_DS_
+0000BA ????           00628         BANKSEL _UIEbits
+                      00629 ;       .line   337; src/picUSB.c       if (UIRbits.STALLIF && UIEbits.STALLIE)
+0000BC BD??           00630         BTFSC   _UIEbits, 6, B
+0000BE 9C??           00631         BCF     _UIRbits, 6
+0000C0                00632 _00180_DS_:
+0000C0 AA??           00633         BTFSS   _UIRbits, 5
+0000C2 D???           00634         BRA     _00185_DS_
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0000C4 ????           00635         BANKSEL _UIEbits
+0000C6 AB??           00636         BTFSS   _UIEbits, 5, B
+0000C8 D???           00637         BRA     _00185_DS_
+                      00638 ;       .line   339; src/picUSB.c       if(UEP0bits.EPSTALL == 1)
+0000CA 6A??           00639         CLRF    r0x00
+0000CC ????           00640         BANKSEL _UEP0bits
+0000CE B1??           00641         BTFSC   _UEP0bits, 0, B
+0000D0 2A??           00642         INCF    r0x00, F
+0000D2 50??           00643         MOVF    r0x00, W
+0000D4 0A01           00644         XORLW   0x01
+0000D6 E1??           00645         BNZ     _00183_DS_
+                      00646 ;       .line   342; src/picUSB.c       WaitForSetupStage();
+0000D8 EC?? F0??      00647         CALL    _WaitForSetupStage
+0000DC ????           00648         BANKSEL _UEP0bits
+                      00649 ;       .line   343; src/picUSB.c       UEP0bits.EPSTALL = 0;
+0000DE 91??           00650         BCF     _UEP0bits, 0, B
+0000E0                00651 _00183_DS_:
+                      00652 ;       .line   345; src/picUSB.c       UIRbits.STALLIF = 0;
+0000E0 9A??           00653         BCF     _UIRbits, 5
+0000E2                00654 _00185_DS_:
+                      00655 ;       .line   349; src/picUSB.c       if (UIRbits.UERRIF && UIEbits.UERRIE)
+0000E2 A2??           00656         BTFSS   _UIRbits, 1
+                      00657 ; #     GOTO    _00188_DS_
+                      00658 ; #     BTFSS   _UIEbits, 1, B
+                      00659 ; #     GOTO    _00188_DS_
+                      00660 ; #     BCF     _UIRbits, 1
+                      00661 ; #     MOVLW   0x03
+                      00662 ;       .line   350; src/picUSB.c       UIRbits.UERRIF = 0;// Clear errors
+0000E4 D???           00663         BRA     _00188_DS_
+0000E6 ????           00664         BANKSEL _UIEbits
+                      00665 ;       .line   353; src/picUSB.c       if (deviceState < DEFAULT)  // DETACHED, ATTACHED or POWERED
+0000E8 B3??           00666         BTFSC   _UIEbits, 1, B
+0000EA 92??           00667         BCF     _UIRbits, 1
+0000EC                00668 _00188_DS_:
+0000EC 0E03           00669         MOVLW   0x03
+                      00670 ; #     SUBWF   _deviceState, W, B
+                      00671 ; #     BTFSC   STATUS, 0
+                      00672 ; #     GOTO    _00191_DS_
+                      00673 ; #     GOTO    _00267_DS_
+                      00674 ; #     BTFSS   _UIRbits, 3
+0000EE ????           00675         BANKSEL _deviceState
+                      00676 ;       .line   354; src/picUSB.c       return;
+0000F0 5D??           00677         SUBWF   _deviceState, W, B
+                      00678 ;       .line   365; src/picUSB.c       if(UIRbits.TRNIF && UIEbits.TRNIE)
+0000F2 A0D8           00679         BTFSS   STATUS, 0
+0000F4 EF?? F0??      00680         GOTO    _00267_DS_
+0000F8 A6??           00681         BTFSS   _UIRbits, 3
+0000FA EF?? F0??      00682         GOTO    _00267_DS_
+0000FE ????           00683         BANKSEL _UIEbits
+000100 A7??           00684         BTFSS   _UIEbits, 3, B
+000102 EF?? F0??      00685         GOTO    _00267_DS_
+                      00686 ;       .line   370; src/picUSB.c       byte end_point = USTAT >> 3;
+000106 38??           00687         SWAPF   _USTAT, W
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000108 44E8           00688         RLNCF   WREG, W
+00010A 0B1F           00689         ANDLW   0x1f
+00010C 6E??           00690         MOVWF   r0x00
+                      00691 ;       .line   373; src/picUSB.c       if (end_point == 0) // Endpoint 0
+00010E 50??           00692         MOVF    r0x00, W
+000110 A4D8           00693         BTFSS   STATUS, 2
+000112 D???           00694         BRA     _00259_DS_
+                      00695 ;       .line   376; src/picUSB.c       if (USTATbits.DIR == OUT)
+000114 B4??           00696         BTFSC   _USTATbits, 2
+000116 D???           00697         BRA     _00254_DS_
+                      00698 ;       .line   380; src/picUSB.c       PID = (EP_OUT_BD(0).Stat.uc & 0x3C) >> 2;
+000118 0E3C           00699         MOVLW   0x3c
+00011A ????           00700         BANKSEL _ep_bdt
+00011C 15??           00701         ANDWF   _ep_bdt, W, B
+00011E 6E??           00702         MOVWF   r0x01
+000120 40??           00703         RRNCF   r0x01, W
+000122 40E8           00704         RRNCF   WREG, W
+000124 0B3F           00705         ANDLW   0x3f
+                      00706 ; #     MOVWF   r0x01
+                      00707 ; #     MOVF    r0x01, W
+                      00708 ;       .line   390; src/picUSB.c       if (PID == 0x0D)
+000126 0A0D           00709         XORLW   0x0d
+000128 E0??           00710         BZ      _00423_DS_
+00012A D???           00711         BRA     _00240_DS_
+00012C                00712 _00423_DS_:
+00012C ????           00713         BANKSEL (_ep_bdt + 4)
+                      00714 ;       .line   394; src/picUSB.c       EP_IN_BD(0).Stat.uc &= ~BDS_UOWN;
+00012E 51??           00715         MOVF    (_ep_bdt + 4), W, B
+000130 6E??           00716         MOVWF   r0x01
+000132 9E??           00717         BCF     r0x01, 7
+000134 50??           00718         MOVF    r0x01, W
+                      00719 ; removed redundant BANKSEL
+000136 6F??           00720         MOVWF   (_ep_bdt + 4), B
+                      00721 ; removed redundant BANKSEL
+                      00722 ;       .line   395; src/picUSB.c       EP_OUT_BD(0).Stat.uc &= ~BDS_UOWN;
+000138 51??           00723         MOVF    _ep_bdt, W, B
+00013A 6E??           00724         MOVWF   r0x01
+00013C 9E??           00725         BCF     r0x01, 7
+00013E 50??           00726         MOVF    r0x01, W
+                      00727 ; removed redundant BANKSEL
+000140 6F??           00728         MOVWF   _ep_bdt, B
+000142 ????           00729         BANKSEL _ctrlTransferStage
+                      00730 ;       .line   398; src/picUSB.c       ctrlTransferStage = SETUP_STAGE;
+000144 6B??           00731         CLRF    _ctrlTransferStage, B
+000146 ????           00732         BANKSEL _requestHandled
+                      00733 ;       .line   399; src/picUSB.c       requestHandled = 0;                   // Default is that request
+                             hasn't been handled
+000148 6B??           00734         CLRF    _requestHandled, B
+00014A ????           00735         BANKSEL _wCount
+                      00736 ;       .line   400; src/picUSB.c       wCount = 0;                           // No bytes transferred
+00014C 6B??           00737         CLRF    _wCount, B
+                      00738 ; removed redundant BANKSEL
+00014E 6B??           00739         CLRF    (_wCount + 1), B
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000150 ????           00740         BANKSEL _SetupPacket
+                      00741 ;       .line   410; src/picUSB.c       if((SetupPacket.bmRequestType & 0x60) != 0x00)
+000152 51??           00742         MOVF    _SetupPacket, W, B
+                      00743 ; #     ANDLW   0x60
+                      00744 ; #     BTFSC   STATUS, 2
+                      00745 ; #     GOTO    _00193_DS_
+                      00746 ; #     GOTO    _00267_DS_
+                      00747 ; #     MOVF    (_SetupPacket + 1), W, B
+                      00748 ;       .line   411; src/picUSB.c       return;
+000154 0B60           00749         ANDLW   0x60
+                      00750 ;       .line   413; src/picUSB.c       if (SetupPacket.bRequest == SET_ADDRESS)
+000156 A4D8           00751         BTFSS   STATUS, 2
+000158 D???           00752         BRA     _00267_DS_
+                      00753 ; removed redundant BANKSEL
+00015A 51??           00754         MOVF    (_SetupPacket + 1), W, B
+00015C 0A05           00755         XORLW   0x05
+00015E E1??           00756         BNZ     _00222_DS_
+                      00757 ;       .line   419; src/picUSB.c       requestHandled = 1;
+000160 0E01           00758         MOVLW   0x01
+000162 ????           00759         BANKSEL _requestHandled
+000164 6F??           00760         MOVWF   _requestHandled, B
+                      00761 ;       .line   420; src/picUSB.c       deviceState = ADDRESS;
+000166 0E04           00762         MOVLW   0x04
+000168 ????           00763         BANKSEL _deviceState
+00016A 6F??           00764         MOVWF   _deviceState, B
+                      00765 ;       .line   421; src/picUSB.c       deviceAddress = SetupPacket.wValue0;
+00016C C??? F???      00766         MOVFF   (_SetupPacket + 2), _deviceAddress
+000170 D???           00767         BRA     _00223_DS_
+000172                00768 _00222_DS_:
+000172 ????           00769         BANKSEL (_SetupPacket + 1)
+                      00770 ;       .line   424; src/picUSB.c       else if (SetupPacket.bRequest == GET_DESCRIPTOR)
+000174 51??           00771         MOVF    (_SetupPacket + 1), W, B
+000176 0A06           00772         XORLW   0x06
+000178 E0??           00773         BZ      _00430_DS_
+00017A D???           00774         BRA     _00219_DS_
+00017C                00775 _00430_DS_:
+00017C ????           00776         BANKSEL _SetupPacket
+                      00777 ;       .line   426; src/picUSB.c       if(SetupPacket.bmRequestType == 0x80)
+00017E 51??           00778         MOVF    _SetupPacket, W, B
+000180 0A80           00779         XORLW   0x80
+000182 E0??           00780         BZ      _00432_DS_
+000184 D???           00781         BRA     _00223_DS_
+000186                00782 _00432_DS_:
+000186 ????           00783         BANKSEL (_SetupPacket + 3)
+                      00784 ;       .line   431; src/picUSB.c       if (SetupPacket.wValue1 == DEVICE_DESCRIPTOR)
+000188 51??           00785         MOVF    (_SetupPacket + 3), W, B
+00018A 0A01           00786         XORLW   0x01
+00018C E1??           00787         BNZ     _00200_DS_
+                      00788 ;       .line   433; src/picUSB.c       requestHandled = 1;
+00018E 0E01           00789         MOVLW   0x01
+000190 ????           00790         BANKSEL _requestHandled
+000192 6F??           00791         MOVWF   _requestHandled, B
+                      00792 ;       .line   434; src/picUSB.c       outPtr = (byte *)&device_descriptor;
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000194 0E??           00793         MOVLW   UPPER(_device_descriptor)
+000196 ????           00794         BANKSEL (_outPtr + 2)
+000198 6F??           00795         MOVWF   (_outPtr + 2), B
+00019A 0E??           00796         MOVLW   HIGH(_device_descriptor)
+                      00797 ; removed redundant BANKSEL
+00019C 6F??           00798         MOVWF   (_outPtr + 1), B
+00019E 0E??           00799         MOVLW   LOW(_device_descriptor)
+                      00800 ; removed redundant BANKSEL
+0001A0 6F??           00801         MOVWF   _outPtr, B
+                      00802 ;       .line   435; src/picUSB.c       wCount = sizeof(USB_Device_Descriptor);
+0001A2 0E12           00803         MOVLW   0x12
+0001A4 ????           00804         BANKSEL _wCount
+0001A6 6F??           00805         MOVWF   _wCount, B
+                      00806 ; removed redundant BANKSEL
+0001A8 6B??           00807         CLRF    (_wCount + 1), B
+0001AA D???           00808         BRA     _00223_DS_
+0001AC                00809 _00200_DS_:
+0001AC ????           00810         BANKSEL (_SetupPacket + 3)
+                      00811 ;       .line   438; src/picUSB.c       else if (SetupPacket.wValue1 == CONFIGURATION_DESCRIPTOR)
+0001AE 51??           00812         MOVF    (_SetupPacket + 3), W, B
+0001B0 0A02           00813         XORLW   0x02
+0001B2 E1??           00814         BNZ     _00197_DS_
+                      00815 ;       .line   440; src/picUSB.c       requestHandled = 1;
+0001B4 0E01           00816         MOVLW   0x01
+0001B6 ????           00817         BANKSEL _requestHandled
+0001B8 6F??           00818         MOVWF   _requestHandled, B
+                      00819 ;       .line   441; src/picUSB.c       outPtr = (byte *)&configuration_descriptor;
+0001BA 0E??           00820         MOVLW   UPPER(_configuration_descriptor)
+0001BC ????           00821         BANKSEL (_outPtr + 2)
+0001BE 6F??           00822         MOVWF   (_outPtr + 2), B
+0001C0 0E??           00823         MOVLW   HIGH(_configuration_descriptor)
+                      00824 ; removed redundant BANKSEL
+0001C2 6F??           00825         MOVWF   (_outPtr + 1), B
+0001C4 0E??           00826         MOVLW   LOW(_configuration_descriptor)
+                      00827 ; removed redundant BANKSEL
+0001C6 6F??           00828         MOVWF   _outPtr, B
+                      00829 ;       .line   442; src/picUSB.c       wCount = configuration_descriptor.Header.wTotalLength;
+0001C8 0E??           00830         MOVLW   LOW(_configuration_descriptor + 2)
+0001CA 6EF6           00831         MOVWF   TBLPTRL
+0001CC 0E??           00832         MOVLW   HIGH(_configuration_descriptor + 2)
+0001CE 6EF7           00833         MOVWF   TBLPTRH
+0001D0 0E??           00834         MOVLW   UPPER(_configuration_descriptor + 2)
+0001D2 6EF8           00835         MOVWF   TBLPTRU
+0001D4 0009           00836         TBLRD*+ 
+0001D6 CFF5 F000      00837         MOVFF   TABLAT, _wCount
+0001DA 0009           00838         TBLRD*+ 
+0001DC CFF5 F000      00839         MOVFF   TABLAT, (_wCount + 1)
+0001E0 D???           00840         BRA     _00223_DS_
+0001E2                00841 _00197_DS_:
+0001E2 ????           00842         BANKSEL (_SetupPacket + 3)
+                      00843 ;       .line   445; src/picUSB.c       else if (SetupPacket.wValue1 == STRING_DESCRIPTOR)
+0001E4 51??           00844         MOVF    (_SetupPacket + 3), W, B
+0001E6 0A03           00845         XORLW   0x03
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0001E8 E0??           00846         BZ      _00438_DS_
+0001EA D???           00847         BRA     _00223_DS_
+0001EC                00848 _00438_DS_:
+                      00849 ;       .line   447; src/picUSB.c       requestHandled = 1;
+0001EC 0E01           00850         MOVLW   0x01
+0001EE ????           00851         BANKSEL _requestHandled
+0001F0 6F??           00852         MOVWF   _requestHandled, B
+                      00853 ; ;multiply lit val:0x03 by variable (_SetupPacket + 2) and store in r0x01
+0001F2 ????           00854         BANKSEL (_SetupPacket + 2)
+                      00855 ;       .line   449; src/picUSB.c       outPtr = string_descriptor[SetupPacket.wValue0];
+0001F4 51??           00856         MOVF    (_SetupPacket + 2), W, B
+0001F6 0D03           00857         MULLW   0x03
+0001F8 50F4           00858         MOVF    PRODH, W
+0001FA 6E??           00859         MOVWF   r0x02
+0001FC CFF3 F000      00860         MOVFF   PRODL, r0x01
+000200 6A??           00861         CLRF    r0x03
+000202 0E??           00862         MOVLW   LOW(_string_descriptor)
+000204 26??           00863         ADDWF   r0x01, F
+000206 0E??           00864         MOVLW   HIGH(_string_descriptor)
+000208 22??           00865         ADDWFC  r0x02, F
+00020A 0E??           00866         MOVLW   UPPER(_string_descriptor)
+00020C 22??           00867         ADDWFC  r0x03, F
+00020E C??? F???      00868         MOVFF   r0x01, TBLPTRL
+000212 C??? F???      00869         MOVFF   r0x02, TBLPTRH
+000216 C??? F???      00870         MOVFF   r0x03, TBLPTRU
+00021A 0009           00871         TBLRD*+ 
+00021C CFF5 F000      00872         MOVFF   TABLAT, _outPtr
+000220 0009           00873         TBLRD*+ 
+000222 CFF5 F000      00874         MOVFF   TABLAT, (_outPtr + 1)
+000226 0009           00875         TBLRD*+ 
+000228 CFF5 F000      00876         MOVFF   TABLAT, (_outPtr + 2)
+                      00877 ;       .line   450; src/picUSB.c       wCount = *outPtr;
+00022C C??? F???      00878         MOVFF   _outPtr, r0x01
+000230 C??? F???      00879         MOVFF   (_outPtr + 1), r0x02
+000234 C??? F???      00880         MOVFF   (_outPtr + 2), r0x03
+000238 C??? F???      00881         MOVFF   r0x01, FSR0L
+00023C C??? F???      00882         MOVFF   r0x02, PRODL
+000240 50??           00883         MOVF    r0x03, W
+000242 EC?? F0??      00884         CALL    __gptrget1
+000246 6E??           00885         MOVWF   r0x01
+000248 C??? F???      00886         MOVFF   r0x01, _wCount
+00024C ????           00887         BANKSEL (_wCount + 1)
+00024E 6B??           00888         CLRF    (_wCount + 1), B
+000250 D???           00889         BRA     _00223_DS_
+000252                00890 _00219_DS_:
+000252 ????           00891         BANKSEL (_SetupPacket + 1)
+                      00892 ;       .line   466; src/picUSB.c       else if (SetupPacket.bRequest == SET_CONFIGURATION)
+000254 51??           00893         MOVF    (_SetupPacket + 1), W, B
+000256 0A09           00894         XORLW   0x09
+000258 E1??           00895         BNZ     _00216_DS_
+                      00896 ;       .line   468; src/picUSB.c       requestHandled = 1;
+00025A 0E01           00897         MOVLW   0x01
+00025C ????           00898         BANKSEL _requestHandled
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00025E 6F??           00899         MOVWF   _requestHandled, B
+                      00900 ;       .line   479; src/picUSB.c       UEP1 = 0b00011110;
+000260 0E1E           00901         MOVLW   0x1e
+000262 ????           00902         BANKSEL _UEP1
+000264 6F??           00903         MOVWF   _UEP1, B
+                      00904 ; #     MOVLW   0x40
+                      00905 ; #     MOVWF   (_ep_bdt + 12), B
+                      00906 ; #     MOVLW   0x40
+                      00907 ;       .line   483; src/picUSB.c       EP_IN_BD(1).Stat.uc  = 0b01000000;
+000266 0E40           00908         MOVLW   0x40
+000268 ????           00909         BANKSEL (_ep_bdt + 12)
+                      00910 ;       .line   486; src/picUSB.c       EP_OUT_BD(1).Cnt  = EP1_BUFFER_SIZE;
+00026A 6F??           00911         MOVWF   (_ep_bdt + 12), B
+                      00912 ; removed redundant BANKSEL
+00026C 6F??           00913         MOVWF   (_ep_bdt + 9), B
+                      00914 ;       .line   488; src/picUSB.c       EP_OUT_BD(1).ADDR = (unsigned long)&bootCmd;
+00026E 0E??           00915         MOVLW   LOW(_bootCmd)
+                      00916 ; removed redundant BANKSEL
+000270 6F??           00917         MOVWF   (_ep_bdt + 10), B
+000272 0E??           00918         MOVLW   HIGH(_bootCmd)
+                      00919 ; removed redundant BANKSEL
+000274 6F??           00920         MOVWF   (_ep_bdt + 11), B
+                      00921 ;       .line   490; src/picUSB.c       EP_OUT_BD(1).Stat.uc = 0b10000000;
+000276 0E80           00922         MOVLW   0x80
+                      00923 ; removed redundant BANKSEL
+000278 6F??           00924         MOVWF   (_ep_bdt + 8), B
+                      00925 ;       .line   492; src/picUSB.c       currentConfiguration = SetupPacket.wValue0;
+00027A C??? F???      00926         MOVFF   (_SetupPacket + 2), _currentConfiguration
+00027E ????           00927         BANKSEL _currentConfiguration
+                      00928 ;       .line   495; src/picUSB.c       if (currentConfiguration == 0)
+000280 51??           00929         MOVF    _currentConfiguration, W, B
+000282 E1??           00930         BNZ     _00205_DS_
+                      00931 ;       .line   498; src/picUSB.c       deviceState = ADDRESS;
+000284 0E04           00932         MOVLW   0x04
+000286 ????           00933         BANKSEL _deviceState
+000288 6F??           00934         MOVWF   _deviceState, B
+00028A D???           00935         BRA     _00223_DS_
+00028C                00936 _00205_DS_:
+                      00937 ;       .line   501; src/picUSB.c       deviceState = CONFIGURED;
+00028C 0E05           00938         MOVLW   0x05
+00028E ????           00939         BANKSEL _deviceState
+000290 6F??           00940         MOVWF   _deviceState, B
+000292 D???           00941         BRA     _00223_DS_
+000294                00942 _00216_DS_:
+000294 ????           00943         BANKSEL (_SetupPacket + 1)
+                      00944 ;       .line   508; src/picUSB.c       else if (SetupPacket.bRequest == GET_CONFIGURATION)
+000296 51??           00945         MOVF    (_SetupPacket + 1), W, B
+000298 0A08           00946         XORLW   0x08
+00029A E1??           00947         BNZ     _00213_DS_
+                      00948 ;       .line   510; src/picUSB.c       requestHandled = 1;
+00029C 0E01           00949         MOVLW   0x01
+00029E ????           00950         BANKSEL _requestHandled
+0002A0 6F??           00951         MOVWF   _requestHandled, B
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00952 ;       .line   511; src/picUSB.c       outPtr = (byte*)&currentConfiguration;
+0002A2 0E??           00953         MOVLW   HIGH(_currentConfiguration)
+0002A4 ????           00954         BANKSEL (_outPtr + 1)
+0002A6 6F??           00955         MOVWF   (_outPtr + 1), B
+0002A8 0E??           00956         MOVLW   LOW(_currentConfiguration)
+                      00957 ; removed redundant BANKSEL
+0002AA 6F??           00958         MOVWF   _outPtr, B
+0002AC 0E80           00959         MOVLW   0x80
+                      00960 ; removed redundant BANKSEL
+0002AE 6F??           00961         MOVWF   (_outPtr + 2), B
+                      00962 ;       .line   512; src/picUSB.c       wCount = 1;
+0002B0 0E01           00963         MOVLW   0x01
+0002B2 ????           00964         BANKSEL _wCount
+0002B4 6F??           00965         MOVWF   _wCount, B
+                      00966 ; removed redundant BANKSEL
+0002B6 6B??           00967         CLRF    (_wCount + 1), B
+0002B8 D???           00968         BRA     _00223_DS_
+0002BA                00969 _00213_DS_:
+0002BA ????           00970         BANKSEL (_SetupPacket + 1)
+                      00971 ;       .line   527; src/picUSB.c       else if (SetupPacket.bRequest == GET_INTERFACE)
+0002BC 51??           00972         MOVF    (_SetupPacket + 1), W, B
+0002BE 0A0A           00973         XORLW   0x0a
+0002C0 E1??           00974         BNZ     _00210_DS_
+                      00975 ;       .line   531; src/picUSB.c       requestHandled = 1;
+0002C2 0E01           00976         MOVLW   0x01
+0002C4 ????           00977         BANKSEL _requestHandled
+0002C6 6F??           00978         MOVWF   _requestHandled, B
+0002C8 ????           00979         BANKSEL _controlTransferBuffer
+                      00980 ;       .line   532; src/picUSB.c       controlTransferBuffer[0] = 0;
+0002CA 6B??           00981         CLRF    _controlTransferBuffer, B
+                      00982 ;       .line   533; src/picUSB.c       outPtr = (byte *)&controlTransferBuffer;
+0002CC 0E??           00983         MOVLW   HIGH(_controlTransferBuffer)
+0002CE ????           00984         BANKSEL (_outPtr + 1)
+0002D0 6F??           00985         MOVWF   (_outPtr + 1), B
+0002D2 0E??           00986         MOVLW   LOW(_controlTransferBuffer)
+                      00987 ; removed redundant BANKSEL
+0002D4 6F??           00988         MOVWF   _outPtr, B
+0002D6 0E80           00989         MOVLW   0x80
+                      00990 ; removed redundant BANKSEL
+0002D8 6F??           00991         MOVWF   (_outPtr + 2), B
+                      00992 ;       .line   534; src/picUSB.c       wCount = 1;
+0002DA 0E01           00993         MOVLW   0x01
+0002DC ????           00994         BANKSEL _wCount
+0002DE 6F??           00995         MOVWF   _wCount, B
+                      00996 ; removed redundant BANKSEL
+0002E0 6B??           00997         CLRF    (_wCount + 1), B
+0002E2 D???           00998         BRA     _00223_DS_
+0002E4                00999 _00210_DS_:
+0002E4 ????           01000         BANKSEL (_SetupPacket + 1)
+                      01001 ;       .line   537; src/picUSB.c       else if (SetupPacket.bRequest == SET_INTERFACE)
+0002E6 51??           01002         MOVF    (_SetupPacket + 1), W, B
+0002E8 0A0B           01003         XORLW   0x0b
+0002EA E1??           01004         BNZ     _00223_DS_
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      01005 ;       .line   540; src/picUSB.c       requestHandled = 1;
+0002EC 0E01           01006         MOVLW   0x01
+0002EE ????           01007         BANKSEL _requestHandled
+0002F0 6F??           01008         MOVWF   _requestHandled, B
+0002F2                01009 _00223_DS_:
+0002F2 ????           01010         BANKSEL _requestHandled
+                      01011 ;       .line   553; src/picUSB.c       if (!requestHandled)
+0002F4 51??           01012         MOVF    _requestHandled, W, B
+0002F6 E1??           01013         BNZ     _00230_DS_
+                      01014 ;       .line   556; src/picUSB.c       EP_OUT_BD(0).Cnt = EP0_BUFFER_SIZE;
+0002F8 0E40           01015         MOVLW   0x40
+0002FA ????           01016         BANKSEL (_ep_bdt + 1)
+0002FC 6F??           01017         MOVWF   (_ep_bdt + 1), B
+                      01018 ;       .line   558; src/picUSB.c       EP_OUT_BD(0).ADDR = (unsigned long)&SetupPacket;
+0002FE 0E??           01019         MOVLW   LOW(_SetupPacket)
+                      01020 ; removed redundant BANKSEL
+000300 6F??           01021         MOVWF   (_ep_bdt + 2), B
+000302 0E??           01022         MOVLW   HIGH(_SetupPacket)
+                      01023 ; removed redundant BANKSEL
+000304 6F??           01024         MOVWF   (_ep_bdt + 3), B
+                      01025 ; #     MOVLW   0x84
+                      01026 ; #     MOVWF   _ep_bdt, B
+                      01027 ; #     MOVLW   0x84
+                      01028 ;       .line   559; src/picUSB.c       EP_OUT_BD(0).Stat.uc = BDS_UOWN | BDS_BSTALL;
+000306 0E84           01029         MOVLW   0x84
+                      01030 ; removed redundant BANKSEL
+                      01031 ;       .line   560; src/picUSB.c       EP_IN_BD(0).Stat.uc = BDS_UOWN | BDS_BSTALL;
+000308 6F??           01032         MOVWF   _ep_bdt, B
+                      01033 ; removed redundant BANKSEL
+00030A 6F??           01034         MOVWF   (_ep_bdt + 4), B
+00030C D???           01035         BRA     _00231_DS_
+00030E                01036 _00230_DS_:
+00030E ????           01037         BANKSEL _SetupPacket
+                      01038 ;       .line   563; src/picUSB.c       else if (SetupPacket.bmRequestType & 0x80)
+000310 AF??           01039         BTFSS   _SetupPacket, 7, B
+000312 D???           01040         BRA     _00227_DS_
+000314 ????           01041         BANKSEL (_wCount + 1)
+                      01042 ;       .line   566; src/picUSB.c       if(SetupPacket.wLength < wCount)
+000316 51??           01043         MOVF    (_wCount + 1), W, B
+000318 ????           01044         BANKSEL (_SetupPacket + 7)
+00031A 5D??           01045         SUBWF   (_SetupPacket + 7), W, B
+00031C E1??           01046         BNZ     _00448_DS_
+00031E ????           01047         BANKSEL _wCount
+000320 51??           01048         MOVF    _wCount, W, B
+000322 ????           01049         BANKSEL (_SetupPacket + 6)
+000324 5D??           01050         SUBWF   (_SetupPacket + 6), W, B
+000326                01051 _00448_DS_:
+000326 E2??           01052         BC      _00225_DS_
+                      01053 ;       .line   567; src/picUSB.c       wCount = SetupPacket.wLength;
+000328 C??? F???      01054         MOVFF   (_SetupPacket + 6), _wCount
+00032C C??? F???      01055         MOVFF   (_SetupPacket + 7), (_wCount + 1)
+000330                01056 _00225_DS_:
+                      01057 ;       .line   569; src/picUSB.c       InDataStage();
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000330 EC?? F0??      01058         CALL    _InDataStage
+                      01059 ;       .line   570; src/picUSB.c       ctrlTransferStage = DATA_IN_STAGE;
+000334 0E02           01060         MOVLW   0x02
+000336 ????           01061         BANKSEL _ctrlTransferStage
+000338 6F??           01062         MOVWF   _ctrlTransferStage, B
+                      01063 ;       .line   572; src/picUSB.c       EP_OUT_BD(0).Cnt = EP0_BUFFER_SIZE;
+00033A 0E40           01064         MOVLW   0x40
+00033C ????           01065         BANKSEL (_ep_bdt + 1)
+00033E 6F??           01066         MOVWF   (_ep_bdt + 1), B
+                      01067 ;       .line   574; src/picUSB.c       EP_OUT_BD(0).ADDR = (unsigned long)&SetupPacket;
+000340 0E??           01068         MOVLW   LOW(_SetupPacket)
+                      01069 ; removed redundant BANKSEL
+000342 6F??           01070         MOVWF   (_ep_bdt + 2), B
+000344 0E??           01071         MOVLW   HIGH(_SetupPacket)
+                      01072 ; removed redundant BANKSEL
+000346 6F??           01073         MOVWF   (_ep_bdt + 3), B
+                      01074 ;       .line   575; src/picUSB.c       EP_OUT_BD(0).Stat.uc = BDS_UOWN;
+000348 0E80           01075         MOVLW   0x80
+                      01076 ; removed redundant BANKSEL
+00034A 6F??           01077         MOVWF   _ep_bdt, B
+                      01078 ;       .line   579; src/picUSB.c       EP_IN_BD(0).ADDR = (unsigned long)&controlTransferBuffer;
+00034C 0E??           01079         MOVLW   LOW(_controlTransferBuffer)
+                      01080 ; removed redundant BANKSEL
+00034E 6F??           01081         MOVWF   (_ep_bdt + 6), B
+000350 0E??           01082         MOVLW   HIGH(_controlTransferBuffer)
+                      01083 ; removed redundant BANKSEL
+000352 6F??           01084         MOVWF   (_ep_bdt + 7), B
+                      01085 ;       .line   581; src/picUSB.c       EP_IN_BD(0).Stat.uc = BDS_UOWN | BDS_DTS | BDS_DTSEN;
+000354 0EC8           01086         MOVLW   0xc8
+                      01087 ; removed redundant BANKSEL
+000356 6F??           01088         MOVWF   (_ep_bdt + 4), B
+000358 D???           01089         BRA     _00231_DS_
+00035A                01090 _00227_DS_:
+                      01091 ;       .line   587; src/picUSB.c       ctrlTransferStage = DATA_OUT_STAGE;
+00035A 0E01           01092         MOVLW   0x01
+00035C ????           01093         BANKSEL _ctrlTransferStage
+00035E 6F??           01094         MOVWF   _ctrlTransferStage, B
+000360 ????           01095         BANKSEL (_ep_bdt + 5)
+                      01096 ;       .line   590; src/picUSB.c       EP_IN_BD(0).Cnt = 0;
+000362 6B??           01097         CLRF    (_ep_bdt + 5), B
+                      01098 ;       .line   591; src/picUSB.c       EP_IN_BD(0).Stat.uc = BDS_UOWN | BDS_DTS | BDS_DTSEN;
+000364 0EC8           01099         MOVLW   0xc8
+                      01100 ; removed redundant BANKSEL
+000366 6F??           01101         MOVWF   (_ep_bdt + 4), B
+                      01102 ;       .line   594; src/picUSB.c       EP_OUT_BD(0).Cnt = EP0_BUFFER_SIZE;
+000368 0E40           01103         MOVLW   0x40
+                      01104 ; removed redundant BANKSEL
+00036A 6F??           01105         MOVWF   (_ep_bdt + 1), B
+                      01106 ;       .line   596; src/picUSB.c       EP_OUT_BD(0).ADDR = (unsigned long)&controlTransferBuffer;
+00036C 0E??           01107         MOVLW   LOW(_controlTransferBuffer)
+                      01108 ; removed redundant BANKSEL
+00036E 6F??           01109         MOVWF   (_ep_bdt + 2), B
+000370 0E??           01110         MOVLW   HIGH(_controlTransferBuffer)
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      01111 ; removed redundant BANKSEL
+000372 6F??           01112         MOVWF   (_ep_bdt + 3), B
+                      01113 ;       .line   598; src/picUSB.c       EP_OUT_BD(0).Stat.uc = BDS_UOWN | BDS_DTS | BDS_DTSEN;
+000374 0EC8           01114         MOVLW   0xc8
+                      01115 ; removed redundant BANKSEL
+000376 6F??           01116         MOVWF   _ep_bdt, B
+000378                01117 _00231_DS_:
+                      01118 ;       .line   602; src/picUSB.c       UCONbits.PKTDIS = 0;
+000378 98??           01119         BCF     _UCONbits, 4
+00037A D???           01120         BRA     _00260_DS_
+00037C                01121 _00240_DS_:
+00037C ????           01122         BANKSEL _ctrlTransferStage
+                      01123 ;       .line   605; src/picUSB.c       else if (ctrlTransferStage == DATA_OUT_STAGE)
+00037E 51??           01124         MOVF    _ctrlTransferStage, W, B
+000380 0A01           01125         XORLW   0x01
+000382 E0??           01126         BZ      _00450_DS_
+000384 D???           01127         BRA     _00237_DS_
+000386                01128 _00450_DS_:
+                      01129 ;       .line   614; src/picUSB.c       bufferSize = ((0x03 & EP_OUT_BD(0).Stat.uc) << 8) | EP_OUT_BD(0)
+                            .Cnt;
+000386 0E03           01130         MOVLW   0x03
+000388 ????           01131         BANKSEL _ep_bdt
+00038A 15??           01132         ANDWF   _ep_bdt, W, B
+00038C 6A??           01133         CLRF    r0x02
+00038E 6E??           01134         MOVWF   r0x04
+000390 6A??           01135         CLRF    r0x03
+000392 C??? F???      01136         MOVFF   (_ep_bdt + 1), r0x01
+000396 50??           01137         MOVF    r0x03, W
+000398 12??           01138         IORWF   r0x01, F
+00039A 50??           01139         MOVF    r0x04, W
+00039C 12??           01140         IORWF   r0x02, F
+                      01141 ;       .line   617; src/picUSB.c       wCount = wCount + bufferSize;
+00039E 50??           01142         MOVF    r0x01, W
+0003A0 ????           01143         BANKSEL _wCount
+0003A2 27??           01144         ADDWF   _wCount, F, B
+0003A4 50??           01145         MOVF    r0x02, W
+                      01146 ; removed redundant BANKSEL
+0003A6 23??           01147         ADDWFC  (_wCount + 1), F, B
+                      01148 ;       .line   619; src/picUSB.c       outPtr = (byte*)&controlTransferBuffer;
+0003A8 0E??           01149         MOVLW   HIGH(_controlTransferBuffer)
+0003AA ????           01150         BANKSEL (_outPtr + 1)
+0003AC 6F??           01151         MOVWF   (_outPtr + 1), B
+0003AE 0E??           01152         MOVLW   LOW(_controlTransferBuffer)
+                      01153 ; removed redundant BANKSEL
+0003B0 6F??           01154         MOVWF   _outPtr, B
+0003B2 0E80           01155         MOVLW   0x80
+                      01156 ; removed redundant BANKSEL
+0003B4 6F??           01157         MOVWF   (_outPtr + 2), B
+                      01158 ;       .line   621; src/picUSB.c       for (i=0;i<bufferSize;i++)
+0003B6 6A??           01159         CLRF    r0x04
+0003B8                01160 _00265_DS_:
+0003B8 50??           01161         MOVF    r0x02, W
+0003BA 5C??           01162         SUBWF   r0x04, W
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0003BC E1??           01163         BNZ     _00453_DS_
+0003BE 50??           01164         MOVF    r0x01, W
+0003C0 5C??           01165         SUBWF   r0x03, W
+0003C2                01166 _00453_DS_:
+0003C2 E2??           01167         BC      _00232_DS_
+                      01168 ;       .line   622; src/picUSB.c       *inPtr++ = *outPtr++;
+0003C4 C??? F???      01169         MOVFF   _inPtr, r0x05
+0003C8 C??? F???      01170         MOVFF   (_inPtr + 1), r0x06
+0003CC C??? F???      01171         MOVFF   (_inPtr + 2), r0x07
+0003D0 C??? F???      01172         MOVFF   _outPtr, r0x08
+0003D4 C??? F???      01173         MOVFF   (_outPtr + 1), r0x09
+0003D8 C??? F???      01174         MOVFF   (_outPtr + 2), r0x0a
+0003DC C??? F???      01175         MOVFF   r0x08, FSR0L
+0003E0 C??? F???      01176         MOVFF   r0x09, PRODL
+0003E4 50??           01177         MOVF    r0x0a, W
+0003E6 EC?? F0??      01178         CALL    __gptrget1
+0003EA 6E??           01179         MOVWF   r0x08
+0003EC ????           01180         BANKSEL _outPtr
+0003EE 2B??           01181         INCF    _outPtr, F, B
+0003F0 E3??           01182         BNC     _00454_DS_
+                      01183 ; removed redundant BANKSEL
+0003F2 3F??           01184         INCFSZ  (_outPtr + 1), F, B
+0003F4 D???           01185         BRA     _10163_DS_
+                      01186 ; removed redundant BANKSEL
+0003F6 2B??           01187         INCF    (_outPtr + 2), F, B
+0003F8                01188 _10163_DS_:
+0003F8                01189 _00454_DS_:
+0003F8 C??? F???      01190         MOVFF   r0x08, POSTDEC1
+0003FC C??? F???      01191         MOVFF   r0x05, FSR0L
+000400 C??? F???      01192         MOVFF   r0x06, PRODL
+000404 50??           01193         MOVF    r0x07, W
+000406 EC?? F0??      01194         CALL    __gptrput1
+00040A ????           01195         BANKSEL _inPtr
+00040C 2B??           01196         INCF    _inPtr, F, B
+00040E E3??           01197         BNC     _00455_DS_
+                      01198 ; removed redundant BANKSEL
+000410 3F??           01199         INCFSZ  (_inPtr + 1), F, B
+000412 D???           01200         BRA     _20164_DS_
+                      01201 ; removed redundant BANKSEL
+000414 2B??           01202         INCF    (_inPtr + 2), F, B
+000416                01203 _20164_DS_:
+000416                01204 _00455_DS_:
+                      01205 ;       .line   621; src/picUSB.c       for (i=0;i<bufferSize;i++)
+000416 4A??           01206         INFSNZ  r0x03, F
+000418 2A??           01207         INCF    r0x04, F
+00041A D???           01208         BRA     _00265_DS_
+00041C                01209 _00232_DS_:
+00041C ????           01210         BANKSEL _ep_bdt
+                      01211 ;       .line   625; src/picUSB.c       if(EP_OUT_BD(0).Stat.DTS)
+00041E AD??           01212         BTFSS   _ep_bdt, 6, B
+000420 D???           01213         BRA     _00234_DS_
+                      01214 ;       .line   626; src/picUSB.c       EP_OUT_BD(0).Stat.uc = BDS_UOWN | BDS_DTSEN;
+000422 0E88           01215         MOVLW   0x88
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      01216 ; removed redundant BANKSEL
+000424 6F??           01217         MOVWF   _ep_bdt, B
+000426 D???           01218         BRA     _00260_DS_
+000428                01219 _00234_DS_:
+                      01220 ;       .line   628; src/picUSB.c       EP_OUT_BD(0).Stat.uc = BDS_UOWN | BDS_DTS | BDS_DTSEN;
+000428 0EC8           01221         MOVLW   0xc8
+00042A ????           01222         BANKSEL _ep_bdt
+00042C 6F??           01223         MOVWF   _ep_bdt, B
+00042E D???           01224         BRA     _00260_DS_
+000430                01225 _00237_DS_:
+                      01226 ;       .line   634; src/picUSB.c       WaitForSetupStage();
+000430 EC?? F0??      01227         CALL    _WaitForSetupStage
+000434 D???           01228         BRA     _00260_DS_
+000436                01229 _00254_DS_:
+000436 ????           01230         BANKSEL _UADDR
+                      01231 ;       .line   641; src/picUSB.c       if ((UADDR == 0) && (deviceState == ADDRESS))
+000438 51??           01232         MOVF    _UADDR, W, B
+00043A E1??           01233         BNZ     _00245_DS_
+00043C ????           01234         BANKSEL _deviceState
+00043E 51??           01235         MOVF    _deviceState, W, B
+000440 0A04           01236         XORLW   0x04
+000442 E1??           01237         BNZ     _00245_DS_
+                      01238 ;       .line   645; src/picUSB.c       UADDR = SetupPacket.wValue0;
+000444 C??? F???      01239         MOVFF   (_SetupPacket + 2), _UADDR
+000448 ????           01240         BANKSEL _UADDR
+                      01241 ;       .line   646; src/picUSB.c       if(UADDR == 0)
+00044A 51??           01242         MOVF    _UADDR, W, B
+00044C E1??           01243         BNZ     _00245_DS_
+                      01244 ;       .line   649; src/picUSB.c       deviceState = DEFAULT;
+00044E 0E03           01245         MOVLW   0x03
+000450 ????           01246         BANKSEL _deviceState
+000452 6F??           01247         MOVWF   _deviceState, B
+000454                01248 _00245_DS_:
+000454 ????           01249         BANKSEL _ctrlTransferStage
+                      01250 ;       .line   652; src/picUSB.c       if (ctrlTransferStage == DATA_IN_STAGE)
+000456 51??           01251         MOVF    _ctrlTransferStage, W, B
+000458 0A02           01252         XORLW   0x02
+00045A E1??           01253         BNZ     _00251_DS_
+                      01254 ;       .line   655; src/picUSB.c       InDataStage();
+00045C EC?? F0??      01255         CALL    _InDataStage
+000460 ????           01256         BANKSEL (_ep_bdt + 4)
+                      01257 ;       .line   658; src/picUSB.c       if(EP_IN_BD(0).Stat.DTS)
+000462 AD??           01258         BTFSS   (_ep_bdt + 4), 6, B
+000464 D???           01259         BRA     _00248_DS_
+                      01260 ;       .line   659; src/picUSB.c       EP_IN_BD(0).Stat.uc = BDS_UOWN | BDS_DTSEN;
+000466 0E88           01261         MOVLW   0x88
+                      01262 ; removed redundant BANKSEL
+000468 6F??           01263         MOVWF   (_ep_bdt + 4), B
+00046A D???           01264         BRA     _00260_DS_
+00046C                01265 _00248_DS_:
+                      01266 ;       .line   661; src/picUSB.c       EP_IN_BD(0).Stat.uc = BDS_UOWN | BDS_DTS | BDS_DTSEN;
+00046C 0EC8           01267         MOVLW   0xc8
+00046E ????           01268         BANKSEL (_ep_bdt + 4)
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000470 6F??           01269         MOVWF   (_ep_bdt + 4), B
+000472 D???           01270         BRA     _00260_DS_
+000474                01271 _00251_DS_:
+                      01272 ;       .line   667; src/picUSB.c       WaitForSetupStage();
+000474 EC?? F0??      01273         CALL    _WaitForSetupStage
+000478 D???           01274         BRA     _00260_DS_
+00047A                01275 _00259_DS_:
+                      01276 ;       .line   676; src/picUSB.c       if (!USTATbits.DIR) // If OUT
+00047A B4??           01277         BTFSC   _USTATbits, 2
+00047C D???           01278         BRA     _00260_DS_
+                      01279 ;       .line   677; src/picUSB.c       usb_ep_data_out_callback(end_point);
+00047E 50??           01280         MOVF    r0x00, W
+000480 6EE5           01281         MOVWF   POSTDEC1
+000482 EC?? F0??      01282         CALL    _usb_ep_data_out_callback
+000486 52E6           01283         MOVF    POSTINC1, F
+000488                01284 _00260_DS_:
+                      01285 ;       .line   681; src/picUSB.c       UIRbits.TRNIF = 0;
+000488 96??           01286         BCF     _UIRbits, 3
+00048A                01287 _00267_DS_:
+00048A CFE4 F000      01288         MOVFF   PREINC1, r0x0a
+00048E CFE4 F000      01289         MOVFF   PREINC1, r0x09
+000492 CFE4 F000      01290         MOVFF   PREINC1, r0x08
+000496 CFE4 F000      01291         MOVFF   PREINC1, r0x07
+00049A CFE4 F000      01292         MOVFF   PREINC1, r0x06
+00049E CFE4 F000      01293         MOVFF   PREINC1, r0x05
+0004A2 CFE4 F000      01294         MOVFF   PREINC1, r0x04
+0004A6 CFE4 F000      01295         MOVFF   PREINC1, r0x03
+0004AA CFE4 F000      01296         MOVFF   PREINC1, r0x02
+0004AE CFE4 F000      01297         MOVFF   PREINC1, r0x01
+0004B2 CFE4 F000      01298         MOVFF   PREINC1, r0x00
+0004B6 0012           01299         RETURN  
+                      01300 
+                      01301 ; ; Starting pCode block
+                      01302 S_picUSB__EnableUSBModule       code
+000000                01303 _EnableUSBModule:
+                      01304 ;       .line   231; src/picUSB.c       if(UCONbits.USBEN == 0)
+000000 B6??           01305         BTFSC   _UCONbits, 3
+000002 D???           01306         BRA     _00142_DS_
+                      01307 ;       .line   233; src/picUSB.c       UCON = 0;               // USB Control Register
+000004 6A??           01308         CLRF    _UCON
+000006 ????           01309         BANKSEL _UIE
+                      01310 ;       .line   234; src/picUSB.c       UIE = 0;                // Disable USB Interrupt Register
+000008 6B??           01311         CLRF    _UIE, B
+                      01312 ;       .line   235; src/picUSB.c       UCONbits.USBEN = 1;     // Enable USB module
+00000A 86??           01313         BSF     _UCONbits, 3
+                      01314 ;       .line   236; src/picUSB.c       deviceState = ATTACHED;
+00000C 0E01           01315         MOVLW   0x01
+00000E ????           01316         BANKSEL _deviceState
+000010 6F??           01317         MOVWF   _deviceState, B
+000012                01318 _00142_DS_:
+000012 ????           01319         BANKSEL _deviceState
+                      01320 ;       .line   240; src/picUSB.c       if ((deviceState == ATTACHED) && !UCONbits.SE0)
+000014 51??           01321         MOVF    _deviceState, W, B
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000016 0A01           01322         XORLW   0x01
+000018 E1??           01323         BNZ     _00146_DS_
+00001A BA??           01324         BTFSC   _UCONbits, 5
+00001C D???           01325         BRA     _00146_DS_
+                      01326 ;       .line   242; src/picUSB.c       UIR = 0;
+00001E 6A??           01327         CLRF    _UIR
+000020 ????           01328         BANKSEL _UIE
+                      01329 ;       .line   243; src/picUSB.c       UIE = 0;                // Disable USB Interrupt Register
+000022 6B??           01330         CLRF    _UIE, B
+000024 ????           01331         BANKSEL _UIEbits
+                      01332 ;       .line   244; src/picUSB.c       UIEbits.URSTIE = 1;     // Enable USB Reset Interrupt
+000026 81??           01333         BSF     _UIEbits, 0, B
+                      01334 ;       .line   245; src/picUSB.c       UIEbits.IDLEIE = 1;     // Enable IDle Detect USB Interrupt
+000028 89??           01335         BSF     _UIEbits, 4, B
+                      01336 ;       .line   246; src/picUSB.c       deviceState = POWERED;
+00002A 0E02           01337         MOVLW   0x02
+00002C ????           01338         BANKSEL _deviceState
+00002E 6F??           01339         MOVWF   _deviceState, B
+000030                01340 _00146_DS_:
+000030 0012           01341         RETURN  
+                      01342 
+                      01343 ; ; Starting pCode block
+                      01344 S_picUSB__WaitForSetupStage     code
+000000                01345 _WaitForSetupStage:
+000000 ????           01346         BANKSEL _ctrlTransferStage
+                      01347 ;       .line   218; src/picUSB.c       ctrlTransferStage = SETUP_STAGE;
+000002 6B??           01348         CLRF    _ctrlTransferStage, B
+                      01349 ;       .line   219; src/picUSB.c       EP_OUT_BD(0).Cnt = EP0_BUFFER_SIZE;
+000004 0E40           01350         MOVLW   0x40
+000006 ????           01351         BANKSEL (_ep_bdt + 1)
+000008 6F??           01352         MOVWF   (_ep_bdt + 1), B
+                      01353 ;       .line   221; src/picUSB.c       EP_OUT_BD(0).ADDR = (unsigned long)&SetupPacket;
+00000A 0E??           01354         MOVLW   LOW(_SetupPacket)
+                      01355 ; removed redundant BANKSEL
+00000C 6F??           01356         MOVWF   (_ep_bdt + 2), B
+00000E 0E??           01357         MOVLW   HIGH(_SetupPacket)
+                      01358 ; removed redundant BANKSEL
+000010 6F??           01359         MOVWF   (_ep_bdt + 3), B
+                      01360 ;       .line   223; src/picUSB.c       EP_OUT_BD(0).Stat.uc = BDS_UOWN | BDS_DTSEN;
+000012 0E88           01361         MOVLW   0x88
+                      01362 ; removed redundant BANKSEL
+000014 6F??           01363         MOVWF   _ep_bdt, B
+                      01364 ; removed redundant BANKSEL
+                      01365 ;       .line   224; src/picUSB.c       EP_IN_BD(0).Stat.uc = 0x00;           // Give control to CPU
+000016 6B??           01366         CLRF    (_ep_bdt + 4), B
+000018 0012           01367         RETURN  
+                      01368 
+                      01369 ; ; Starting pCode block
+                      01370 S_picUSB__InDataStage   code
+000000                01371 _InDataStage:
+                      01372 ;       .line   180; src/picUSB.c       void InDataStage()
+000000 C??? F???      01373         MOVFF   r0x00, POSTDEC1
+000004 C??? F???      01374         MOVFF   r0x01, POSTDEC1
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000008 C??? F???      01375         MOVFF   r0x02, POSTDEC1
+00000C C??? F???      01376         MOVFF   r0x03, POSTDEC1
+000010 C??? F???      01377         MOVFF   r0x04, POSTDEC1
+000014 C??? F???      01378         MOVFF   r0x05, POSTDEC1
+000018 C??? F???      01379         MOVFF   r0x06, POSTDEC1
+00001C C??? F???      01380         MOVFF   r0x07, POSTDEC1
+000020 C??? F???      01381         MOVFF   r0x08, POSTDEC1
+                      01382 ;       .line   186; src/picUSB.c       if(wCount < EP0_BUFFER_SIZE)
+000024 0E00           01383         MOVLW   0x00
+000026 ????           01384         BANKSEL (_wCount + 1)
+000028 5D??           01385         SUBWF   (_wCount + 1), W, B
+00002A E1??           01386         BNZ     _00124_DS_
+00002C 0E40           01387         MOVLW   0x40
+                      01388 ; removed redundant BANKSEL
+00002E 5D??           01389         SUBWF   _wCount, W, B
+000030                01390 _00124_DS_:
+000030 E2??           01391         BC      _00106_DS_
+                      01392 ;       .line   187; src/picUSB.c       bufferSize = wCount;
+000032 C??? F???      01393         MOVFF   _wCount, r0x00
+000036 C??? F???      01394         MOVFF   (_wCount + 1), r0x01
+00003A D???           01395         BRA     _00107_DS_
+00003C                01396 _00106_DS_:
+                      01397 ;       .line   189; src/picUSB.c       bufferSize = EP0_BUFFER_SIZE;
+00003C 0E40           01398         MOVLW   0x40
+00003E 6E??           01399         MOVWF   r0x00
+000040 6A??           01400         CLRF    r0x01
+000042                01401 _00107_DS_:
+000042 ????           01402         BANKSEL (_ep_bdt + 4)
+                      01403 ;       .line   193; src/picUSB.c       EP_IN_BD(0).Stat.uc &= ~(BDS_BC8 | BDS_BC9);
+000044 51??           01404         MOVF    (_ep_bdt + 4), W, B
+000046 6E??           01405         MOVWF   r0x02
+000048 0EFC           01406         MOVLW   0xfc
+00004A 16??           01407         ANDWF   r0x02, F
+00004C 50??           01408         MOVF    r0x02, W
+                      01409 ; removed redundant BANKSEL
+00004E 6F??           01410         MOVWF   (_ep_bdt + 4), B
+                      01411 ;       .line   194; src/picUSB.c       EP_IN_BD(0).Stat.uc |= (byte)((bufferSize & 0x0300) >> 8);
+000050 0E03           01412         MOVLW   0x03
+000052 14??           01413         ANDWF   r0x01, W
+                      01414 ; #     MOVWF   r0x03
+                      01415 ; #     MOVF    r0x03, W
+000054 6E??           01416         MOVWF   r0x02
+                      01417 ; removed redundant BANKSEL
+000056 51??           01418         MOVF    (_ep_bdt + 4), W, B
+000058 12??           01419         IORWF   r0x02, F
+00005A 50??           01420         MOVF    r0x02, W
+                      01421 ; removed redundant BANKSEL
+00005C 6F??           01422         MOVWF   (_ep_bdt + 4), B
+                      01423 ; #     MOVF    r0x00, W
+                      01424 ; #     MOVWF   r0x02
+                      01425 ; #     MOVF    r0x02, W
+                      01426 ;       .line   195; src/picUSB.c       EP_IN_BD(0).Cnt = (byte)(bufferSize & 0xFF);
+00005E 50??           01427         MOVF    r0x00, W
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000060 6E??           01428         MOVWF   r0x02
+                      01429 ; removed redundant BANKSEL
+000062 6F??           01430         MOVWF   (_ep_bdt + 5), B
+                      01431 ;       .line   197; src/picUSB.c       EP_IN_BD(0).ADDR = (unsigned long)&controlTransferBuffer;
+000064 0E??           01432         MOVLW   LOW(_controlTransferBuffer)
+                      01433 ; removed redundant BANKSEL
+000066 6F??           01434         MOVWF   (_ep_bdt + 6), B
+000068 0E??           01435         MOVLW   HIGH(_controlTransferBuffer)
+                      01436 ; removed redundant BANKSEL
+00006A 6F??           01437         MOVWF   (_ep_bdt + 7), B
+                      01438 ;       .line   202; src/picUSB.c       wCount = wCount - bufferSize;
+00006C 50??           01439         MOVF    r0x00, W
+00006E ????           01440         BANKSEL _wCount
+000070 5F??           01441         SUBWF   _wCount, F, B
+000072 50??           01442         MOVF    r0x01, W
+                      01443 ; removed redundant BANKSEL
+000074 5B??           01444         SUBWFB  (_wCount + 1), F, B
+                      01445 ;       .line   205; src/picUSB.c       inPtr = (byte *)&controlTransferBuffer;
+000076 0E??           01446         MOVLW   HIGH(_controlTransferBuffer)
+000078 ????           01447         BANKSEL (_inPtr + 1)
+00007A 6F??           01448         MOVWF   (_inPtr + 1), B
+00007C 0E??           01449         MOVLW   LOW(_controlTransferBuffer)
+                      01450 ; removed redundant BANKSEL
+00007E 6F??           01451         MOVWF   _inPtr, B
+000080 0E80           01452         MOVLW   0x80
+                      01453 ; removed redundant BANKSEL
+000082 6F??           01454         MOVWF   (_inPtr + 2), B
+                      01455 ;       .line   207; src/picUSB.c       for (i=0;i<bufferSize;i++)
+000084 6A??           01456         CLRF    r0x02
+000086                01457 _00110_DS_:
+000086 C??? F???      01458         MOVFF   r0x02, r0x03
+00008A 6A??           01459         CLRF    r0x04
+00008C 50??           01460         MOVF    r0x01, W
+00008E 5C??           01461         SUBWF   r0x04, W
+000090 E1??           01462         BNZ     _00129_DS_
+000092 50??           01463         MOVF    r0x00, W
+000094 5C??           01464         SUBWF   r0x03, W
+000096                01465 _00129_DS_:
+000096 E2??           01466         BC      _00112_DS_
+                      01467 ;       .line   208; src/picUSB.c       *inPtr++ = *outPtr++;
+000098 C??? F???      01468         MOVFF   _inPtr, r0x03
+00009C C??? F???      01469         MOVFF   (_inPtr + 1), r0x04
+0000A0 C??? F???      01470         MOVFF   (_inPtr + 2), r0x05
+0000A4 C??? F???      01471         MOVFF   _outPtr, r0x06
+0000A8 C??? F???      01472         MOVFF   (_outPtr + 1), r0x07
+0000AC C??? F???      01473         MOVFF   (_outPtr + 2), r0x08
+0000B0 C??? F???      01474         MOVFF   r0x06, FSR0L
+0000B4 C??? F???      01475         MOVFF   r0x07, PRODL
+0000B8 50??           01476         MOVF    r0x08, W
+0000BA EC?? F0??      01477         CALL    __gptrget1
+0000BE 6E??           01478         MOVWF   r0x06
+0000C0 ????           01479         BANKSEL _outPtr
+0000C2 2B??           01480         INCF    _outPtr, F, B
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0000C4 E3??           01481         BNC     _00130_DS_
+                      01482 ; removed redundant BANKSEL
+0000C6 3F??           01483         INCFSZ  (_outPtr + 1), F, B
+0000C8 D???           01484         BRA     _30165_DS_
+                      01485 ; removed redundant BANKSEL
+0000CA 2B??           01486         INCF    (_outPtr + 2), F, B
+0000CC                01487 _30165_DS_:
+0000CC                01488 _00130_DS_:
+0000CC C??? F???      01489         MOVFF   r0x06, POSTDEC1
+0000D0 C??? F???      01490         MOVFF   r0x03, FSR0L
+0000D4 C??? F???      01491         MOVFF   r0x04, PRODL
+0000D8 50??           01492         MOVF    r0x05, W
+0000DA EC?? F0??      01493         CALL    __gptrput1
+0000DE ????           01494         BANKSEL _inPtr
+0000E0 2B??           01495         INCF    _inPtr, F, B
+0000E2 E3??           01496         BNC     _00131_DS_
+                      01497 ; removed redundant BANKSEL
+0000E4 3F??           01498         INCFSZ  (_inPtr + 1), F, B
+0000E6 D???           01499         BRA     _40166_DS_
+                      01500 ; removed redundant BANKSEL
+0000E8 2B??           01501         INCF    (_inPtr + 2), F, B
+0000EA                01502 _40166_DS_:
+0000EA                01503 _00131_DS_:
+                      01504 ;       .line   207; src/picUSB.c       for (i=0;i<bufferSize;i++)
+0000EA 2A??           01505         INCF    r0x02, F
+0000EC D???           01506         BRA     _00110_DS_
+0000EE                01507 _00112_DS_:
+0000EE CFE4 F000      01508         MOVFF   PREINC1, r0x08
+0000F2 CFE4 F000      01509         MOVFF   PREINC1, r0x07
+0000F6 CFE4 F000      01510         MOVFF   PREINC1, r0x06
+0000FA CFE4 F000      01511         MOVFF   PREINC1, r0x05
+0000FE CFE4 F000      01512         MOVFF   PREINC1, r0x04
+000102 CFE4 F000      01513         MOVFF   PREINC1, r0x03
+000106 CFE4 F000      01514         MOVFF   PREINC1, r0x02
+00010A CFE4 F000      01515         MOVFF   PREINC1, r0x01
+00010E CFE4 F000      01516         MOVFF   PREINC1, r0x00
+000112 0012           01517         RETURN  
+                      01518 
+                      01519 ; ; Starting pCode block for Ival
+                      01520         code
+000000                01521 _device_descriptor:
+000000 0112 0200 FFFF 01522         DB      0x12, 0x01, 0x00, 0x02, 0xff, 0xff, 0xff, 0x40, 0xd8, 0x04, 0xaa, 0xfe
+       40FF 04D8 FEAA 
+00000C 0414 0201 0100 01523         DB      0x14, 0x04, 0x01, 0x02, 0x00, 0x01
+                      01524 ; ; Starting pCode block for Ival
+000012                01525 _configuration_descriptor:
+000012 0209 0020 0101 01526         DB      0x09, 0x02, 0x20, 0x00, 0x01, 0x01, 0x00, 0xc0, 0x7d, 0x09, 0x04, 0x00
+       C000 097D 0004 
+00001E 0200 FFFF 00FF 01527         DB      0x00, 0x02, 0xff, 0xff, 0xff, 0x00, 0x07, 0x05, 0x01, 0x02, 0x40, 0x00
+       0507 0201 0040 
+00002A 0700 8105 4002 01528         DB      0x00, 0x07, 0x05, 0x81, 0x02, 0x40, 0x00, 0x00
+       0000           
+                      01529 ; ; Starting pCode block for Ival
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000032                01530 _lang:
+000032 0304 0409      01531         DB      0x04, 0x03, 0x09, 0x04
+                      01532 ; ; Starting pCode block for Ival
+000036                01533 _manu:
+000036 030C 0052 0042 01534         DB      0x0c, 0x03, 0x52, 0x00, 0x42, 0x00, 0x2b, 0x00, 0x41, 0x00, 0x47, 0x00
+       002B 0041 0047 
+                      01535 ; ; Starting pCode block for Ival
+000042                01536 _prod:
+000042 0306 0050 0038 01537         DB      0x06, 0x03, 0x50, 0x00, 0x38, 0x00
+                      01538 ; ; Starting pCode block for Ival
+000048                01539 _string_descriptor:
+000048 00?? 00?? 00?? 01540         DB      LOW(_lang), HIGH(_lang), UPPER(_lang), LOW(_manu), HIGH(_manu), UPPER(_manu), LOW(_prod)
+                            , HIGH(_prod), UPPER(_prod)
+       00?? 00??      
+                      01541 
+                      01542 
+                      01543 ; Statistics:
+                      01544 ; code size:     1580 (0x062c) bytes ( 1.21%)
+                      01545 ;                 790 (0x0316) words
+                      01546 ; udata size:     222 (0x00de) bytes ( 6.31%)
+                      01547 ; access size:     11 (0x000b) bytes
+                      01548 
+                      01549 
+                      01550         end
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 31
+
+
+SYMBOL TABLE
+  LABEL                             VALUE
+
+FSR0L                             00000FE9
+POSTDEC1                          00000FE5
+POSTINC1                          00000FE6
+PREINC1                           00000FE4
+PRODH                             00000FF4
+PRODL                             00000FF3
+STATUS                            00000FD8
+TABLAT                            00000FF5
+TBLPTRH                           00000FF7
+TBLPTRL                           00000FF6
+TBLPTRU                           00000FF8
+WREG                              00000FE8
+_00106_DS_                        0000003C
+_00107_DS_                        00000042
+_00110_DS_                        00000086
+_00112_DS_                        000000EE
+_00124_DS_                        00000030
+_00129_DS_                        00000096
+_00130_DS_                        000000CC
+_00131_DS_                        000000EA
+_00142_DS_                        00000012
+_00146_DS_                        00000030
+_00166_DS_                        00000046
+_00169_DS_                        00000056
+_00170_DS_                        0000007A
+_00172_DS_                        0000008A
+_00174_DS_                        0000009E
+_00177_DS_                        000000B6
+_00180_DS_                        000000C0
+_00183_DS_                        000000E0
+_00185_DS_                        000000E2
+_00188_DS_                        000000EC
+_00197_DS_                        000001E2
+_00200_DS_                        000001AC
+_00205_DS_                        0000028C
+_00210_DS_                        000002E4
+_00213_DS_                        000002BA
+_00216_DS_                        00000294
+_00219_DS_                        00000252
+_00222_DS_                        00000172
+_00223_DS_                        000002F2
+_00225_DS_                        00000330
+_00227_DS_                        0000035A
+_00230_DS_                        0000030E
+_00231_DS_                        00000378
+_00232_DS_                        0000041C
+_00234_DS_                        00000428
+_00237_DS_                        00000430
+_00240_DS_                        0000037C
+_00245_DS_                        00000454
+_00248_DS_                        0000046C
+_00251_DS_                        00000474
+_00254_DS_                        00000436
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 32
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_00259_DS_                        0000047A
+_00260_DS_                        00000488
+_00265_DS_                        000003B8
+_00267_DS_                        0000048A
+_00423_DS_                        0000012C
+_00430_DS_                        0000017C
+_00432_DS_                        00000186
+_00438_DS_                        000001EC
+_00448_DS_                        00000326
+_00450_DS_                        00000386
+_00453_DS_                        000003C2
+_00454_DS_                        000003F8
+_00455_DS_                        00000416
+_10163_DS_                        000003F8
+_20164_DS_                        00000416
+_30165_DS_                        000000CC
+_40166_DS_                        000000EA
+_ADCON0                           00000000
+_ADCON0bits                       00000000
+_ADCON1                           00000000
+_ADCON1bits                       00000000
+_ADRES                            00000000
+_ADRESH                           00000000
+_ADRESL                           00000000
+_ALRMCFG                          00000000
+_ALRMCFGbits                      00000000
+_ALRMRPT                          00000000
+_ALRMRPTbits                      00000000
+_ALRMVALH                         00000000
+_ALRMVALL                         00000000
+_ANCON0                           00000000
+_ANCON0bits                       00000000
+_ANCON1                           00000000
+_ANCON1bits                       00000000
+_BAUDCON                          00000000
+_BAUDCON1                         00000000
+_BAUDCON1bits                     00000000
+_BAUDCON2                         00000000
+_BAUDCON2bits                     00000000
+_BAUDCONbits                      00000000
+_BAUDCTL                          00000000
+_BAUDCTLbits                      00000000
+_BSR                              00000000
+_CCP1CON                          00000000
+_CCP1CONbits                      00000000
+_CCP2CON                          00000000
+_CCP2CONbits                      00000000
+_CCPR1                            00000000
+_CCPR1H                           00000000
+_CCPR1L                           00000000
+_CCPR2                            00000000
+_CCPR2H                           00000000
+_CCPR2L                           00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 33
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_CM1CON                           00000000
+_CM1CON1                          00000000
+_CM1CON1bits                      00000000
+_CM1CONbits                       00000000
+_CM2CON                           00000000
+_CM2CON1                          00000000
+_CM2CON1bits                      00000000
+_CM2CONbits                       00000000
+_CMSTAT                           00000000
+_CMSTATUS                         00000000
+_CMSTATUSbits                     00000000
+_CMSTATbits                       00000000
+_CTMUCONH                         00000000
+_CTMUCONHbits                     00000000
+_CTMUCONL                         00000000
+_CTMUCONLbits                     00000000
+_CTMUICON                         00000000
+_CTMUICONbits                     00000000
+_CVRCON                           00000000
+_CVRCONbits                       00000000
+_DMABCH                           00000000
+_DMABCL                           00000000
+_DMACON1                          00000000
+_DMACON1bits                      00000000
+_DMACON2                          00000000
+_DMACON2bits                      00000000
+_DSCONH                           00000000
+_DSCONHbits                       00000000
+_DSCONL                           00000000
+_DSCONLbits                       00000000
+_DSGPR0                           00000000
+_DSGPR1                           00000000
+_DSWAKEH                          00000000
+_DSWAKEHbits                      00000000
+_DSWAKEL                          00000000
+_DSWAKELbits                      00000000
+_ECCP1AS                          00000000
+_ECCP1ASbits                      00000000
+_ECCP1CON                         00000000
+_ECCP1CONbits                     00000000
+_ECCP1DEL                         00000000
+_ECCP1DELbits                     00000000
+_ECCP2AS                          00000000
+_ECCP2ASbits                      00000000
+_ECCP2CON                         00000000
+_ECCP2CONbits                     00000000
+_ECCP2DEL                         00000000
+_ECCP2DELbits                     00000000
+_EECON1                           00000000
+_EECON1bits                       00000000
+_EECON2                           00000000
+_EnableUSBModule                  00000000
+_FSR0H                            00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 34
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_FSR0L                            00000000
+_FSR1H                            00000000
+_FSR1L                            00000000
+_FSR2H                            00000000
+_FSR2L                            00000000
+_HLVDCON                          00000000
+_HLVDCONbits                      00000000
+_INDF0                            00000000
+_INDF1                            00000000
+_INDF2                            00000000
+_INTCON                           00000000
+_INTCON2                          00000000
+_INTCON2bits                      00000000
+_INTCON3                          00000000
+_INTCON3bits                      00000000
+_INTCONbits                       00000000
+_IPR1                             00000000
+_IPR1bits                         00000000
+_IPR2                             00000000
+_IPR2bits                         00000000
+_IPR3                             00000000
+_IPR3bits                         00000000
+_InDataStage                      00000000
+_LATA                             00000000
+_LATAbits                         00000000
+_LATB                             00000000
+_LATBbits                         00000000
+_LATC                             00000000
+_LATCbits                         00000000
+_ODCON1                           00000000
+_ODCON1bits                       00000000
+_ODCON2                           00000000
+_ODCON2bits                       00000000
+_ODCON3                           00000000
+_ODCON3bits                       00000000
+_OSCCON                           00000000
+_OSCCONbits                       00000000
+_OSCTUNE                          00000000
+_OSCTUNEbits                      00000000
+_PADCFG1                          00000000
+_PADCFG1bits                      00000000
+_PC                               00000000
+_PCL                              00000000
+_PCLATH                           00000000
+_PCLATU                           00000000
+_PIE1                             00000000
+_PIE1bits                         00000000
+_PIE2                             00000000
+_PIE2bits                         00000000
+_PIE3                             00000000
+_PIE3bits                         00000000
+_PIR1                             00000000
+_PIR1bits                         00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 35
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_PIR2                             00000000
+_PIR2bits                         00000000
+_PIR3                             00000000
+_PIR3bits                         00000000
+_PLUSW0                           00000000
+_PLUSW1                           00000000
+_PLUSW2                           00000000
+_PORTA                            00000000
+_PORTAbits                        00000000
+_PORTB                            00000000
+_PORTBbits                        00000000
+_PORTC                            00000000
+_PORTCbits                        00000000
+_POSTDEC0                         00000000
+_POSTDEC1                         00000000
+_POSTDEC2                         00000000
+_POSTINC0                         00000000
+_POSTINC1                         00000000
+_POSTINC2                         00000000
+_PPSCON                           00000000
+_PPSCONbits                       00000000
+_PR2                              00000000
+_PR4                              00000000
+_PREINC0                          00000000
+_PREINC1                          00000000
+_PREINC2                          00000000
+_PROD                             00000000
+_PRODH                            00000000
+_PRODL                            00000000
+_PSTR1CON                         00000000
+_PSTR1CONbits                     00000000
+_PSTR2CON                         00000000
+_PSTR2CONbits                     00000000
+_PWM1CON                          00000000
+_PWM1CONbits                      00000000
+_PWM2CON                          00000000
+_PWM2CONbits                      00000000
+_ProcessUSBTransactions           00000000
+_RCON                             00000000
+_RCONbits                         00000000
+_RCREG                            00000000
+_RCREG1                           00000000
+_RCREG2                           00000000
+_RCSTA                            00000000
+_RCSTA1                           00000000
+_RCSTA1bits                       00000000
+_RCSTA2                           00000000
+_RCSTA2bits                       00000000
+_RCSTAbits                        00000000
+_REFOCON                          00000000
+_REFOCONbits                      00000000
+_RPINR1                           00000000
+_RPINR12                          00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 36
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_RPINR13                          00000000
+_RPINR16                          00000000
+_RPINR17                          00000000
+_RPINR2                           00000000
+_RPINR21                          00000000
+_RPINR22                          00000000
+_RPINR23                          00000000
+_RPINR24                          00000000
+_RPINR3                           00000000
+_RPINR4                           00000000
+_RPINR6                           00000000
+_RPINR7                           00000000
+_RPINR8                           00000000
+_RPOR0                            00000000
+_RPOR1                            00000000
+_RPOR10                           00000000
+_RPOR11                           00000000
+_RPOR12                           00000000
+_RPOR13                           00000000
+_RPOR17                           00000000
+_RPOR18                           00000000
+_RPOR2                            00000000
+_RPOR3                            00000000
+_RPOR4                            00000000
+_RPOR5                            00000000
+_RPOR6                            00000000
+_RPOR7                            00000000
+_RPOR8                            00000000
+_RPOR9                            00000000
+_RTCCAL                           00000000
+_RTCCALbits                       00000000
+_RTCCFG                           00000000
+_RTCCFGbits                       00000000
+_RTCVALH                          00000000
+_RTCVALL                          00000000
+_RXADDRH                          00000000
+_RXADDRL                          00000000
+_SPBRG                            00000000
+_SPBRG1                           00000000
+_SPBRG2                           00000000
+_SPBRGH                           00000000
+_SPBRGH1                          00000000
+_SPBRGH2                          00000000
+_SSP1ADD                          00000000
+_SSP1ADDbits                      00000000
+_SSP1BUF                          00000000
+_SSP1CON1                         00000000
+_SSP1CON1bits                     00000000
+_SSP1CON2                         00000000
+_SSP1CON2bits                     00000000
+_SSP1STAT                         00000000
+_SSP1STATbits                     00000000
+_SSP2ADD                          00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 37
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_SSP2ADDbits                      00000000
+_SSP2BUF                          00000000
+_SSP2CON1                         00000000
+_SSP2CON1bits                     00000000
+_SSP2CON2                         00000000
+_SSP2CON2bits                     00000000
+_SSP2STAT                         00000000
+_SSP2STATbits                     00000000
+_SSPADD                           00000000
+_SSPADDbits                       00000000
+_SSPBUF                           00000000
+_SSPCON1                          00000000
+_SSPCON1bits                      00000000
+_SSPCON2                          00000000
+_SSPCON2bits                      00000000
+_SSPSTAT                          00000000
+_SSPSTATbits                      00000000
+_STATUS                           00000000
+_STATUSbits                       00000000
+_STKPTR                           00000000
+_STKPTRbits                       00000000
+_SetupPacket                      00000040
+_T0CON                            00000000
+_T0CONbits                        00000000
+_T1CON                            00000000
+_T1CONbits                        00000000
+_T1GCON                           00000000
+_T1GCONbits                       00000000
+_T2CON                            00000000
+_T2CONbits                        00000000
+_T3CON                            00000000
+_T3CONbits                        00000000
+_T3GCON                           00000000
+_T3GCONbits                       00000000
+_T4CON                            00000000
+_T4CONbits                        00000000
+_TABLAT                           00000000
+_TBLPTR                           00000000
+_TBLPTRH                          00000000
+_TBLPTRL                          00000000
+_TBLPTRU                          00000000
+_TCLKCON                          00000000
+_TCLKCONbits                      00000000
+_TMR0                             00000000
+_TMR0H                            00000000
+_TMR0L                            00000000
+_TMR1                             00000000
+_TMR1H                            00000000
+_TMR1L                            00000000
+_TMR2                             00000000
+_TMR3                             00000000
+_TMR3H                            00000000
+_TMR3L                            00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 38
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_TMR4                             00000000
+_TOS                              00000000
+_TOSH                             00000000
+_TOSL                             00000000
+_TOSU                             00000000
+_TRISA                            00000000
+_TRISAbits                        00000000
+_TRISB                            00000000
+_TRISBbits                        00000000
+_TRISC                            00000000
+_TRISCbits                        00000000
+_TXADDRH                          00000000
+_TXADDRL                          00000000
+_TXREG                            00000000
+_TXREG1                           00000000
+_TXREG2                           00000000
+_TXSTA                            00000000
+_TXSTA1                           00000000
+_TXSTA1bits                       00000000
+_TXSTA2                           00000000
+_TXSTA2bits                       00000000
+_TXSTAbits                        00000000
+_UADDR                            00000000
+_UADDRbits                        00000000
+_UCFG                             00000000
+_UCFGbits                         00000000
+_UCON                             00000000
+_UCONbits                         00000000
+_UEIE                             00000000
+_UEIEbits                         00000000
+_UEIR                             00000000
+_UEIRbits                         00000000
+_UEP0                             00000000
+_UEP0bits                         00000000
+_UEP1                             00000000
+_UEP10                            00000000
+_UEP10bits                        00000000
+_UEP11                            00000000
+_UEP11bits                        00000000
+_UEP12                            00000000
+_UEP12bits                        00000000
+_UEP13                            00000000
+_UEP13bits                        00000000
+_UEP14                            00000000
+_UEP14bits                        00000000
+_UEP15                            00000000
+_UEP15bits                        00000000
+_UEP1bits                         00000000
+_UEP2                             00000000
+_UEP2bits                         00000000
+_UEP3                             00000000
+_UEP3bits                         00000000
+_UEP4                             00000000
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 39
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_UEP4bits                         00000000
+_UEP5                             00000000
+_UEP5bits                         00000000
+_UEP6                             00000000
+_UEP6bits                         00000000
+_UEP7                             00000000
+_UEP7bits                         00000000
+_UEP8                             00000000
+_UEP8bits                         00000000
+_UEP9                             00000000
+_UEP9bits                         00000000
+_UFRM                             00000000
+_UFRMH                            00000000
+_UFRMHbits                        00000000
+_UFRML                            00000000
+_UFRMLbits                        00000000
+_UIE                              00000000
+_UIEbits                          00000000
+_UIR                              00000000
+_UIRbits                          00000000
+_USTAT                            00000000
+_USTATbits                        00000000
+_WDTCON                           00000000
+_WDTCONbits                       00000000
+_WREG                             00000000
+_WaitForSetupStage                00000000
+__18F26J50                        00000001
+__gptrget1                        00000000
+__gptrput1                        00000000
+_bootCmd                          00000000
+_configuration_descriptor         00000012
+_controlTransferBuffer            00000000
+_ctrlTransferStage                00000000
+_currentConfiguration             00000000
+_deviceAddress                    00000000
+_deviceState                      00000000
+_device_descriptor                00000000
+_ep_bdt                           00000400
+_inPtr                            00000000
+_lang                             00000032
+_manu                             00000036
+_outPtr                           00000000
+_prod                             00000042
+_requestHandled                   00000000
+_selfPowered                      00000000
+_string_descriptor                00000048
+_usb_ep_data_out_callback         00000000
+_wCount                           00000000
+r0x00                             00000000
+r0x01                             00000001
+r0x02                             00000002
+r0x03                             00000003
+r0x04                             00000004
+gpasm-1.2.0 #996 (Oct 11 2013) obj/picUSB.asm   12-17-2013  16:05:28        PAGE 40
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+r0x05                             00000005
+r0x06                             00000006
+r0x07                             00000007
+r0x08                             00000008
+r0x09                             00000009
+r0x0a                             0000000A
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
