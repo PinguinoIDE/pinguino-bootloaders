@@ -5,7 +5,7 @@
 #	Author:	Régis Blanchot <rblanchot@gmail.com>                       #
 #           André Gentric                                              #
 #                                                                      #
-#	Usage: make --makefile=Makefile PROC=18f26j50 OSC=20               #
+#	Usage ex. : make --makefile=Makefile PROC=18f26j50 OSC=20          #
 #          to compile the bootloader                                   #
 #                                                                      #
 #	This file is part of Pinguino Project (http://www.pinguino.cc)     #
