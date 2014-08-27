@@ -1,0 +1,783 @@
+Archive member included because of file (symbol)
+
+/dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+                              obj/main.o (memcpy)
+/dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+                              obj/main.o (memset)
+
+Allocating common symbols
+Common symbol       size              file
+
+pDst                0x4               obj/usb_device.o
+USBDeferINDataStagePackets
+                    0x4               obj/usb_device.o
+BDT                 0x40              obj/usb_device.o
+ProgrammingBuffer   0x80              obj/main.o
+CtrlTrfData         0x40              obj/usb_device.o
+BootState           0x1               obj/main.o
+hid_report_out      0x40              obj/usb_device.o
+USBDeferOUTDataStagePackets
+                    0x4               obj/usb_device.o
+USBDeviceState      0x4               obj/usb_device.o
+controlTransferState
+                    0x1               obj/usb_device.o
+endpoint_number     0x1               obj/usb_device.o
+inPipes             0x10              obj/usb_device.o
+pBDTEntryIn         0x8               obj/usb_device.o
+PacketToPC          0x40              obj/main.o
+hid_report_in       0x40              obj/usb_device.o
+ep_data_out         0x2               obj/usb_device.o
+USBStatusStageEnabledFlag1
+                    0x4               obj/usb_device.o
+PacketFromPC        0x40              obj/main.o
+ConfigsProtected    0x1               obj/main.o
+ProgrammedPointer   0x4               obj/main.o
+USBStatusStageEnabledFlag2
+                    0x4               obj/usb_device.o
+pBDTEntryOut        0x8               obj/usb_device.o
+BothEP0OutUOWNsSet  0x4               obj/usb_device.o
+ProgramMemStopAddress
+                    0x4               obj/main.o
+pBDTEntryEP0OutNext
+                    0x4               obj/usb_device.o
+PacketFromPCBuffer  0x40              obj/main.o
+USBBusIsSuspended   0x4               obj/usb_device.o
+MaxPageToErase      0x1               obj/main.o
+BufferedDataIndex   0x1               obj/main.o
+USBStatusStageTimeoutCounter
+                    0x1               obj/usb_device.o
+SetupPkt            0x8               obj/usb_device.o
+ep_data_in          0x2               obj/usb_device.o
+active_protocol     0x1               obj/usb_function_hid.o
+ErasePageTracker    0x1               obj/main.o
+shortPacketStatus   0x1               obj/usb_device.o
+pBDTEntryEP0OutCurrent
+                    0x4               obj/usb_device.o
+USBActiveConfiguration
+                    0x1               obj/usb_device.o
+RemoteWakeup        0x4               obj/usb_device.o
+USTATcopy           0x1               obj/usb_device.o
+USBAlternateInterface
+                    0x1               obj/usb_device.o
+outPipes            0xb               obj/usb_device.o
+USBDeferStatusStagePacket
+                    0x4               obj/usb_device.o
+idle_rate           0x1               obj/usb_function_hid.o
+
+Discarded input sections
+
+ .text          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .data          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .bss           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .pdr           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .init          0x0000000000000000        0x8 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .fini          0x0000000000000000        0x8 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+ .text          0x0000000000000000      0x1b4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .data          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .bss           0x0000000000000000       0x20 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .ctors         0x0000000000000000        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .dtors         0x0000000000000000        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .jcr           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .tm_clone_table
+                0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .sdata         0x0000000000000000        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .fini          0x0000000000000000       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .init          0x0000000000000000       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .text          0x0000000000000000        0x0 obj/usb_function_hid.o
+ .data          0x0000000000000000        0x0 obj/usb_function_hid.o
+ .bss           0x0000000000000000        0x0 obj/usb_function_hid.o
+ .reginfo       0x0000000000000000       0x18 obj/usb_function_hid.o
+ .pdr           0x0000000000000000       0x20 obj/usb_function_hid.o
+ .text          0x0000000000000000        0x0 obj/usb_descriptors.o
+ .data          0x0000000000000000        0x0 obj/usb_descriptors.o
+ .bss           0x0000000000000000        0x0 obj/usb_descriptors.o
+ .reginfo       0x0000000000000000       0x18 obj/usb_descriptors.o
+ .text          0x0000000000000000        0x0 obj/flash.o
+ .data          0x0000000000000000        0x0 obj/flash.o
+ .bss           0x0000000000000000        0x0 obj/flash.o
+ .reginfo       0x0000000000000000       0x18 obj/flash.o
+ .pdr           0x0000000000000000       0x60 obj/flash.o
+ .text.FlashOperation
+                0x0000000000000000       0x5c obj/flash.o
+ .text          0x0000000000000000        0x0 obj/main.o
+ .data          0x0000000000000000        0x0 obj/main.o
+ .bss           0x0000000000000000        0x0 obj/main.o
+ .reginfo       0x0000000000000000       0x18 obj/main.o
+ .pdr           0x0000000000000000       0xe0 obj/main.o
+ .text.BlinkUSBStatus
+                0x0000000000000000       0x84 obj/main.o
+ .text.WriteFlashSubBlock
+                0x0000000000000000       0x34 obj/main.o
+ .text.USBCBInitEP
+                0x0000000000000000       0x24 obj/main.o
+ .text          0x0000000000000000        0x0 obj/usb_device.o
+ .data          0x0000000000000000        0x0 obj/usb_device.o
+ .bss           0x0000000000000000        0x0 obj/usb_device.o
+ .reginfo       0x0000000000000000       0x18 obj/usb_device.o
+ .pdr           0x0000000000000000      0x120 obj/usb_device.o
+ .text.USBCtrlEPAllowStatusStage
+                0x0000000000000000       0xe4 obj/usb_device.o
+ .text.USBCtrlEPAllowDataStage
+                0x0000000000000000       0xe4 obj/usb_device.o
+ .text.USBStallEndpoint
+                0x0000000000000000       0x94 obj/usb_device.o
+ .text.USBCancelIO
+                0x0000000000000000      0x144 obj/usb_device.o
+ .data          0x0000000000000000        0x0 /tmp/ccQpK1xW.o
+ .bss           0x0000000000000000        0x0 /tmp/ccQpK1xW.o
+ .reginfo       0x0000000000000000       0x18 /tmp/ccQpK1xW.o
+ .pdr           0x0000000000000000       0xa0 /tmp/ccQpK1xW.o
+ .bev_handler   0x0000000000000000        0x4 /tmp/ccQpK1xW.o
+ .text          0x0000000000000000        0x0 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .data          0x0000000000000000        0x0 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .data          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .bss           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .reginfo       0x0000000000000000       0x18 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .pdr           0x0000000000000000       0x20 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .data          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+ .bss           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+ .reginfo       0x0000000000000000       0x18 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+ .pdr           0x0000000000000000       0x20 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+ .text          0x0000000000000000       0x60 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .data          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .bss           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .ctors         0x0000000000000000        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .dtors         0x0000000000000000        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .jcr           0x0000000000000000        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .tm_clone_table
+                0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .init          0x0000000000000000       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+ .text          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .data          0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .bss           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .pdr           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .init          0x0000000000000000       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .fini          0x0000000000000000       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+ .text          0x0000000000000000        0x0 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .data          0x0000000000000000        0x0 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+exception_mem    0x000000009d000000 0x0000000000001000
+kseg0_boot_mem   0x000000009fc00000 0x0000000000000970
+kseg1_boot_mem   0x000000009fc00970 0x0000000000000280
+kseg0_program_mem 0x000000009d001000 0x000000000001f000 xr
+config3          0x00000000bfc00bf0 0x0000000000000004
+config2          0x00000000bfc00bf4 0x0000000000000004
+config1          0x00000000bfc00bf8 0x0000000000000004
+config0          0x00000000bfc00bfc 0x0000000000000004
+configsfrs       0x00000000bfc00bf0 0x0000000000000010
+sfrs             0x00000000bf800000 0x0000000000100000
+kseg1_data_mem   0x00000000a0000000 0x0000000000008000 w !x
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crti.o
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libm.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/libgcc.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a
+LOAD obj/usb_function_hid.o
+LOAD obj/usb_descriptors.o
+LOAD obj/flash.o
+LOAD obj/main.o
+LOAD obj/usb_device.o
+LOAD /tmp/ccQpK1xW.o
+LOAD /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libm.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/libgcc.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/libgcc.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/libgcc.a
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+LOAD /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtn.o
+LOAD /dvpt/pinguino/git-copy/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+                0x0000000000000001                PROVIDE (_vector_spacing, 0x1)
+                0x000000009d000000                _ebase_address = 0x9d000000
+                0x000000009fc00970                _RESET_ADDR = 0x9fc00970
+                0x000000009d000180                _GEN_EXCPT_ADDR = (_ebase_address + 0x180)
+
+.config_BFC00BF0
+ *(.config_BFC00BF0)
+
+.config_BFC00BF4
+ *(.config_BFC00BF4)
+
+.config_BFC00BF8
+ *(.config_BFC00BF8)
+
+.config_BFC00BFC
+ *(.config_BFC00BFC)
+                0x0000000000000400                PROVIDE (_min_stack_size, 0x400)
+                0x0000000000000000                PROVIDE (_min_heap_size, 0x0)
+
+.reset          0x000000009fc00970       0x10
+ *(.reset)
+ .reset         0x000000009fc00970       0x10 /tmp/ccQpK1xW.o
+                0x000000009fc00970                _reset
+
+.app_excpt      0x000000009d000180        0x4
+ *(.gen_handler)
+ .gen_handler   0x000000009d000180        0x4 /tmp/ccQpK1xW.o
+
+.vector_0       0x000000009d000200        0x0
+ *(.vector_0)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_0) <= (_vector_spacing << 0x5))), function at exception vector 0 too large)
+
+.vector_1       0x000000009d000220        0x0
+ *(.vector_1)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_1) <= (_vector_spacing << 0x5))), function at exception vector 1 too large)
+
+.vector_2       0x000000009d000240        0x0
+ *(.vector_2)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_2) <= (_vector_spacing << 0x5))), function at exception vector 2 too large)
+
+.vector_3       0x000000009d000260        0x0
+ *(.vector_3)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_3) <= (_vector_spacing << 0x5))), function at exception vector 3 too large)
+
+.vector_4       0x000000009d000280        0x0
+ *(.vector_4)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_4) <= (_vector_spacing << 0x5))), function at exception vector 4 too large)
+
+.vector_5       0x000000009d0002a0        0x0
+ *(.vector_5)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_5) <= (_vector_spacing << 0x5))), function at exception vector 5 too large)
+
+.vector_6       0x000000009d0002c0        0x0
+ *(.vector_6)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_6) <= (_vector_spacing << 0x5))), function at exception vector 6 too large)
+
+.vector_7       0x000000009d0002e0        0x0
+ *(.vector_7)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_7) <= (_vector_spacing << 0x5))), function at exception vector 7 too large)
+
+.vector_8       0x000000009d000300        0x0
+ *(.vector_8)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_8) <= (_vector_spacing << 0x5))), function at exception vector 8 too large)
+
+.vector_9       0x000000009d000320        0x0
+ *(.vector_9)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_9) <= (_vector_spacing << 0x5))), function at exception vector 9 too large)
+
+.vector_10      0x000000009d000340        0x0
+ *(.vector_10)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_10) <= (_vector_spacing << 0x5))), function at exception vector 10 too large)
+
+.vector_11      0x000000009d000360        0x0
+ *(.vector_11)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_11) <= (_vector_spacing << 0x5))), function at exception vector 11 too large)
+
+.vector_12      0x000000009d000380        0x0
+ *(.vector_12)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_12) <= (_vector_spacing << 0x5))), function at exception vector 12 too large)
+
+.vector_13      0x000000009d0003a0        0x0
+ *(.vector_13)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_13) <= (_vector_spacing << 0x5))), function at exception vector 13 too large)
+
+.vector_14      0x000000009d0003c0        0x0
+ *(.vector_14)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_14) <= (_vector_spacing << 0x5))), function at exception vector 14 too large)
+
+.vector_15      0x000000009d0003e0        0x0
+ *(.vector_15)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_15) <= (_vector_spacing << 0x5))), function at exception vector 15 too large)
+
+.vector_16      0x000000009d000400        0x0
+ *(.vector_16)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_16) <= (_vector_spacing << 0x5))), function at exception vector 16 too large)
+
+.vector_17      0x000000009d000420        0x0
+ *(.vector_17)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_17) <= (_vector_spacing << 0x5))), function at exception vector 17 too large)
+
+.vector_18      0x000000009d000440        0x0
+ *(.vector_18)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_18) <= (_vector_spacing << 0x5))), function at exception vector 18 too large)
+
+.vector_19      0x000000009d000460        0x0
+ *(.vector_19)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_19) <= (_vector_spacing << 0x5))), function at exception vector 19 too large)
+
+.vector_20      0x000000009d000480        0x0
+ *(.vector_20)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_20) <= (_vector_spacing << 0x5))), function at exception vector 20 too large)
+
+.vector_21      0x000000009d0004a0        0x0
+ *(.vector_21)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_21) <= (_vector_spacing << 0x5))), function at exception vector 21 too large)
+
+.vector_22      0x000000009d0004c0        0x0
+ *(.vector_22)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_22) <= (_vector_spacing << 0x5))), function at exception vector 22 too large)
+
+.vector_23      0x000000009d0004e0        0x0
+ *(.vector_23)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_23) <= (_vector_spacing << 0x5))), function at exception vector 23 too large)
+
+.vector_24      0x000000009d000500        0x0
+ *(.vector_24)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_24) <= (_vector_spacing << 0x5))), function at exception vector 24 too large)
+
+.vector_25      0x000000009d000520        0x0
+ *(.vector_25)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_25) <= (_vector_spacing << 0x5))), function at exception vector 25 too large)
+
+.vector_26      0x000000009d000540        0x0
+ *(.vector_26)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_26) <= (_vector_spacing << 0x5))), function at exception vector 26 too large)
+
+.vector_27      0x000000009d000560        0x0
+ *(.vector_27)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_27) <= (_vector_spacing << 0x5))), function at exception vector 27 too large)
+
+.vector_28      0x000000009d000580        0x0
+ *(.vector_28)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_28) <= (_vector_spacing << 0x5))), function at exception vector 28 too large)
+
+.vector_29      0x000000009d0005a0        0x0
+ *(.vector_29)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_29) <= (_vector_spacing << 0x5))), function at exception vector 29 too large)
+
+.vector_30      0x000000009d0005c0        0x0
+ *(.vector_30)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_30) <= (_vector_spacing << 0x5))), function at exception vector 30 too large)
+
+.vector_31      0x000000009d0005e0        0x0
+ *(.vector_31)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_31) <= (_vector_spacing << 0x5))), function at exception vector 31 too large)
+
+.vector_32      0x000000009d000600        0x0
+ *(.vector_32)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_32) <= (_vector_spacing << 0x5))), function at exception vector 32 too large)
+
+.vector_33      0x000000009d000620        0x0
+ *(.vector_33)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_33) <= (_vector_spacing << 0x5))), function at exception vector 33 too large)
+
+.vector_34      0x000000009d000640        0x0
+ *(.vector_34)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_34) <= (_vector_spacing << 0x5))), function at exception vector 34 too large)
+
+.vector_35      0x000000009d000660        0x0
+ *(.vector_35)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_35) <= (_vector_spacing << 0x5))), function at exception vector 35 too large)
+
+.vector_36      0x000000009d000680        0x0
+ *(.vector_36)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_36) <= (_vector_spacing << 0x5))), function at exception vector 36 too large)
+
+.vector_37      0x000000009d0006a0        0x0
+ *(.vector_37)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_37) <= (_vector_spacing << 0x5))), function at exception vector 37 too large)
+
+.vector_38      0x000000009d0006c0        0x0
+ *(.vector_38)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_38) <= (_vector_spacing << 0x5))), function at exception vector 38 too large)
+
+.vector_39      0x000000009d0006e0        0x0
+ *(.vector_39)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_39) <= (_vector_spacing << 0x5))), function at exception vector 39 too large)
+
+.vector_40      0x000000009d000700        0x0
+ *(.vector_40)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_40) <= (_vector_spacing << 0x5))), function at exception vector 40 too large)
+
+.vector_41      0x000000009d000720        0x0
+ *(.vector_41)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_41) <= (_vector_spacing << 0x5))), function at exception vector 41 too large)
+
+.vector_42      0x000000009d000740        0x0
+ *(.vector_42)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_42) <= (_vector_spacing << 0x5))), function at exception vector 42 too large)
+
+.vector_43      0x000000009d000760        0x0
+ *(.vector_43)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_43) <= (_vector_spacing << 0x5))), function at exception vector 43 too large)
+
+.vector_44      0x000000009d000780        0x0
+ *(.vector_44)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_44) <= (_vector_spacing << 0x5))), function at exception vector 44 too large)
+
+.vector_45      0x000000009d0007a0        0x0
+ *(.vector_45)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_45) <= (_vector_spacing << 0x5))), function at exception vector 45 too large)
+
+.vector_46      0x000000009d0007c0        0x0
+ *(.vector_46)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_46) <= (_vector_spacing << 0x5))), function at exception vector 46 too large)
+
+.vector_47      0x000000009d0007e0        0x0
+ *(.vector_47)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_47) <= (_vector_spacing << 0x5))), function at exception vector 47 too large)
+
+.vector_48      0x000000009d000800        0x0
+ *(.vector_48)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_48) <= (_vector_spacing << 0x5))), function at exception vector 48 too large)
+
+.vector_49      0x000000009d000820        0x0
+ *(.vector_49)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_49) <= (_vector_spacing << 0x5))), function at exception vector 49 too large)
+
+.vector_50      0x000000009d000840        0x0
+ *(.vector_50)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_50) <= (_vector_spacing << 0x5))), function at exception vector 50 too large)
+
+.vector_51      0x000000009d000860        0x0
+ *(.vector_51)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_51) <= (_vector_spacing << 0x5))), function at exception vector 51 too large)
+
+.vector_52      0x000000009d000880        0x0
+ *(.vector_52)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_52) <= (_vector_spacing << 0x5))), function at exception vector 52 too large)
+
+.vector_53      0x000000009d0008a0        0x0
+ *(.vector_53)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_53) <= (_vector_spacing << 0x5))), function at exception vector 53 too large)
+
+.vector_54      0x000000009d0008c0        0x0
+ *(.vector_54)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_54) <= (_vector_spacing << 0x5))), function at exception vector 54 too large)
+
+.vector_55      0x000000009d0008e0        0x0
+ *(.vector_55)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_55) <= (_vector_spacing << 0x5))), function at exception vector 55 too large)
+
+.vector_56      0x000000009d000900        0x0
+ *(.vector_56)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_56) <= (_vector_spacing << 0x5))), function at exception vector 56 too large)
+
+.vector_57      0x000000009d000920        0x0
+ *(.vector_57)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_57) <= (_vector_spacing << 0x5))), function at exception vector 57 too large)
+
+.vector_58      0x000000009d000940        0x0
+ *(.vector_58)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_58) <= (_vector_spacing << 0x5))), function at exception vector 58 too large)
+
+.vector_59      0x000000009d000960        0x0
+ *(.vector_59)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_59) <= (_vector_spacing << 0x5))), function at exception vector 59 too large)
+
+.vector_60      0x000000009d000980        0x0
+ *(.vector_60)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_60) <= (_vector_spacing << 0x5))), function at exception vector 60 too large)
+
+.vector_61      0x000000009d0009a0        0x0
+ *(.vector_61)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_61) <= (_vector_spacing << 0x5))), function at exception vector 61 too large)
+
+.vector_62      0x000000009d0009c0        0x0
+ *(.vector_62)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_62) <= (_vector_spacing << 0x5))), function at exception vector 62 too large)
+
+.vector_63      0x000000009d0009e0        0x0
+ *(.vector_63)
+                0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_63) <= (_vector_spacing << 0x5))), function at exception vector 63 too large)
+
+.startup        0x000000009fc00000      0x1bc
+ *(.startup)
+ .startup       0x000000009fc00000      0x1bc /tmp/ccQpK1xW.o
+
+.text           0x000000009d001000     0x24c0
+                0x000000009d001000                _text_begin = .
+ *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text.USBCheckHIDRequest
+                0x000000009d001000       0xf4 obj/usb_function_hid.o
+                0x000000009d001001                USBCheckHIDRequest
+ .text.FlashErasePage
+                0x000000009d0010f4       0x6c obj/flash.o
+                0x000000009d0010f5                FlashErasePage
+ .text.FlashWriteWord
+                0x000000009d001160       0x74 obj/flash.o
+                0x000000009d001161                FlashWriteWord
+ .text.PicReset
+                0x000000009d0011d4       0x40 obj/main.o
+                0x000000009d0011d4                PicReset
+ .text.BootApplication
+                0x000000009d001214      0x4e4 obj/main.o
+                0x000000009d001215                BootApplication
+ .text.startup.main
+                0x000000009d0016f8      0x11c obj/main.o
+                0x000000009d0016f9                main
+ .text.USER_USB_CALLBACK_EVENT_HANDLER
+                0x000000009d001814       0x4c obj/main.o
+                0x000000009d001815                USER_USB_CALLBACK_EVENT_HANDLER
+ .text.USBCtrlTrfTxService
+                0x000000009d001860       0xd8 obj/usb_device.o
+ .text.USBDeviceInit
+                0x000000009d001938      0x1ac obj/usb_device.o
+                0x000000009d001939                USBDeviceInit
+ .text.USBDeviceTasks
+                0x000000009d001ae4     0x1428 obj/usb_device.o
+                0x000000009d001ae5                USBDeviceTasks
+ .text.USBEnableEndpoint
+                0x000000009d002f0c       0x80 obj/usb_device.o
+                0x000000009d002f0d                USBEnableEndpoint
+ .text.USBTransferOnePacket
+                0x000000009d002f8c       0xd0 obj/usb_device.o
+                0x000000009d002f8d                USBTransferOnePacket
+ .text          0x000000009d00305c       0x14 /tmp/ccQpK1xW.o
+ .text          0x000000009d003070      0x334 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+                0x000000009d003070                memcpy
+ .text          0x000000009d0033a4      0x11c /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+                0x000000009d0033a4                memset
+ *(.text.*personality*)
+ *(.gnu.warning)
+ *(.mips16.fn.*)
+ *(.mips16.call.*)
+                0x000000009d0034c0                _text_end = .
+
+.rodata         0x000000009d0034c0       0xc8
+ *(.rodata .rodata.* .gnu.linkonce.r.*)
+ .rodata.USB_SD_Ptr
+                0x000000009d0034c0        0xc obj/usb_descriptors.o
+                0x000000009d0034c0                USB_SD_Ptr
+ .rodata.hid_rpt01
+                0x000000009d0034cc       0x20 obj/usb_descriptors.o
+                0x000000009d0034cc                hid_rpt01
+ .rodata.sd002  0x000000009d0034ec       0x28 obj/usb_descriptors.o
+                0x000000009d0034ec                sd002
+ .rodata.sd001  0x000000009d003514       0x34 obj/usb_descriptors.o
+                0x000000009d003514                sd001
+ .rodata.configDescriptor1
+                0x000000009d003548       0x2c obj/usb_descriptors.o
+                0x000000009d003548                configDescriptor1
+ .rodata.device_dsc
+                0x000000009d003574       0x14 obj/usb_descriptors.o
+                0x000000009d003574                device_dsc
+ *(.rodata1)
+                0x000000009d003588                . = ALIGN (0x4)
+
+.sdata2         0x000000009d003588        0x0
+ *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
+                0x000000009d003588                . = ALIGN (0x4)
+
+.sbss2          0x000000009d003588        0x0
+ *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
+                0x000000009d003588                . = ALIGN (0x4)
+
+.eh_frame_hdr
+ *(.eh_frame_hdr)
+
+.eh_frame       0x000000009d003588        0x4
+ *(.eh_frame)
+ .eh_frame      0x000000009d003588        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .eh_frame      0x000000009d003588        0x4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+
+.rel.dyn        0x000000009d00358c        0x0
+ .rel.dyn       0x0000000000000000        0x0 obj/usb_descriptors.o
+
+.dbg_data       0x00000000a0000000        0x0
+                0x00000000a0000000                . = (. + DEFINED (_DEBUGGER)?0x200:0x0)
+
+.data           0x00000000a0000000        0x0 load address 0x000000009d00358c
+                0x00000000a0000000                _data_begin = .
+ *(.data .data.* .gnu.linkonce.d.*)
+ *(.gnu.linkonce.d.*personality*)
+ *(.data1)
+                0x000000009d00358c                _data_image_begin = LOADADDR (.data)
+
+.eh_frame
+ *(.eh_frame)
+                0x00000000a0007ff0                _gp = (ALIGN (0x10) + 0x7ff0)
+
+.got
+ *(.got.plt)
+ *(.got)
+
+.sdata          0x00000000a0000000        0xa load address 0x000000009d00358c
+                0x00000000a0000000                _sdata_begin = .
+ *(.sdata .sdata.* .gnu.linkonce.s.*)
+ .sdata.USB_CD_Ptr
+                0x00000000a0000000        0x4 obj/usb_descriptors.o
+                0x00000000a0000000                USB_CD_Ptr
+ .sdata.sd000   0x00000000a0000004        0x4 obj/usb_descriptors.o
+                0x00000000a0000004                sd000
+ .sdata.delay_count.6841
+                0x00000000a0000008        0x2 obj/flash.o
+                0x00000000a000000a                _sdata_end = .
+
+.lit8
+ *(.lit8)
+
+.lit4
+ *(.lit4)
+                0x00000000a000000c                . = ALIGN (0x4)
+                0x00000000a000000c                _data_end = .
+                0x00000000a000000c                _bss_begin = .
+
+.sbss           0x00000000a000000c       0x84 load address 0x000000009d003596
+                0x00000000a000000c                _sbss_begin = .
+ *(.dynsbss)
+ *(.sbss .sbss.* .gnu.linkonce.sb.*)
+ .sbss.led_count.7426
+                0x00000000a000000c        0x2 obj/main.o
+ *fill*         0x00000000a000000e        0x2 
+ .sbss.USBInHandle
+                0x00000000a0000010        0x4 obj/main.o
+                0x00000000a0000010                USBInHandle
+ .sbss.USBOutHandle
+                0x00000000a0000014        0x4 obj/main.o
+                0x00000000a0000014                USBOutHandle
+ *(.scommon)
+ .scommon       0x00000000a0000018        0x2 obj/usb_function_hid.o
+                0x00000000a0000018                active_protocol
+                0x00000000a0000019                idle_rate
+ *fill*         0x00000000a000001a        0x2 
+ .scommon       0x00000000a000001c        0xf obj/main.o
+                0x00000000a000001c                BootState
+                0x00000000a000001d                ConfigsProtected
+                0x00000000a0000020                ProgrammedPointer
+                0x00000000a0000024                ProgramMemStopAddress
+                0x00000000a0000028                MaxPageToErase
+                0x00000000a0000029                BufferedDataIndex
+                0x00000000a000002a                ErasePageTracker
+ *fill*         0x00000000a000002b        0x1 
+ .scommon       0x00000000a000002c       0x64 obj/usb_device.o
+                0x00000000a000002c                pDst
+                0x00000000a0000030                USBDeferINDataStagePackets
+                0x00000000a0000034                USBDeferOUTDataStagePackets
+                0x00000000a0000038                USBDeviceState
+                0x00000000a000003c                controlTransferState
+                0x00000000a000003d                endpoint_number
+                0x00000000a0000040                pBDTEntryIn
+                0x00000000a0000048                ep_data_out
+                0x00000000a000004c                USBStatusStageEnabledFlag1
+                0x00000000a0000050                USBStatusStageEnabledFlag2
+                0x00000000a0000054                pBDTEntryOut
+                0x00000000a000005c                BothEP0OutUOWNsSet
+                0x00000000a0000060                pBDTEntryEP0OutNext
+                0x00000000a0000064                USBBusIsSuspended
+                0x00000000a0000068                USBStatusStageTimeoutCounter
+                0x00000000a000006c                SetupPkt
+                0x00000000a0000074                ep_data_in
+                0x00000000a0000076                shortPacketStatus
+                0x00000000a0000078                pBDTEntryEP0OutCurrent
+                0x00000000a000007c                USBActiveConfiguration
+                0x00000000a0000080                RemoteWakeup
+                0x00000000a0000084                USTATcopy
+                0x00000000a0000088                USBAlternateInterface
+                0x00000000a000008c                USBDeferStatusStagePacket
+                0x00000000a0000090                _sbss_end = .
+
+.bss            0x00000000a0000200      0x31c load address 0x000000009d003596
+ *(.dynbss)
+ *(.bss .bss.* .gnu.linkonce.b.*)
+ *(COMMON)
+ COMMON         0x00000000a0000200      0x140 obj/main.o
+                0x00000000a0000200                ProgrammingBuffer
+                0x00000000a0000280                PacketToPC
+                0x00000000a00002c0                PacketFromPC
+                0x00000000a0000300                PacketFromPCBuffer
+ *fill*         0x00000000a0000340       0xc0 
+ COMMON         0x00000000a0000400      0x11b obj/usb_device.o
+                0x00000000a0000400                BDT
+                0x00000000a0000440                CtrlTrfData
+                0x00000000a0000480                hid_report_out
+                0x00000000a00004c0                inPipes
+                0x00000000a00004d0                hid_report_in
+                0x00000000a0000510                outPipes
+                0x00000000a000051c                . = ALIGN (0x4)
+ *fill*         0x00000000a000051b        0x1 
+                0x00000000a000051c                . = ALIGN (0x4)
+                0x00000000a000051c                _end = .
+                0x00000000a000051c                _bss_end = .
+
+.heap           0x00000000a000051c        0x0
+                0x00000000a000051c                _heap = .
+                0x00000000a000051c                . = (. + _min_heap_size)
+
+.stack          0x00000000a000051c      0x400
+                0x00000000a000051c                _splim = .
+                0x00000000a000051c                _SPLIM = .
+                0x00000000a000091c                . = (. + _min_stack_size)
+ *fill*         0x00000000a000051c      0x400 
+
+.ramfunc        0x00000000a0001000        0x0 load address 0x000000009d003596
+                0x00000000a0001000                _ramfunc_begin = .
+ *(.ramfunc .ramfunc.*)
+                0x00000000a0001000                . = ALIGN (0x4)
+                0x00000000a0001000                _ramfunc_end = .
+                0x000000009d003596                _ramfunc_image_begin = LOADADDR (.ramfunc)
+                0x0000000000000000                _ramfunc_length = SIZEOF (.ramfunc)
+                0x0000000000001000                _bmxdkpba_address = (_ramfunc_begin - ORIGIN (kseg1_data_mem))
+                0x0000000000008000                _bmxdudba_address = 0x8000
+                0x0000000000008000                _bmxdupba_address = 0x8000
+                0x00000000a0008000                _stack = (_ramfunc_length > 0x0)?(_ramfunc_begin - 0x4):(ORIGIN (kseg1_data_mem) + 0x8000)
+                0x0000000000000001                ASSERT (((_min_stack_size + _min_heap_size) <= (_stack - _heap)), Not enough space to allocate both stack and heap.  Reduce heap and/or stack size.)
+
+.pdr            0x0000000000000000        0x0
+ *(.pdr)
+ .pdr           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .pdr           0x0000000000000000        0x0 obj/usb_descriptors.o
+ .pdr           0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+
+.mdebug.abi32   0x0000000000000000        0x0
+ .mdebug.abi32  0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/usb_function_hid.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/usb_descriptors.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/flash.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/main.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/usb_device.o
+ .mdebug.abi32  0x0000000000000000        0x0 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+
+.comment        0x0000000000000000       0x11
+ .comment       0x0000000000000000       0x11 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+                                         0x12 (size before relaxing)
+ .comment       0x0000000000000000       0x12 obj/usb_function_hid.o
+ .comment       0x0000000000000000       0x12 obj/usb_descriptors.o
+ .comment       0x0000000000000000       0x12 obj/flash.o
+ .comment       0x0000000000000000       0x12 obj/main.o
+ .comment       0x0000000000000000       0x12 obj/usb_device.o
+ .comment       0x0000000000000000       0x12 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+
+.gnu.attributes
+                0x0000000000000000       0x10
+ .gnu.attributes
+                0x0000000000000000       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtbegin.o
+ .gnu.attributes
+                0x0000000000000010       0x10 obj/usb_function_hid.o
+ .gnu.attributes
+                0x0000000000000020       0x10 obj/usb_descriptors.o
+ .gnu.attributes
+                0x0000000000000030       0x10 obj/flash.o
+ .gnu.attributes
+                0x0000000000000040       0x10 obj/main.o
+ .gnu.attributes
+                0x0000000000000050       0x10 obj/usb_device.o
+ .gnu.attributes
+                0x0000000000000060       0x10 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/crtend.o
+
+.reginfo
+ *(.reginfo)
+OUTPUT(hex/Bootloader_v0.1_32MX250F128B_X8MHz.elf elf32-littlemips)
+
+.debug_line     0x0000000000000000      0x218
+ .debug_line    0x0000000000000000      0x154 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .debug_line    0x0000000000000154       0xc4 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+
+.debug_info     0x0000000000000000      0x174
+ .debug_info    0x0000000000000000       0xba /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .debug_info    0x00000000000000ba       0xba /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+
+.debug_abbrev   0x0000000000000000       0x28
+ .debug_abbrev  0x0000000000000000       0x14 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .debug_abbrev  0x0000000000000014       0x14 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
+
+.debug_aranges  0x0000000000000000       0x40
+ .debug_aranges
+                0x0000000000000000       0x20 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memcpy.o)
+ .debug_aranges
+                0x0000000000000020       0x20 /dvpt/gcc/mips/linux64/p32/lib/gcc/mipsel-elf/4.9.1/../../../../mipsel-elf/lib/libc.a(lib_a-memset.o)
