@@ -6,7 +6,7 @@
     |_____]   |   | \  | |  ____ |     |   |   | \  | |     |
     |       __|__ |  \_| |_____| |_____| __|__ |  \_| |_____|
 
-    Pinguino Stand-alone Uploader
+    Pinguino Stand-alone Uploader for 8-bit Pinguino
 
     Author:          Regis Blanchot <rblanchot@gmail.com> 
     Last release:    2013-11-13
@@ -563,12 +563,8 @@ def hexWrite(handle, filename, proc, memend):
     return ERR_NONE
 
 # ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
-
 def main(filename):
+# ----------------------------------------------------------------------
 
     # check file to upload
     # ------------------------------------------------------------------
@@ -578,11 +574,11 @@ def main(filename):
         closeDevice(handle)
         sys.exit(0)
 
-    file = open(filename, 'r')
-    if file == "":
+    hexfile = open(filename, 'r')
+    if hexfile == "":
         print "Unable to open %s" % filename
         sys.exit(0)
-    file.close()
+    hexfile.close()
 
     # search for a Pinguino board
     # ------------------------------------------------------------------

@@ -11,39 +11,52 @@
 #ifndef FLASH_H
 #define FLASH_H
 
-#include <GenericTypeDefs.h>
+//#include <GenericTypeDefs.h>
 
-#define PAGE_SIZE               1024        // Number of 32-bit Instructions per Page
-#define ROW_SIZE                128         // Number of 32-bit Instructions per Row
-#define NUM_ROWS_PAGE           8           // Number of Rows per Page
-
-// Pinguino 32MX220 and Pinguino 32MX250
-#if defined(__32MX220F032B__) || defined(__32MX250F128B__)
-    #define BYTE_PAGE_SIZE       PAGE_SIZE // Page size in Bytes
-    #define BYTE_ROW_SIZE        ROW_SIZE // # Row size in Bytes
-#else
-    #define BYTE_PAGE_SIZE       (4 * PAGE_SIZE) // Page size in Bytes
-    #define BYTE_ROW_SIZE        (4 * ROW_SIZE) // # Row size in Bytes
-#endif
-
-#define FLASH_PAGE_SIZE         BYTE_PAGE_SIZE
-
-#define NVMOP_WORD_PGM          0x4001      // Word program operation
-#define NVMOP_PAGE_ERASE        0x4004      // Page erase operation
-#define NVMOP_ROW_PGM           0x4003      // Row program operation
 #define NVMOP_NOP               0x4000      // NOP operation
+#define NVMOP_WORD_PGM          0x4001      // Word program operation
+#define NVMOP_ROW_PGM           0x4003      // Row program operation
+#define NVMOP_PAGE_ERASE        0x4004      // Page erase operation
+#define NVMOP_PFM_ERASE         0x4005      // Program Flash Memory erase operation
 
-UINT FlashWriteWord(void* address, UINT data);
-UINT FlashErasePage(void* address);
+unsigned int FlashOperation(unsigned int nvmop);
+unsigned int FlashWriteWord(void* address, unsigned int data);
+unsigned int FlashErasePage(void* address);
 
 #if 0
-extern UINT FlashWriteRow(void* address, void* data);
-extern UINT FlashClearError(void);
+extern unsigned int FlashWriteRow(void* address, void* data);
+extern unsigned int FlashClearError(void);
 #endif
 
+/*
+    Virtual to Physical Address Calculation (and Vice-Versa)
+
+To translate the kernel address (KSEG0 or KSEG1) to a physical address,
+perform a "Bitwise AND" operation of the virtual address with 0x1FFFFFFF:
+
+ * Physical Address = Virtual Address and 0x1FFFFFFF
+
+For physical address to KSEG0 virtual address translation,
+perform a "Bitwise OR" operation of the physical address with 0x80000000:
+
+ * KSEG0 Virtual Address = Physical Address | 0x80000000
+
+For physical address to KSEG1 virtual address translation,
+perform a "Bitwise OR" operation of the physical address with 0xA0000000:
+
+ * KSEG1 Virtual Address = Physical Address | 0xA0000000
+
+To translate from KSEG0 to KSEG1 virtual address,
+perform a "Bitwise OR" operation of the KSEG0 virtual address with 0x20000000:
+
+ * KSEG1 Virtual Address = KSEG0 Virtual Address | 0x20000000
+
+*/
+
 // Convert a virtual address to a physical address
-#define KVA_TO_PA(v)            ((unsigned long)(v) & 0x1fffffff)
-//#define PA_TO_KVA0(pa)          ((void *) ((pa) | 0x80000000))
-#define PA_TO_KVA1(pa)          ((void *) ((pa) | 0xA0000000))
+#define KVA_TO_PA(kva)      ((unsigned long)(kva) & 0x1FFFFFFF)
+#define PA_TO_KVA0(pa)      ((void *) ((pa) | 0x80000000))
+#define PA_TO_KVA1(pa)      ((void *) ((pa) | 0xA0000000))
+#define KVA0_TO_KVA1(kva)   ((void *) ((kva) | 0x20000000))
 
 #endif /* FLASH_H */

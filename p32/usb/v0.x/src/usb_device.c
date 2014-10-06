@@ -536,7 +536,8 @@ void USBDeviceInit(void)
  ***************************************************************************/
 //DOM-IGNORE-END
 
-#if defined(USB_INTERRUPT) 
+#if defined(USB_INTERRUPT)
+#error
 void __attribute__((interrupt(), vector(45))) _USB1Interrupt(void)
 #else
 void USBDeviceTasks(void)
@@ -544,7 +545,8 @@ void USBDeviceTasks(void)
 {
     BYTE i;
 
-#ifdef USB_SUPPORT_OTG
+    #ifdef USB_SUPPORT_OTG
+    #error
     //SRP Time Out Check
     if (USBOTGSRPIsReady())
     {
@@ -562,9 +564,9 @@ void USBDeviceTasks(void)
             USBClearInterruptFlag(USBT1MSECIFReg, USBT1MSECIFBitNum);
         }
     }
-#endif
+    #endif
 
-#if defined(USB_POLLING)
+    #if defined(USB_POLLING)
     //If the interrupt option is selected then the customer is required
     //  to notify the stack when the device is attached or removed from the
     //  bus by calling the USBDeviceAttach() and USBDeviceDetach() functions.
@@ -591,11 +593,12 @@ void USBDeviceTasks(void)
         //moved to the attached state
         USBDeviceState = ATTACHED_STATE;
 
-#ifdef  USB_SUPPORT_OTG
+        #ifdef  USB_SUPPORT_OTG
+        #error
         U1OTGCON |= USB_OTG_DPLUS_ENABLE | USB_OTG_ENABLE;
-#endif
+        #endif
     }
-#endif  //#if defined(USB_POLLING)
+    #endif  //#if defined(USB_POLLING)
 
     if (USBDeviceState == ATTACHED_STATE)
     {
@@ -611,16 +614,16 @@ void USBDeviceTasks(void)
         if (!USBSE0Event)
         {
             USBClearInterruptRegister(U1IR); // Clear all USB interrupts
-#if defined(USB_POLLING)
+            #if defined(USB_POLLING)
             U1IE = 0; // Mask all USB interrupts
-#endif
+            #endif
             USBResetIE = 1; // Unmask RESET interrupt
             USBIdleIE = 1; // Unmask IDLE interrupt
             USBDeviceState = POWERED_STATE;
         }
     }
 
-#ifdef  USB_SUPPORT_OTG
+    #ifdef  USB_SUPPORT_OTG
     //If ID Pin Changed State
     if (USBIDIF && USBIDIE)
     {
@@ -629,7 +632,7 @@ void USBDeviceTasks(void)
 
         USBClearInterruptFlag(USBIDIFReg, USBIDIFBitNum);
     }
-#endif
+    #endif
 
     /*
      * Task A: Service USB Activity Interrupt
@@ -637,11 +640,11 @@ void USBDeviceTasks(void)
     if (USBActivityIF && USBActivityIE)
     {
         USBClearInterruptFlag(USBActivityIFReg, USBActivityIFBitNum);
-#if defined(USB_SUPPORT_OTG)
+        #if defined(USB_SUPPORT_OTG)
         U1OTGIR = 0x10;
-#else
+        #else
         USBWakeFromSuspend();
-#endif
+        #endif
     }
 
     /*
@@ -673,13 +676,13 @@ void USBDeviceTasks(void)
 
         USBDeviceState = DEFAULT_STATE;
 
-#ifdef USB_SUPPORT_OTG
+        #ifdef USB_SUPPORT_OTG
         //Disable HNP
         USBOTGDisableHnp();
 
         //Deactivate HNP
         USBOTGDeactivateHnp();
-#endif
+        #endif
 
         USBClearInterruptFlag(USBResetIFReg, USBResetIFBitNum);
     }
@@ -689,12 +692,12 @@ void USBDeviceTasks(void)
      */
     if (USBIdleIF && USBIdleIE)
     {
-#ifdef  USB_SUPPORT_OTG 
+        #ifdef  USB_SUPPORT_OTG 
         //If Suspended, Try to switch to Host
         USBOTGSelectRole(ROLE_HOST);
-#else
+        #else
         USBSuspend();
-#endif
+        #endif
 
         USBClearInterruptFlag(USBIdleIFReg, USBIdleIFBitNum);
     }
@@ -707,10 +710,10 @@ void USBDeviceTasks(void)
         }
         USBClearInterruptFlag(USBSOFIFReg, USBSOFIFBitNum);
 
-#if defined(USB_ENABLE_STATUS_STAGE_TIMEOUTS)
+        #if defined(USB_ENABLE_STATUS_STAGE_TIMEOUTS)
         //Supporting this feature requires a 1ms timebase for keeping track of the timeout interval.
-#if(USB_SPEED_OPTION == USB_LOW_SPEED)
-#warning "Double click this message.  See inline code comments."
+        #if(USB_SPEED_OPTION == USB_LOW_SPEED)
+        #warning "Double click this message.  See inline code comments."
         //The "USB_ENABLE_STATUS_STAGE_TIMEOUTS" feature is optional and is
         //not strictly needed in all applications (ex: those that never call
         //USBDeferStatusStage() and don't use host to device (OUT) control
@@ -727,7 +730,7 @@ void USBDeviceTasks(void)
         //Note: Pre-condition to executing the below code: USBDeviceInit() should have
         //been called at least once (since the last microcontroller reset/power up),
         //prior to executing the below code.
-#endif
+        #endif
 
         //Decrement our status stage counter.
         if (USBStatusStageTimeoutCounter != 0u)
@@ -743,7 +746,7 @@ void USBDeviceTasks(void)
         {
             USBCtrlEPAllowStatusStage(); //Does nothing if the status stage was already armed.
         }
-#endif
+        #endif
     }
 
     if (USBStallIF && USBStallIE)
@@ -759,9 +762,9 @@ void USBDeviceTasks(void)
         //On PIC18 or PIC24F, clearing the source of the error will automatically
         //  clear the interrupt flag.  On PIC32 the interrut flag must be manually
         //  cleared. 
-#if defined(__C32__) || defined(__C30__)
+        #if defined(__C32__) || defined(__C30__)
         USBClearInterruptFlag(USBErrorIFReg, USBErrorIFBitNum);
-#endif
+        #endif
     }
 
     /*
@@ -792,7 +795,7 @@ void USBDeviceTasks(void)
 
                 //Keep track of the hardware ping pong state for endpoints other
                 //than EP0, if ping pong buffering is enabled.
-#if (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG) 
+                #if (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG) 
                 if (USBHALGetLastDirection(USTATcopy) == OUT_FROM_HOST)
                 {
                     ep_data_out[endpoint_number].bits.ping_pong_state ^= 1;
@@ -801,7 +804,7 @@ void USBDeviceTasks(void)
                 {
                     ep_data_in[endpoint_number].bits.ping_pong_state ^= 1;
                 }
-#endif    
+                #endif    
 
                 //USBCtrlEPService only services transactions over EP0.
                 //It ignores all other EP transactions.
@@ -814,8 +817,10 @@ void USBDeviceTasks(void)
                     USB_TRASFER_COMPLETE_HANDLER(EVENT_TRANSFER, (BYTE*) & USTATcopy.Val, 0);
                 }
             }//end if(USBTransactionCompleteIF)
+            
             else
                 break; //USTAT FIFO must be empty.
+                
         }//end for()
     }//end if(USBTransactionCompleteIE)
 
@@ -974,9 +979,9 @@ static void USBCtrlEPService(void)
     //If we get to here, that means a successful transaction has just occurred 
     //on EP0.  This means "progress" has occurred in the currently pending 
     //control transfer, so we should re-initialize our timeout counter.
-#if defined(USB_ENABLE_STATUS_STAGE_TIMEOUTS)
+    #if defined(USB_ENABLE_STATUS_STAGE_TIMEOUTS)
     USBStatusStageTimeoutCounter = USB_STATUS_STAGE_TIMEOUT;
-#endif
+    #endif
 
     //Check if the last transaction was on EP0 OUT endpoint (of any kind, to either the even or odd buffer if ping pong buffers used)
     if ((USTATcopy.Val & USTAT_EP0_PP_MASK) == USTAT_EP0_OUT_EVEN)
@@ -1345,7 +1350,7 @@ static void USBStdFeatureReqHandler(void)
     BDT_ENTRY *p;
     EP_STATUS current_ep_data;
 
-#ifdef	USB_SUPPORT_OTG
+    #ifdef	USB_SUPPORT_OTG
     //Check for USB On-The-Go (OTG) specific requests
     if ((SetupPkt.bFeature == OTG_FEATURE_B_HNP_ENABLE) &&
             (SetupPkt.Recipient == USB_SETUP_RECIPIENT_DEVICE_BITFIELD))
@@ -1376,7 +1381,7 @@ static void USBStdFeatureReqHandler(void)
         else
             USBOTGDisableAltHnp();
     }
-#endif   //#ifdef USB_SUPPORT_OTG 
+    #endif   //#ifdef USB_SUPPORT_OTG 
 
     //Check if the host sent a valid SET or CLEAR feature (remote wakeup) request.
     if ((SetupPkt.bFeature == USB_FEATURE_DEVICE_REMOTE_WAKEUP) &&
@@ -1414,7 +1419,7 @@ static void USBStdFeatureReqHandler(void)
         //If ping pong buffering is enabled on the requested endpoint, need 
         //to point to the one that is the active BDT entry which the SIE will 
         //use for the next attempted transaction on that EP number.
-#if (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)   
+        #if (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)   
         if (current_ep_data.bits.ping_pong_state == 0) //Check if even
         {
             USBHALPingPongSetToEven(&p);
@@ -1423,7 +1428,7 @@ static void USBStdFeatureReqHandler(void)
         {
             USBHALPingPongSetToOdd(&p);
         }
-#endif
+        #endif
 
         //Update the BDT pointers with the new, next entry based on the feature
         //  request
@@ -1459,7 +1464,7 @@ static void USBStdFeatureReqHandler(void)
         else
         {
             //Else the request must have been a CLEAR_FEATURE endpoint halt.
-#if (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)   
+            #if (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)   
             //toggle over the to the non-active BDT
             USBAdvancePingPongBuffer(&p);
 
@@ -1504,7 +1509,7 @@ static void USBStdFeatureReqHandler(void)
                 //clear UOWN, clear DTS to DATA0, and finally remove the STALL condition
                 p->STAT.Val &= ~(_USIE | _DAT1 | _BSTALL);
             }
-#else //else we must not be using ping-pong buffering on the requested endpoint
+            #else //else we must not be using ping-pong buffering on the requested endpoint
             if ((current_ep_data.bits.transfer_terminated != 0) || ((p->STAT.UOWN == 1) && (p->STAT.BSTALL == 0)))
             {
                 if (SetupPkt.EPDir == 0)
@@ -1536,7 +1541,7 @@ static void USBStdFeatureReqHandler(void)
                 p->STAT.Val &= ~(_USIE | _BSTALL);
                 p->STAT.Val |= _DAT1;
             }
-#endif
+            #endif
         }//end if
     }//end if
 }//end USBStdFeatureReqHandler
@@ -1598,12 +1603,12 @@ void USBCtrlEPAllowStatusStage(void)
 
                 //This buffer (when ping pong buffering is enabled on EP0 OUT) receives the
                 //next SETUP packet.
-#if ((USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG))
+                #if ((USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY) || (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG))
                 pBDTEntryEP0OutCurrent->CNT = USB_EP0_BUFF_SIZE;
                 pBDTEntryEP0OutCurrent->ADR = ConvertToPhysicalAddress(&SetupPkt);
                 pBDTEntryEP0OutCurrent->STAT.Val = _USIE | _BSTALL; //Prepare endpoint to accept a SETUP transaction
                 BothEP0OutUOWNsSet = TRUE; //Indicator flag used in USBCtrlTrfOutHandler()
-#endif
+                #endif
 
                 //This EP0 OUT buffer receives the 0-byte OUT status stage packet.
                 pBDTEntryEP0OutNext->CNT = USB_EP0_BUFF_SIZE;
@@ -1695,19 +1700,19 @@ static void USBStdGetDscHandler(void)
         switch (SetupPkt.bDescriptorType)
         {
         case USB_DESCRIPTOR_DEVICE:
-#if !defined(USB_USER_DEVICE_DESCRIPTOR)
+            #if !defined(USB_USER_DEVICE_DESCRIPTOR)
             inPipes[0].pSrc.bRom = (ROM BYTE*) & device_dsc;
-#else
+            #else
             inPipes[0].pSrc.bRom = (ROM BYTE*) USB_USER_DEVICE_DESCRIPTOR;
-#endif
+            #endif
             inPipes[0].wCount.Val = sizeof (device_dsc);
             break;
         case USB_DESCRIPTOR_CONFIGURATION:
-#if !defined(USB_USER_CONFIG_DESCRIPTOR)
+            #if !defined(USB_USER_CONFIG_DESCRIPTOR)
             inPipes[0].pSrc.bRom = *(USB_CD_Ptr + SetupPkt.bDscIndex);
-#else
+            #else
             inPipes[0].pSrc.bRom = *(USB_USER_CONFIG_DESCRIPTOR + SetupPkt.bDscIndex);
-#endif
+            #endif
 
             //This must be loaded using byte addressing.  The source pointer
             //  may not be word aligned for the 16 or 32 bit machines resulting
@@ -2267,25 +2272,25 @@ static void USBConfigureEndpoint(BYTE EPNum, BYTE direction)
         pBDTEntryIn[EPNum] = handle;
     }
 
-#if (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)
+    #if (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG)
     handle->STAT.DTS = 0;
     (handle + 1)->STAT.DTS = 1;
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
+    #elif (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
     //Set DTS to one because the first thing we will do
     //when transmitting is toggle the bit
     handle->STAT.DTS = 1;
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
+    #elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
     if (EPNum != 0)
     {
         handle->STAT.DTS = 1;
     }
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)    
+    #elif (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)    
     if (EPNum != 0)
     {
         handle->STAT.DTS = 0;
         (handle + 1)->STAT.DTS = 1;
     }
-#endif
+    #endif
 }
 
 /*****************************************************************************************************************
@@ -2354,11 +2359,11 @@ void USBEnableEndpoint(BYTE ep, BYTE options)
     //Update the relevant UEPx register to actually enable the endpoint with
     //the specified options (ex: handshaking enabled, control transfers allowed,
     //etc.)
-#if defined(__C32__)
+    #if defined(__C32__)
     p = (unsigned char*) (&U1EP0 + (4 * ep));
-#else
+    #else
     p = (unsigned char*) (&U1EP0 + ep);
-#endif
+    #endif
     *p = options;
 }
 
@@ -2403,12 +2408,12 @@ void USBStallEndpoint(BYTE ep, BYTE dir)
 
         //If the device is in FULL or ALL_BUT_EP0 ping pong modes
         //then stall that entry as well
-#if (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG) || \
+        #if (USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG) || \
             (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0)
 
         p = (BDT_ENTRY*) (&BDT[EP(ep, dir, 1)]);
         p->STAT.Val |= _BSTALL | _USIE;
-#endif
+        #endif
     }
 }
 
@@ -2509,14 +2514,14 @@ USB_HANDLE USBTransferOnePacket(BYTE ep, BYTE dir, BYTE* data, BYTE len)
     }
 
     //Toggle the DTS bit if required
-#if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
+    #if (USB_PING_PONG_MODE == USB_PING_PONG__NO_PING_PONG)
     handle->STAT.Val ^= _DTSMASK;
-#elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
+    #elif (USB_PING_PONG_MODE == USB_PING_PONG__EP0_OUT_ONLY)
     if (ep != 0)
     {
         handle->STAT.Val ^= _DTSMASK;
     }
-#endif
+    #endif
 
     //Set the data pointer, data length, and enable the endpoint
     handle->ADR = ConvertToPhysicalAddress(data);
@@ -2571,7 +2576,7 @@ void USBCancelIO(BYTE endpoint)
         pBDTEntryIn[endpoint]->Val ^= _DTSMASK; //Toggle the DTS bit.  This packet didn't get sent yet, and the next call to USBTransferOnePacket() will re-toggle the DTS bit back to the original (correct) value.
 
         //Need to do additional handling if ping-pong buffering is being used
-#if ((USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG) || (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0))
+        #if ((USB_PING_PONG_MODE == USB_PING_PONG__FULL_PING_PONG) || (USB_PING_PONG_MODE == USB_PING_PONG__ALL_BUT_EP0))
         //Point to the next buffer for ping pong purposes.  UOWN getting cleared
         //(either due to SIE clearing it after a transaction, or the firmware
         //clearing it) makes hardware ping pong pointer advance.
@@ -2579,7 +2584,7 @@ void USBCancelIO(BYTE endpoint)
 
         pBDTEntryIn[endpoint]->STAT.Val &= _DTSMASK;
         pBDTEntryIn[endpoint]->STAT.Val ^= _DTSMASK;
-#endif
+        #endif
     }
 }
 
@@ -2608,9 +2613,9 @@ void USBDeviceDetach(void)
     //If the interrupt option is selected then the customer is required
     //  to notify the stack when the device is attached or removed from the
     //  bus by calling the USBDeviceAttach() and USBDeviceDetach() functions.
-#ifdef USB_SUPPORT_OTG
+    #ifdef USB_SUPPORT_OTG
     if (USB_BUS_SENSE != 1)
-#endif
+    #endif
     {
         // Disable module & detach from bus
         U1CON = 0;
@@ -2621,7 +2626,7 @@ void USBDeviceDetach(void)
         //Move to the detached state
         USBDeviceState = DETACHED_STATE;
 
-#ifdef  USB_SUPPORT_OTG    
+        #ifdef  USB_SUPPORT_OTG    
         //Disable D+ Pullup
         U1OTGCONbits.DPPULUP = 0;
 
@@ -2640,17 +2645,17 @@ void USBDeviceDetach(void)
             //Clear ID Interrupt Flag
             USBClearInterruptFlag(USBIDIFReg, USBIDIFBitNum);
         }
-#endif
+        #endif
 
-#ifdef __C30__
+        #ifdef __C30__
         //USBClearInterruptFlag(U1OTGIR, 3);
-#endif
+        #endif
         //return so that we don't go through the rest of
         //the state machine
         return;
     }
 
-#ifdef USB_SUPPORT_OTG
+    #ifdef USB_SUPPORT_OTG
         //If Session Is Started Then
     else
     {
@@ -2667,7 +2672,7 @@ void USBDeviceDetach(void)
             UART2PrintString("\r\n***** USB OTG B Event - Session Started  *****\r\n");
         }
     }
-#endif
+    #endif
 }
 #endif  //#if defined(USB_INTERRUPT)
 /**************************************************************************
@@ -2736,11 +2741,12 @@ void USBDeviceAttach(void)
             //moved to the attached state
             USBDeviceState = ATTACHED_STATE;
 
-#ifdef  USB_SUPPORT_OTG
+            #ifdef  USB_SUPPORT_OTG
             U1OTGCON = USB_OTG_DPLUS_ENABLE | USB_OTG_ENABLE;
-#endif
+            #endif
         }
     }
 }
 #endif  //#if defined(USB_INTERRUPT)
+
 /** EOF USBDevice.c *****************************************************/

@@ -55,9 +55,16 @@ if (len(sys.argv) > 1):
             codesize = codesize + byte_count
 
             # address calculation
-            if (address > old_address) : # and (address < 0x0C00):
+            if (address > old_address) and (address < 0x9FC00000):
                 max_address = address + byte_count
                 old_address = address
+
+            # display
+            print "0x%08X" % address,
+            for i in range(byte_count):
+                print "%02X" % int(line[9 + (2 * i) : 11 + (2 * i)], 16),
+            print
+
 
     fichier.close()
 
@@ -65,8 +72,10 @@ if (len(sys.argv) > 1):
 
     print "code size is : %d bytes (0x%X)" % (codesize, codesize)
     print "max. address : 0x%X" % max_address
-    print "user app. address : 0x%X" % (page1024 * 1024)
-    #print "still %d bytes to gain !" % ( max_address - ( ( page1024 - 1 ) * 1024 ) )
+    print "Bootloader's code : edit src/hardware.h and make sure you have :"
+    print "#define ProgramMemStart 0x%X" % (page1024 * 1024)
+    print "IDE : edit p32/lkr/YOUR_PROC/procdefs.ld and make sure you have :"
+    print "kseg0_program_mem    (rx)  : ORIGIN = 0x%X" % (page1024 * 1024)
     #print
 else:
     print "No file to proceed"

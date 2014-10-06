@@ -20,7 +20,9 @@ PROVIDE(_min_heap_size = 0) ;
 
 SECTIONS
 {
-  /* Boot Sections */
+  /*********************************************************************
+   *** Boot Sections
+   ********************************************************************/
 
   .reset _RESET_ADDR :
   {
@@ -32,7 +34,42 @@ SECTIONS
   {
     KEEP(*(.bev_handler))
   } > kseg1_boot_mem
+  */
+  
+  .startup ORIGIN(kseg0_boot_mem) :
+  {
+    KEEP(*(.startup))
+  } > kseg0_boot_mem
 
+  /*********************************************************************
+   *** Config. Sections
+   ********************************************************************/
+
+  .config_BFC00BF0 :
+  {
+    KEEP(*(.config_BFC00BF0))
+  } > config3
+
+  .config_BFC00BF4 :
+  {
+    KEEP(*(.config_BFC00BF4))
+  } > config2
+  
+  .config_BFC00BF8 :
+  {
+    KEEP(*(.config_BFC00BF8))
+  } > config1
+  
+  .config_BFC00BFC :
+  {
+    KEEP(*(.config_BFC00BFC))
+  } > config0
+
+  /*********************************************************************
+   *** Debug Sections
+   ********************************************************************/
+
+  /*
   .dbg_excpt _DBG_EXCPT_ADDR (NOLOAD) :
   {
     . += (DEFINED (_DEBUGGER) ? 0x8 : 0x0);
@@ -42,12 +79,16 @@ SECTIONS
   {
     . += (DEFINED (_DEBUGGER) ? 0xFF0 : 0x0);
   } > debug_exec_mem
-  */
   
   .app_excpt _GEN_EXCPT_ADDR :
   {
     KEEP(*(.gen_handler))
   } > exception_mem
+  */
+
+  /*********************************************************************
+   *** Vector Sections
+   ********************************************************************/
 
   .vector_0 _ebase_address + 0x200 :
   {
@@ -430,11 +471,6 @@ SECTIONS
   } > exception_mem
   
   ASSERT (_vector_spacing == 0 || SIZEOF(.vector_63) <= (_vector_spacing << 5), "function at exception vector 63 too large")
-
-  .startup ORIGIN(kseg0_boot_mem) :
-  {
-    KEEP(*(.startup))
-  } > kseg0_boot_mem
   
   /*********************************************************************
    * Code Sections

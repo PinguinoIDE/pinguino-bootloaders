@@ -40,7 +40,7 @@ Description:
     C:\\Microchip Solutions\\My Demo Application 
 
 ******************************************************************************/
-//DOM-IGNORE-BEGIN
+
 /******************************************************************************
  FileName:     	usb_device.h
  Dependencies:	See INCLUDES section
@@ -102,7 +102,6 @@ Description:
 
 #ifndef USBDEVICE_H
 #define USBDEVICE_H
-//DOM-IGNORE-END
 
 /** DEFINITIONS ****************************************************/
 
@@ -132,38 +131,31 @@ typedef enum
     /* Detached is the state in which the device is not attached to the bus.  When
     in the detached state a device should not have any pull-ups attached to either
     the D+ or D- line.  */
-    DETACHED_STATE 
-    /*DOM-IGNORE-BEGIN*/    = 0x00                         /*DOM-IGNORE-END*/,
+    DETACHED_STATE = 0x00                         ,
     /* Attached is the state in which the device is attached ot the bus but the
     hub/port that it is attached to is not yet configured. */
-    ATTACHED_STATE
-    /*DOM-IGNORE-BEGIN*/    = 0x01                         /*DOM-IGNORE-END*/,
+    ATTACHED_STATE = 0x01                         ,
     /* Powered is the state in which the device is attached to the bus and the 
     hub/port that it is attached to is configured. */
-    POWERED_STATE
-    /*DOM-IGNORE-BEGIN*/    = 0x02                         /*DOM-IGNORE-END*/,
+    POWERED_STATE  = 0x02                         ,
     /* Default state is the state after the device receives a RESET command from
     the host. */
-    DEFAULT_STATE
-    /*DOM-IGNORE-BEGIN*/    = 0x04                         /*DOM-IGNORE-END*/,
+    DEFAULT_STATE  = 0x04                         ,
     /* Address pending state is not an official state of the USB defined states.
     This state is internally used to indicate that the device has received a 
     SET_ADDRESS command but has not received the STATUS stage of the transfer yet.
     The device is should not switch addresses until after the STATUS stage is
     complete.  */
-    ADR_PENDING_STATE
-    /*DOM-IGNORE-BEGIN*/    = 0x08                         /*DOM-IGNORE-END*/,
+    ADR_PENDING_STATE = 0x08                         ,
     /* Address is the state in which the device has its own specific address on the
     bus. */
-    ADDRESS_STATE
-    /*DOM-IGNORE-BEGIN*/    = 0x10                         /*DOM-IGNORE-END*/,
+    ADDRESS_STATE = 0x10                         ,
     /* Configured is the state where the device has been fully enumerated and is
     operating on the bus.  The device is now allowed to excute its application
     specific tasks.  It is also allowed to increase its current consumption to the
     value specified in the configuration descriptor of the current configuration.
     */
-    CONFIGURED_STATE
-    /*DOM-IGNORE-BEGIN*/    = 0x20                        /*DOM-IGNORE-END*/
+    CONFIGURED_STATE = 0x20                        
 } USB_DEVICE_STATE;
 
 
@@ -171,8 +163,7 @@ typedef enum
 typedef enum
 {
     // Notification that a SET_CONFIGURATION() command was received (device)
-    EVENT_CONFIGURED
-    /*DOM-IGNORE-BEGIN*/    = EVENT_DEVICE_STACK_BASE        /*DOM-IGNORE-END*/,
+    EVENT_CONFIGURED = EVENT_DEVICE_STACK_BASE        ,
 
     // A SET_DESCRIPTOR request was received (device)
     EVENT_SET_DESCRIPTOR,
@@ -368,9 +359,9 @@ void USBDeviceInit(void);
                                                                                                                                                                                                                                                                                                                        
   *******************************************************************/
 BOOL USBGetRemoteWakeupStatus(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBGetRemoteWakeupStatus() RemoteWakeup
-/*DOM-IGNORE-END*/
+
 
 /***************************************************************************
   Function:
@@ -425,9 +416,9 @@ BOOL USBGetRemoteWakeupStatus(void);
     None                                                                    
   ***************************************************************************/
 USB_DEVICE_STATE USBGetDeviceState(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBGetDeviceState() USBDeviceState
-/*DOM-IGNORE-END*/
+
 
 /***************************************************************************
   Function:
@@ -558,9 +549,9 @@ void USBEnableEndpoint(BYTE ep, BYTE options);
     None                                                                                                          
   *****************************************************************************/
 BOOL USBIsDeviceSuspended(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBIsDeviceSuspended() USBSuspendControl 
-/*DOM-IGNORE-END*/
+
 
 
 /*******************************************************************************
@@ -601,9 +592,9 @@ BOOL USBIsDeviceSuspended(void);
     sure USBDeviceTasks() has executed recently (if using USB polling mode).
   *****************************************************************************/
 BOOL USBIsBusSuspended(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBIsBusSuspended() USBBusIsSuspended
-/*DOM-IGNORE-END*/
+
 
 /*******************************************************************************
   Function:
@@ -627,9 +618,9 @@ BOOL USBIsBusSuspended(void);
     reattached to the bus.                                                                                                          
   *****************************************************************************/
 void USBSoftDetach(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBSoftDetach()  U1CON = 0; U1IE = 0; USBDeviceState = DETACHED_STATE;
-/*DOM-IGNORE-END*/
+
 
 /*************************************************************************
   Function:
@@ -756,9 +747,9 @@ USB_HANDLE USBTransferOnePacket(BYTE ep,BYTE dir,BYTE* data,BYTE len);
     None                                                                  
   *************************************************************************/
 BOOL USBHandleBusy(USB_HANDLE handle);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBHandleBusy(handle) (handle==0?0:((volatile BDT_ENTRY*)handle)->STAT.UOWN)
-/*DOM-IGNORE-END*/
+
 
 /********************************************************************
     Function:
@@ -790,9 +781,9 @@ BOOL USBHandleBusy(USB_HANDLE handle);
  
  *******************************************************************/
 WORD USBHandleGetLength(USB_HANDLE handle);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBHandleGetLength(handle) (((volatile BDT_ENTRY*)handle)->CNT)
-/*DOM-IGNORE-END*/
+
 
 /********************************************************************
     Function:
@@ -822,9 +813,9 @@ WORD USBHandleGetLength(USB_HANDLE handle);
  
  *******************************************************************/
 WORD USBHandleGetAddr(USB_HANDLE);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBHandleGetAddr(handle) ConvertToVirtualAddress((((volatile BDT_ENTRY*)handle)->ADR))
-/*DOM-IGNORE-END*/
+
 
 /********************************************************************
     Function:
@@ -855,9 +846,9 @@ WORD USBHandleGetAddr(USB_HANDLE);
  
  *******************************************************************/
 void USBEP0Transmit(BYTE options);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBEP0Transmit(options) inPipes[0].info.Val = options | USB_EP0_BUSY
-/*DOM-IGNORE-END*/
+
 
 /*************************************************************************
   Function:
@@ -883,13 +874,13 @@ void USBEP0Transmit(BYTE options);
     None                                                                  
   *************************************************************************/
 void USBEP0SendRAMPtr(BYTE* src, WORD size, BYTE Options);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBEP0SendRAMPtr(src,size,options)  {\
             inPipes[0].pSrc.bRam = src;\
             inPipes[0].wCount.Val = size;\
             inPipes[0].info.Val = options | USB_EP0_BUSY | USB_EP0_RAM;\
             }
-/*DOM-IGNORE-END*/
+
 
 /**************************************************************************
   Function:
@@ -915,13 +906,13 @@ void USBEP0SendRAMPtr(BYTE* src, WORD size, BYTE Options);
     None                                                                   
   **************************************************************************/
 void USBEP0SendROMPtr(BYTE* src, WORD size, BYTE Options);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBEP0SendROMPtr(src,size,options)  {\
             inPipes[0].pSrc.bRom = src;\
             inPipes[0].wCount.Val = size;\
             inPipes[0].info.Val = options | USB_EP0_BUSY | USB_EP0_ROM;\
             }
-/*DOM-IGNORE-END*/
+
 
 /***************************************************************************
   Function:
@@ -943,9 +934,9 @@ void USBEP0SendROMPtr(BYTE* src, WORD size, BYTE Options);
     None                                                                    
   ***************************************************************************/
 void USBEP0Receive(BYTE* dest, WORD size, void (*function));
-/*DOM-IGNORE-BEGIN*/
+
 #define USBEP0Receive(dest,size,function)  {outPipes[0].pDst.bRam = dest;outPipes[0].wCount.Val = size;outPipes[0].pFunc = function;outPipes[0].info.bits.busy = 1; }
-/*DOM-IGNORE-END*/
+
 
 /********************************************************************
     Function:
@@ -971,9 +962,9 @@ void USBEP0Receive(BYTE* dest, WORD size, void (*function));
   
  *******************************************************************/
 USB_HANDLE USBTxOnePacket(BYTE ep, BYTE* data, WORD len);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBTxOnePacket(ep,data,len)     USBTransferOnePacket(ep,IN_TO_HOST,data,len)
-/*DOM-IGNORE-END*/
+
 
 /********************************************************************
     Function:
@@ -998,9 +989,9 @@ USB_HANDLE USBTxOnePacket(BYTE ep, BYTE* data, WORD len);
   
  *******************************************************************/
 USB_HANDLE USBRxOnePacket(BYTE ep, BYTE* data, WORD len);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBRxOnePacket(ep,data,len)      USBTransferOnePacket(ep,OUT_FROM_HOST,data,len)
-/*DOM-IGNORE-END*/
+
 
 /********************************************************************
     Function:
@@ -1053,11 +1044,11 @@ void USBStallEndpoint(BYTE ep, BYTE dir);
   **************************************************************************/
 void USBDeviceDetach(void);
 
-/*DOM-IGNORE-BEGIN*/
+
 #if !defined(USB_INTERRUPT)
     #define USBDeviceDetach() 
 #endif
-/*DOM-IGNORE-END*/
+
 
 /**************************************************************************
     Function:
@@ -1095,11 +1086,11 @@ void USBDeviceDetach(void);
 ****************************************************************************/
 void USBDeviceAttach(void);
 
-/*DOM-IGNORE-BEGIN*/
+
 #if !defined(USB_INTERRUPT)
     #define USBDeviceAttach() 
 #endif
-/*DOM-IGNORE-END*/
+
 
 /*******************************************************************************
   Function:
@@ -1263,9 +1254,9 @@ void USBCtrlEPAllowStatusStage(void);
   *****************************************************************************/
 void USBDeferStatusStage(void);
 extern volatile BOOL USBDeferStatusStagePacket;
-/*DOM-IGNORE-BEGIN*/
+
 #define USBDeferStatusStage()   {USBDeferStatusStagePacket = TRUE;}
-/*DOM-IGNORE-END*/
+
 
 
 /*******************************************************************************
@@ -1372,9 +1363,9 @@ void USBCtrlEPAllowDataStage(void);
   *****************************************************************************/
 void USBDeferOUTDataStage(void);
 extern volatile BOOL USBDeferOUTDataStagePackets;
-/*DOM-IGNORE-BEGIN*/
+
 #define USBDeferOUTDataStage()   {USBDeferOUTDataStagePackets = TRUE; outPipes[0].info.bits.busy = 1;}
-/*DOM-IGNORE-END*/
+
 
 
 
@@ -1424,9 +1415,9 @@ extern volatile BOOL USBDeferOUTDataStagePackets;
   Remarks: 
   *****************************************************************************/
 BOOL USBOUTDataStageDeferred(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBOUTDataStageDeferred() USBDeferOUTDataStagePackets
-/*DOM-IGNORE-END*/
+
 
 /*******************************************************************************
   Function: void USBDeferINDataStage(void);
@@ -1508,9 +1499,9 @@ BOOL USBOUTDataStageDeferred(void);
   *****************************************************************************/
 void USBDeferINDataStage(void);
 extern volatile BOOL USBDeferINDataStagePackets;
-/*DOM-IGNORE-BEGIN*/
+
 #define USBDeferINDataStage()   {USBDeferINDataStagePackets = TRUE; inPipes[0].info.bits.busy = 1;}
-/*DOM-IGNORE-END*/
+
 
 
 
@@ -1561,9 +1552,9 @@ extern volatile BOOL USBDeferINDataStagePackets;
   Remarks: 
   *****************************************************************************/
 BOOL USBINDataStageDeferred(void);
-/*DOM-IGNORE-BEGIN*/
+
 #define USBINDataStageDeferred() USBDeferINDataStagePackets
-/*DOM-IGNORE-END*/
+
 
 
 

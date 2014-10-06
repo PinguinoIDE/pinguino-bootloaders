@@ -9,10 +9,28 @@
 *******************************************************************************/
 
 #include <p32xxxx.h>
-#include <GenericTypeDefs.h>
+#include "GenericTypeDefs.h"
 #include "flash.h"
+#include "hardware.h"
 
-#define FlashIsError()    (NVMCON & (_NVMCON_WRERR_MASK | _NVMCON_LVDERR_MASK))
+/*
+ * Microsecond delay routine for MIPS processor.
+ * mips_read_c0_register (C0_COUNT, 0) = _CP0_GET_COUNT()
+ */
+static void delayus (unsigned usec)
+{
+    unsigned now = _CP0_GET_COUNT();
+    unsigned final = now + usec * FCPU_MHZ;
+
+    for (;;)
+    {
+        now = _CP0_GET_COUNT();
+
+        /* This comparison is valid only when using a signed type. */
+        if ((int) (now - final) >= 0)
+            break;
+    }
+}
 
 /********************************************************************
 * Function: 	FlashOperation()
@@ -32,62 +50,45 @@
 * Note:		 	None.
 ********************************************************************/
 
-UINT FlashOperation(UINT nvmop)
-//UINT __attribute__((nomips16)) FlashOperation(UINT nvmop)
+unsigned int FlashOperation(unsigned int operation)
 {
-    //unsigned long t0 = _CP0_GET_COUNT();
-    static WORD delay_count = 500;
-    #if 0
-    int	int_status;
-    int	susp;
-    #endif
+    unsigned int status;
     
-    // Disable DMA & Disable Interrupts
-    #if 0
-    #ifdef _DMAC
-    int_status = INTDisableInterrupts();
-    susp = DmaSuspend();
-    #else
-    int_status = INTDisableInterrupts();
-    #endif	// _DMAC
-    #endif
+    // Suspend or Disable all Interrupts
+    asm volatile ("di %0" : "=r" (status));
 
-    //asm("di"); // Disable all interrupts
+    // Enable Flash Write/Erase Operations and Select
+    // Flash operation to perform
+    // operation bits are writable when WREN = 0 (bit 14).
+    NVMCON = 0x4000 | operation;
 
-    // Enable Flash Write/Erase Operations
-    NVMCON = NVMCON_WREN | nvmop;
+    // Data sheet prescribes 6us delay for LVD to become stable.
+    // To be on the safer side, we shall set 7us delay.
+    delayus(7);
 
-    // Wait at least 6 us = 6000 ns for LVD start-up
-    // Assume we're running at max frequency (80 MHz) so we're always safe
-    // 1 cycle = 1/80MHz = 12.5 ns so 6us is about 500 cycles
-    //while (_CP0_GET_COUNT() - t0 < (80/2)*6);
+    // Write Keys
+    NVMKEY = 0xAA996655;
+    NVMKEY = 0x556699AA;
 
-    while (delay_count--);
+    // Start the operation (WR=1)
+    NVMCONSET = 0x8000;
 
-    NVMKEY 	= 0xAA996655;
-    NVMKEY 	= 0x556699AA;
-    NVMCONSET 	= NVMCON_WR;
+    // Wait for operation to complete (WR=0)
+    while (NVMCON & 0x8000);
 
-    // Wait for WR bit to clear
-    while(NVMCON & NVMCON_WR);
-    
-    // Disable Flash Write/Erase operations
-    NVMCONCLR = NVMCON_WREN;  
+    // Restore Interrupts
+    if (status & 0x00000001)
+    {
+        asm volatile ("ei");
+    }
+    else
+    {
+        asm volatile ("di");
+    }
 
-    //asm("ei"); // Enable all interrupts
-
-    // Enable DMA & Enable Interrupts
-    #if 0
-    #ifdef _DMAC
-    DmaResume(susp);
-    INTRestoreInterrupts(int_status);
-    #else
-    INTRestoreInterrupts(int_status);
-    #endif // _DMAC
-    #endif
-
-    // Return Error Status
-    return(FlashIsError());
+    // Return NVMERR and LVDERR Error Status Bits
+    //#define FlashIsError()    (NVMCON & (_NVMCON_WRERR_MASK | _NVMCON_LVDERR_MASK))
+    return (NVMCON & 0x3000); // bits 12 and 13
 }
 
 /*********************************************************************
@@ -106,12 +107,28 @@ UINT FlashOperation(UINT nvmop)
  *
  * Example:         FlashErasePage((void*) 0xBD000000)
  ********************************************************************/
-UINT FlashErasePage(void* address)
-{
-    UINT res;
 
-    // Convert Address to Physical Address
-    NVMADDR = KVA_TO_PA((unsigned int)address);
+#if 0
+unsigned int FlashEraseAll(void)
+{
+    unsigned int res;
+    
+    // Unlock and Erase Program Flash
+    res = FlashOperation(NVMOP_PFM_ERASE);
+
+    // Return Result
+    return res;
+}
+#endif
+
+unsigned int FlashErasePage(void* address)
+{
+    unsigned int res;
+
+    // Convert Virtual Address to Physical Address
+    // as NVMADDR only accept Physical Address
+    //NVMADDR = KVA_TO_PA((unsigned int)address);
+    NVMADDR = (unsigned long)address & 0x1FFFFFFF;
 
     // Unlock and Erase Page
     res = FlashOperation(NVMOP_PAGE_ERASE);
@@ -134,13 +151,18 @@ UINT FlashErasePage(void* address)
  *
  * Output:          '0' if operation completed successfully.
  *
- * Example:         NVMWriteWord((void*) 0xBD000000, 0x12345678)
+ * Example:         FlashWriteWord((DWORD*) Address.Val, (unsigned int) ProgrammingBuffer[i++]);
+ *                  NVMWriteWord((void*) 0xBD000000, 0x12345678)
  ********************************************************************/
-UINT FlashWriteWord(void* address, UINT data)
-{
-    UINT res;
 
-    NVMADDR = KVA_TO_PA((unsigned int)address);
+unsigned int FlashWriteWord(void* address, unsigned int data)
+{
+    unsigned int res;
+
+    // Convert Virtual Address to Physical Address
+    // as NVMADDR only accept Physical Address
+    //NVMADDR = KVA_TO_PA((unsigned int)address);
+    NVMADDR = (unsigned long)address & 0x1FFFFFFF;
 
     // Load data into NVMDATA register
     NVMDATA = data;
@@ -148,6 +170,7 @@ UINT FlashWriteWord(void* address, UINT data)
     // Unlock and Write Word
     res = FlashOperation(NVMOP_WORD_PGM);
 
+    // Return WRERR state.
     return res;
 }
 
@@ -170,7 +193,7 @@ UINT FlashWriteWord(void* address, UINT data)
  ********************************************************************/
 
 #if 0
-UINT FlashWriteRow(void* address, void* data)
+unsigned int FlashWriteRow(void* address, void* data)
 {
     unsigned int res;
 
@@ -201,7 +224,7 @@ UINT FlashWriteRow(void* address, void* data)
  * Example:			NMVClearError()
  ********************************************************************/
 #if 0
-UINT FlashClearError(void)
+unsigned int FlashClearError(void)
 {
     unsigned int res;
 
@@ -210,4 +233,3 @@ UINT FlashClearError(void)
     return res;
 }
 #endif
-/***********************End of File*************************************************************/

@@ -4,9 +4,10 @@
 #	32-bit USB HID Bootloader                                          #
 #	Author : Régis Blanchot <rblanchot@gmail.com>                      #
 #                                                                      #
-#	Usage ex. : make --makefile=Makefile PROC=32MX250F128B [DEBUG]     #
+#	Usage ex. : make --makefile=Makefile PROC=32MX250F128B [DEBUG=yes] #
 #                                                                      #
 #	Supported CPU : 32MX250F128B                                       #
+#	                32MX270F256B                                       #
 #                                                                      #
 #	This file is part of Pinguino Project (http://www.pinguino.cc)     #
 #	Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
@@ -14,8 +15,8 @@
 ########################################################################
 
 # Where to find the gcc-mips-elf toolchain
-BINDIR		= /dvpt/gcc/mips/linux64/p32/bin
-#BINDIR		= /usr/bin
+#BINDIR		= /dvpt/gcc/mips/linux64/p32/bin
+BINDIR		= /usr/bin
 
 # ----------------------------------------------------------------------
 # Version (cf. changelog.txt)
@@ -29,7 +30,7 @@ MIN_VER		= 1
 # ----------------------------------------------------------------------
 
 ifndef PROC
-	PROC	= 32MX250F128B
+	PROC	= 32MX270F256B
 	DEFAULT = YES
 endif 
 
@@ -85,12 +86,12 @@ END=$(TERM)
 # Directories
 # ----------------------------------------------------------------------
 
-HOME		= $(shell pwd)
-SRCDIR		= $(HOME)/src
-HEXDIR		= $(HOME)/hex
-INCDIR		= $(HOME)/src
-LKRDIR		= $(HOME)/lkr
-OBJDIR		= $(HOME)/obj/non-free
+ORIGIN		= $(shell pwd)
+SRCDIR		= $(ORIGIN)/src
+HEXDIR		= $(ORIGIN)/hex
+INCDIR		= $(ORIGIN)/src
+LKRDIR		= $(ORIGIN)/lkr
+OBJDIR		= $(ORIGIN)/obj/non-free
 
 INCLUDEDIRS	= -I$(LKRDIR) \
 			  -I$(OBJDIR) \
@@ -127,21 +128,22 @@ MV			= mv
 
 CFLAGS		= $(INCLUDEDIRS)
 
-LDFLAGS		= $(LIBDIRS) $(LIBS)
+LDFLAGS		= --verbose -G9000 $(LIBDIRS) $(LIBS)
 
 # -Os option leads to errors when non-zero initialized static variable are defined
+# -minterlink-mips16
 # -msoft-float
+
 ELF_FLAGS	= -EL -march=24kc \
 			  -O3 \
 			  -ffunction-sections \
 			  -fdata-sections \
-			  -minterlink-mips16 \
 			  -Wl,--gc-sections \
 			  -Wl,-L$(OBJDIR) \
 			  -Wl,-Map=output.map \
 			  -D __PIC32MX__ \
 			  -D __$(CPU)__ \
-			  -T$(LKRDIR)/$(CPU).ld \
+			  -T$(LKRDIR)/$(CPU)/procdefs.ld \
 			  -T$(LKRDIR)/elf32pic32mx.x
 
 #-----------------------------------------------------------------------
@@ -156,8 +158,8 @@ ELF_FLAGS	= -EL -march=24kc \
 #
 #-----------------------------------------------------------------------
 
-#all: start clean copy $(PRJ).elf convert correct size
-all: start clean copy $(PRJ).elf convert size
+all: start clean copy $(PRJ).elf convert correct size
+#all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert correct
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf
@@ -166,16 +168,16 @@ all: start clean copy $(PRJ).elf convert size
 start:
 ifeq ($(DEFAULT), YES)
 	@echo "$(WARNING)No Processor has been defined.$(END)"
-	@echo "$(WARNING)Usage ex. : make --makefile=Makefile PROC=32MX250F128B [DEBUG=yes]$(END)"
-	@echo "$(WARNING)Using 32MX250F128B as default processor$(END)"
+	@echo "$(WARNING)Usage ex. : make --makefile=Makefile PROC=32MX270F256B [DEBUG=yes]$(END)"
+	@echo "$(WARNING)Using 32MX270F256B as default processor$(END)"
 endif
 	@echo "$(NORMAL)Compiling $(PRJ)$(END)"
 
 clean:
 	@echo "Cleaning all build files"
 	@$(RM) $(OBJDIR)/processor.o	> /dev/null
-	@$(RM) $(HOME)/obj/*.o			> /dev/null
-	@$(RM) $(HOME)/obj/*.S			> /dev/null
+	@$(RM) $(ORIGIN)/obj/*.o		> /dev/null
+	@$(RM) $(ORIGIN)/obj/*.S		> /dev/null
 	@$(RM) $(HEXDIR)/*.elf			> /dev/null
 	@$(RM) $(HEXDIR)/*.hex			> /dev/null
 
@@ -185,7 +187,7 @@ copy:
 
 obj/%.o: src/%.c
 	@echo "Compiling $<"
-	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -mips16 -c $< -o $@
+	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -c $< -o $@
 ifdef DEBUG
 	@echo "Disassembling all files"
 	@$(OBJDUMP) -d -M intel -S $@ > obj/$*.S
@@ -195,7 +197,7 @@ endif
 $(PRJ).elf: $(OBJS)
 	@echo "Linking all the modules together"
 	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex/$@ $^ \
-		$(OBJDIR)/crt0.S \
+		$(LKRDIR)/crt0.S \
 		$(OBJDIR)/processor.o \
 		$(INCDIR)/non-free/p32xxxx.h \
 		$(LIBS)
@@ -204,10 +206,10 @@ convert:
 	@echo "Converting elf to hex"
 	@$(OBJCOPY) -O ihex $(HEXDIR)/$(PRJ).elf $(HEXDIR)/$(PRJ).hex
 
+# @grep --binary --invert-match $(BADRECORD) $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
 correct:
 	@echo "Fixing bad record"
 	@sed 's/$(BADRECORD)/$(NEWRECORD)/g' $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
-	#@grep --binary --invert-match $(BADRECORD) $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
 	@$(MV) $(HEXDIR)/temp.hex $(HEXDIR)/$(PRJ).hex  
 
 size:
