@@ -14,16 +14,20 @@
 #                                                                      #
 ########################################################################
 
+_TEST_ENABLE_   = true
+_MIPS16_ENABLE_ = false
+
 # Where to find the gcc-mips-elf toolchain
-#BINDIR		= /dvpt/gcc/mips/linux64/p32/bin
+#BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
 BINDIR		= /usr/bin
 
 # ----------------------------------------------------------------------
-# Version (cf. changelog.txt)
+# Version (will override boot.h #define)
 # ----------------------------------------------------------------------
 
 MAJ_VER		= 0
-MIN_VER		= 1
+MIN_VER		= 0
+DOT_VER		= 2
 
 # ----------------------------------------------------------------------
 # Project definition
@@ -36,7 +40,12 @@ endif
 
 CRYSTAL		= 8
 CPU			= $(PROC)
-PRJ			= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(CPU)_X$(CRYSTAL)MHz
+
+ifeq "$(_TEST_ENABLE_)" "true"
+	PRJ		= Test
+else
+	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(CPU)_X$(CRYSTAL)MHz
+endif
 
 # ----------------------------------------------------------------------
 # Unsupported record in hex file / Jean-pierre Mandon 2012
@@ -58,12 +67,8 @@ FAMILY2		= $(findstring 32MX2, $(PROC))
 FAMILY		= $(FAMILY1)$(FAMILY2)
 
 ifneq (,$(filter $(FAMILY),32MX1 32MX2))
-	#LKRFILE	= p32mx1xxand2xx.ld
-	#BADRECORD   = '^:040000059D0040001A'
-	BADRECORD   = ':04000005BD001970B1'
-	NEWRECORD   = ':04000005BD001E001C'
+	BADRECORD   = '^:04000005BFC0000078'
 else
-	#LKRFILE	= p32mx3xxto7xx.ld
 	BADRECORD   = '^:040000059D006000FA'
 endif
 
@@ -87,9 +92,9 @@ END=$(TERM)
 # ----------------------------------------------------------------------
 
 ORIGIN		= $(shell pwd)
-SRCDIR		= $(ORIGIN)/src
+SRCDIR		= $(ORIGIN)
 HEXDIR		= $(ORIGIN)/hex
-INCDIR		= $(ORIGIN)/src
+INCDIR		= $(ORIGIN)
 LKRDIR		= $(ORIGIN)/lkr
 OBJDIR		= $(ORIGIN)/obj/non-free
 
@@ -99,16 +104,21 @@ INCLUDEDIRS	= -I$(LKRDIR) \
 			  -I$(INCDIR)/non-free
 
 #-lm -lgcc -lc
-LIBS		= -lm -lgcc -lc
-
+LIBS		=
 LIBDIRS		=
 
 # ----------------------------------------------------------------------
 # Files
 # ----------------------------------------------------------------------
 
-SRCS		= $(wildcard src/*.c)
-OBJS		= $(SRCS:src/%.c=obj/%.o)
+ifeq "$(_TEST_ENABLE_)" "true"
+	SRCS	= test.c
+else
+	ALLSRCS	= $(wildcard *.c)
+	SRCS	= $(filter-out test.c, $(ALLSRCS))
+endif
+
+OBJS		= $(SRCS:%.c=obj/%.o)
 
 # ----------------------------------------------------------------------
 # Commands
@@ -126,25 +136,43 @@ MV			= mv
 # Flags
 # ----------------------------------------------------------------------
 
-CFLAGS		= $(INCLUDEDIRS)
+ifeq "$(_MIPS16_ENABLE_)" "true"
+	# Generate MIPS16 code.
+	MIPS16_OPT=-mips16
+	# makes non-MIPS16 and MIPS16 code link-compatible.
+	MIPS16_INTER=-minterlink-mips16
+endif
 
-LDFLAGS		= --verbose -G9000 $(LIBDIRS) $(LIBS)
+CFLAGS		= -fdollars-in-identifiers $(INCLUDEDIRS)
+
+LDFLAGS		= $(LIBDIRS) $(LIBS)
+#LDFLAGS	   += -G0
+#--verbose
 
 # -Os option leads to errors when non-zero initialized static variable are defined
-# -minterlink-mips16
-# -msoft-float
+#			  -msoft-float \
+#			  -march=m4k \
+#			  -march=24kc \
 
-ELF_FLAGS	= -EL -march=24kc \
-			  -O3 \
+# PIC32 has a MIPS M4K core
+
+ELF_FLAGS	= -march=m4k \
+			  -EL -msoft-float -nostdlib -static \
+			  -Os $(MIPS16_INTER) \
 			  -ffunction-sections \
 			  -fdata-sections \
 			  -Wl,--gc-sections \
 			  -Wl,-L$(OBJDIR) \
 			  -Wl,-Map=output.map \
+			  -D __P32GCC__ \
 			  -D __PIC32MX__ \
 			  -D __$(CPU)__ \
-			  -T$(LKRDIR)/$(CPU)/procdefs.ld \
-			  -T$(LKRDIR)/elf32pic32mx.x
+			  -D USB_MAJOR_VER=$(MAJ_VER) \
+			  -D USB_MINOR_VER=$(MIN_VER) \
+			  -D USB_DOT_VER=$(DOT_VER) \
+			  -T$(LKRDIR)/$(CPU)/$(CPU).ld
+
+#			  -T$(LKRDIR)/elf32pic32mx.x
 
 #-----------------------------------------------------------------------
 # Rules
@@ -158,9 +186,8 @@ ELF_FLAGS	= -EL -march=24kc \
 #
 #-----------------------------------------------------------------------
 
-all: start clean copy $(PRJ).elf convert correct size
-#all: start clean copy $(PRJ).elf convert size
-#all: start clean copy $(PRJ).elf convert correct
+#all: start clean copy $(PRJ).elf convert correct size
+all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf
 #all: start
@@ -185,12 +212,12 @@ copy:
 	@echo "Adding $(CPU) SFR definition"
 	@$(CP) $(OBJDIR)/$(CPU).o $(OBJDIR)/processor.o
 
-obj/%.o: src/%.c
+obj/%.o: %.c
 	@echo "Compiling $<"
-	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -c $< -o $@
+	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) $(MIPS16_OPT) -c $< -o $@
 ifdef DEBUG
 	@echo "Disassembling all files"
-	@$(OBJDUMP) -d -M intel -S $@ > obj/$*.S
+	@$(OBJDUMP) -D -M intel -S $@ > obj/$*.S
 	cat obj/$*.S
 endif
 
@@ -199,23 +226,28 @@ $(PRJ).elf: $(OBJS)
 	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex/$@ $^ \
 		$(LKRDIR)/crt0.S \
 		$(OBJDIR)/processor.o \
-		$(INCDIR)/non-free/p32xxxx.h \
 		$(LIBS)
+
+#		$(INCDIR)/p32xxxx.h \
 
 convert:
 	@echo "Converting elf to hex"
 	@$(OBJCOPY) -O ihex $(HEXDIR)/$(PRJ).elf $(HEXDIR)/$(PRJ).hex
 
-# @grep --binary --invert-match $(BADRECORD) $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
+#@sed 's/$(BADRECORD)/$(NEWRECORD)/g' $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
+#@sed '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
 correct:
 	@echo "Fixing bad record"
-	@sed 's/$(BADRECORD)/$(NEWRECORD)/g' $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
-	@$(MV) $(HEXDIR)/temp.hex $(HEXDIR)/$(PRJ).hex  
+	@grep --binary --invert-match $(BADRECORD) $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
+	@rm -f $(HEXDIR)/$(PRJ).hex
+	@mv $(HEXDIR)/temp.hex $(HEXDIR)/$(PRJ).hex
 
 size:
-	@tools/codesize.py $(HEXDIR)/$(PRJ)
 ifdef DEBUG
+	@tools/codesize.py $(HEXDIR)/$(PRJ).hex DEBUG=yes
 	@$(SIZE) $(HEXDIR)/$(PRJ).hex
+else
+	@tools/codesize.py $(HEXDIR)/$(PRJ).hex
 endif
 
 burn:

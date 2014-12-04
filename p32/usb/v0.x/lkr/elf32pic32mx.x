@@ -522,6 +522,7 @@ SECTIONS
   
   .eh_frame_hdr : { *(.eh_frame_hdr) }
   .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) }
+
   .dbg_data (NOLOAD) :
   {
     . += (DEFINED (_DEBUGGER) ? 0x200 : 0x0);
@@ -534,9 +535,11 @@ SECTIONS
     KEEP (*(.gnu.linkonce.d.*personality*))
     *(.data1)
   } >kseg1_data_mem AT>kseg0_program_mem
+
   _data_image_begin = LOADADDR(.data) ;
   .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) }
   _gp = ALIGN(16) + 0x7FF0 ;
+
   .got   :
   {
      *(.got.plt) *(.got)
@@ -547,23 +550,28 @@ SECTIONS
    * can access them all, and initialized data all before uninitialized, so
    * we can shorten the on-disk segment size.
    */
+
   .sdata   :
   {
     _sdata_begin = . ;
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     _sdata_end = . ;
   } >kseg1_data_mem AT>kseg0_program_mem
+
   .lit8           :
   {
     *(.lit8)
   } >kseg1_data_mem AT>kseg0_program_mem
+
   .lit4           :
   {
     *(.lit4)
   } >kseg1_data_mem AT>kseg0_program_mem
+
   . = ALIGN (4) ;
   _data_end = . ;
   _bss_begin = . ;
+
   .sbss   :
   {
     _sbss_begin = . ;
@@ -572,6 +580,7 @@ SECTIONS
     *(.scommon)
     _sbss_end = . ;
   } >kseg1_data_mem
+
   .bss   :
   {
     *(.dynbss)
@@ -585,15 +594,18 @@ SECTIONS
      */
     . = ALIGN(32 / 8) ;
   } >kseg1_data_mem
+
   . = ALIGN(32 / 8) ;
   _end = . ;
   _bss_end = . ;
   /* Heap allocating takes a chunk of memory following BSS */
+
   .heap ALIGN(4) :
   {
     _heap = . ;
     . += _min_heap_size ;
   } >kseg1_data_mem
+
   /* Stack allocation follows the heap */
   .stack ALIGN(4) :
   {
@@ -606,6 +618,7 @@ SECTIONS
    * RAM functions go at the end of our stack and heap allocation.
    * Alignment of 2K required by the boundary register (BMXDKPBA).
    */
+
   .ramfunc ALIGN(2K) :
   {
     _ramfunc_begin = . ;
@@ -613,11 +626,13 @@ SECTIONS
     . = ALIGN(4) ;
     _ramfunc_end = . ;
   } >kseg1_data_mem AT>kseg0_program_mem
+
   _ramfunc_image_begin = LOADADDR(.ramfunc) ;
   _ramfunc_length = SIZEOF(.ramfunc) ;
   _bmxdkpba_address = _ramfunc_begin - ORIGIN(kseg1_data_mem) ;
   _bmxdudba_address = LENGTH(kseg1_data_mem) ;
   _bmxdupba_address = LENGTH(kseg1_data_mem) ;
+
   /*
    * The actual top of stack should include the gap between the stack
    * section and the beginning of the .ramfunc section caused by the
@@ -625,6 +640,7 @@ SECTIONS
    * do not exist, then the top of the stack should point to the end of
    * the data memory.
    */
+
   _stack = (_ramfunc_length > 0)
          ? _ramfunc_begin - 4
          : ORIGIN(kseg1_data_mem) + LENGTH(kseg1_data_mem) ;

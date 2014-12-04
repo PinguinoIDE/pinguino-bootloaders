@@ -1,17 +1,12 @@
 /**********************************************************************
- * PIC32MX250F128B object file
+ * PIC32MX270F256B object file
  * Contains Memory Regions definitions
- * 2014-10-13 Régis Blanchot
+ * 2014-09-19 Régis Blanchot
  **********************************************************************/
 
 INPUT("processor.o")
-/*
 OUTPUT_FORMAT("elf32-littlemips")
 OUTPUT_ARCH(mips)
-ENTRY(_reset)
-*/
-OUTPUT_FORMAT("elf32-tradlittlemips")
-OUTPUT_ARCH(pic32mx)
 ENTRY(_reset)
 
 /**********************************************************************
@@ -31,7 +26,7 @@ PROVIDE(_min_heap_size = 0) ;
 /**********************************************************************
  * For interrupt vector handling
  * base address of interrupt vector table (length = 0x1000)
- * placed at the beginning of the flash memory (0x9D000000)
+ * placed at the end of flash memory (0x40000 - 0x1000 = 0x3F000)
  * _ebase_address value MUST BE same as the ORIGIN value of exception_mem
  **********************************************************************/
 
@@ -42,49 +37,13 @@ _ebase_address = 0x9D000000;
 /**********************************************************************
  * Memory Address Equates
  * _RESET_ADDR      -- Reset Vector
- * _BEV_EXCPT_ADDR  -- Boot exception Vector
- * _DBG_EXCPT_ADDR  -- In-circuit Debugging Exception Vector
- * _DBG_CODE_ADDR   -- In-circuit Debug Executive address
- * _DBG_CODE_SIZE   -- In-circuit Debug Executive size
  * _GEN_EXCPT_ADDR  -- General Exception Vector
- **********************************************************************/
-
-/**********************************************************************
  * _RESET_ADDR value MUST BE same as the ORIGIN value of kseg1_boot_mem
  * When the PIC is reset, it goes to the reset address 0xBFC00000,
- * which is the location of the boot flash, and executes the code there:
- * crt0.S which takes care of some initialization tasks,
- * then calls the code for the bootloader,
- * which resides in the KSEG0 program flash (kseg0_boot_mem) memory block.
+ * and executes crt0.S
  **********************************************************************/
 
 _RESET_ADDR              = 0xBFC00000;
-
-/**********************************************************************
- * map boot exception vector to kseg1_boot_mem
- * Place _BEV_EXCPT_ADDR at an offset of 0x380 to _RESET_ADDR
- **********************************************************************/
-
-/*
-_BEV_EXCPT_ADDR          = 0xBFC00000 + 0x380;
-*/
-
-/**********************************************************************
- * map _DBG_EXCPT_ADDR to kseg1_boot_mem
- * Place _DBG_EXCPT_ADDR at an offset of 0x480 to _RESET_ADDR
- * we don't use debug supporting code
- **********************************************************************/
-
-/*
-_DBG_EXCPT_ADDR          = 0xBFC00000 + 0x480;
-_DBG_CODE_ADDR           = 0x9FC00000 + 0x490;
-_DBG_CODE_SIZE           = 0x560;
-*/
-
-/**********************************************************************
- *
- **********************************************************************/
-
 _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
 
 /**********************************************************************
@@ -97,8 +56,8 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
  * - configuration words (non-cacheable)
  **********************************************************************
  * Cacheable (KSEG0) and non-cacheable (KSEG1)
- * KSEG0 PROGRAM FLASH [0x9D000000:0x9D01FFFF]
- * KSEG1 PROGRAM FLASH [0xBD000000:0xBD01FFFF]
+ * KSEG0 PROGRAM FLASH [0x9D000000:0x9D03FFFF]
+ * KSEG1 PROGRAM FLASH [0xBD000000:0xBD03FFFF]
  * KSEG0    BOOT FLASH [0x9FC00000:0x9FC00BEF]
  * KSEG1    BOOT FLASH [0xBFC00000:0xBFC00BEF]
  * KSEG1           RAM [0xA0000000:0xA000FFFF]
@@ -109,31 +68,26 @@ MEMORY
 
 /**********************************************************************
  * interrupt vector table in PROGRAM FLASH starting at ebase
- * PIC32MX250F128B = 128 KB flash = 0x20000
- * IVT from 0x9D01F000 to 0x9D020000
  * exception_mem value MUST BE same as value of _ebase_address
  **********************************************************************/
 
 exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
 
 /**********************************************************************
- * Bootloader Program code
- * in cacheable PROGRAM FLASH
- * from 0x9D001000 to 0x9D006000
+ * Bootloader code
+ * Bootloader Interrupt Vector Table is placed between 0x9D000000 to 0x9D001000
  **********************************************************************/
 
-kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x1F000
+kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x2800
 
 /**********************************************************************
- * Reset (0x0), Boot (0x380) and Debug (0x480) vectors
  * kseg1_boot_mem value MUST BE same as the _RESET_ADDR value
- * in non-cacheable BOOT FLASH
- * vector's length = 0x10 ?
+ * bfc00000:    c09f1a3c     lui    k0,0x9fc0
+ * bfc00004:    10005a27     addiu  k0,k0,16
+ * bfc00008:    08004003     jr     k0
+ * bfc0000c:    00000000     nop
  **********************************************************************/
 
-/*
-kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x490
-*/
 kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10
 
 /**********************************************************************
@@ -141,43 +95,29 @@ kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10
  * in cacheable BOOT FLASH
  **********************************************************************/
 
-/*
-kseg0_boot_mem             : ORIGIN = 0x9FC00490, LENGTH = 0x200
-*/
 kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200
 
 /**********************************************************************
- * Debug code
- * only 0xBF0 bytes available on PIC32MX2xx
- * 0xBF0 - 0x200 - 0x490 (Statup Code, Reset, Boot & Debug vectors) = 0x560
- * we don't use debug supporting code
+ * PIC32MX270F256B has 64 KB RAM, or 0x10000
  **********************************************************************/
 
-/*
-debug_exec_mem             : ORIGIN = 0x9FC00690, LENGTH = 0x560
-*/
+kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 64K
 
 /**********************************************************************
  * Device Configuration Registers (configuration bits)
  **********************************************************************/
 
-config3                    : ORIGIN = 0xBFC00BF0, LENGTH = 0x4
-config2                    : ORIGIN = 0xBFC00BF4, LENGTH = 0x4
-config1                    : ORIGIN = 0xBFC00BF8, LENGTH = 0x4
-config0                    : ORIGIN = 0xBFC00BFC, LENGTH = 0x4
-configsfrs                 : ORIGIN = 0xBFC00BF0, LENGTH = 0x10
+devcfg3                    : ORIGIN = 0xBFC00BF0, LENGTH = 0x4
+devcfg2                    : ORIGIN = 0xBFC00BF4, LENGTH = 0x4
+devcfg1                    : ORIGIN = 0xBFC00BF8, LENGTH = 0x4
+devcfg0                    : ORIGIN = 0xBFC00BFC, LENGTH = 0x4
+devcfg                     : ORIGIN = 0xBFC00BF0, LENGTH = 0x10
 
 /**********************************************************************
  * all SFRS
  **********************************************************************/
 
 sfrs                       : ORIGIN = 0xBF800000, LENGTH = 0x100000
-
-/**********************************************************************
- * PIC32MX250F128B has 32 KB RAM, or 0x8000
- **********************************************************************/
-
-kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 32K
 
 }
 
@@ -192,41 +132,36 @@ SECTIONS
     KEEP(*(.reset))
     } > kseg1_boot_mem
 
-    /*
-    .bev_excpt _BEV_EXCPT_ADDR :
-    {
-    KEEP(*(.bev_handler))
-    } > kseg1_boot_mem
-    */
-
     .startup ORIGIN(kseg0_boot_mem) :
     {
     KEEP(*(.startup))
     } > kseg0_boot_mem
 
     /********************************************************************
+    *** Exception Vectors
+    ********************************************************************/
+
+    /*
+    .bev_excpt _BEV_EXCPT_ADDR :
+    {
+    KEEP(*(.bev_handler))
+    } > kseg1_boot_mem
+
+    .app_excpt _GEN_EXCPT_ADDR :
+    {
+    KEEP(*(.gen_handler))
+    } > exception_mem
+    */
+
+    /********************************************************************
     *** Config. Sections
     ********************************************************************/
 
-    .config_BFC00BF0 :
-    {
-    KEEP(*(.config_BFC00BF0))
-    } > config3
-
-    .config_BFC00BF4 :
-    {
-    KEEP(*(.config_BFC00BF4))
-    } > config2
-
-    .config_BFC00BF8 :
-    {
-    KEEP(*(.config_BFC00BF8))
-    } > config1
-
-    .config_BFC00BFC :
-    {
-    KEEP(*(.config_BFC00BFC))
-    } > config0
+    .devcfg  : { KEEP(*(.devcfg )) } > devcfg
+    .devcfg3 : { KEEP(*(.devcfg3)) } > devcfg3
+    .devcfg2 : { KEEP(*(.devcfg2)) } > devcfg2
+    .devcfg1 : { KEEP(*(.devcfg1)) } > devcfg1
+    .devcfg0 : { KEEP(*(.devcfg0)) } > devcfg0
 
     /********************************************************************
     *** Debug Sections
@@ -242,11 +177,6 @@ SECTIONS
     {
     . += (DEFINED (_DEBUGGER) ? 0xFF0 : 0x0);
     } > debug_exec_mem
-
-    .app_excpt _GEN_EXCPT_ADDR :
-    {
-    KEEP(*(.gen_handler))
-    } > exception_mem
     */
 
     /********************************************************************
@@ -269,6 +199,7 @@ SECTIONS
     {
     KEEP(*(.vector_2))
     } > exception_mem
+    
     ASSERT (_vector_spacing == 0 || SIZEOF(.vector_2) <= (_vector_spacing << 5), "function at exception vector 2 too large")
     .vector_3 _ebase_address + 0x200 + (_vector_spacing << 5) * 3 :
     {

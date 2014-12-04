@@ -1,11 +1,12 @@
 
-#include "regdef.h"
-#include "cp0defs.h"
+#include "../regdef.h"
+#include "../cp0defs.h"
 
 #ifdef __LIBBUILD__
    .file 1 "crt0.S"
    .loc 1 0
 #endif
+
         ##################################################################
         # Entry point of the entire application
         ##################################################################
@@ -30,14 +31,14 @@ _startup:
         ##################################################################
         # If entered because of an NMI, jump to the NMI handler.
         ##################################################################
-        mfc0    k0,_CP0_STATUS
-        ext     k0,k0,19,1              # Extract NMI bit
-        beqz    k0,_no_nmi
-        nop
+        #mfc0    k0,_CP0_STATUS
+        #ext     k0,k0,19,1              # Extract NMI bit
+        #beqz    k0,_no_nmi
+        #nop
         # AF la      k0,_nmi_handler
         # AF jr      k0
-        nop
-_no_nmi:
+        #nop
+#_no_nmi:
 
         ##################################################################
         # Initialize Stack Pointer
@@ -75,7 +76,7 @@ _no_nmi:
         ##################################################################
         # AF la      t0,_on_reset
         # AF jalr    t0
-        nop
+        #nop
 
         ##################################################################
         # Clear uninitialized data sections
@@ -219,7 +220,7 @@ _ramfunc_done:
         ##################################################################
         # AF la      t0,_on_bootstrap
         # AF jalr    t0
-        nop
+        #nop
 
         ##################################################################
         # Initialize Status<BEV> for normal exception vectors
@@ -240,7 +241,6 @@ _ramfunc_done:
         la      t0,_main_entry
         jr      t0
         nop
-
         
         .end _startup
 
@@ -248,29 +248,29 @@ _ramfunc_done:
         # Boot Exception Vector Handler
         # Jumps to _bootstrap_exception_handler
         ##################################################################
-        .section .bev_handler,"ax",@progbits
-        .set noreorder
-        .ent _bev_exception
-_bev_exception:
+        #.section .bev_handler,"ax",@progbits
+        #.set noreorder
+        #.ent _bev_exception
+#_bev_exception:
         # AF la      k0,_bootstrap_exception_handler
         # AF jr      k0
-        nop
+        #nop
 
-        .end _bev_exception
+        #.end _bev_exception
                         
         ##################################################################
         # General Exception Vector Handler
         # Jumps to _general_exception_handler
         ##################################################################
-        .section .gen_handler,"ax",@progbits
-        .set noreorder
-        .ent _gen_exception
-_gen_exception:
+        #.section .gen_handler,"ax",@progbits
+        #.set noreorder
+        #.ent _gen_exception
+#_gen_exception:
         # AF la      k0,_general_exception_context
         # AF jr      k0
-        nop
+        #nop
 
-        .end _gen_exception
+        #.end _gen_exception
 
 
         .text
@@ -285,8 +285,8 @@ _main_entry:
         ##################################################################
         # Call exit
         ##################################################################
-        # jal    exit
-        nop
+        #jal    exit
+        #nop
 
         ##################################################################
         # Just in case, go into infinite loop

@@ -24,6 +24,14 @@
 
 import sys
 
+# Hex format record types
+Data_Record = 00
+End_Of_File_Record = 01
+Extended_Segment_Address_Record = 02
+Start_Segment_Address_Record = 03
+Extended_Linear_Address_Record = 04
+Start_Linear_Address_Record = 05
+    
 codesize = 0
 address_Hi = 0
 max_address = 0
@@ -32,7 +40,7 @@ old_address = 0
 if (len(sys.argv) > 1):
 
     filename = sys.argv[1]
-    fichier = open(filename + ".hex", 'r')
+    fichier = open(filename, 'r')
     lines = fichier.readlines()
 
     for line in lines:
@@ -42,29 +50,47 @@ if (len(sys.argv) > 1):
         record_type= int(line[7:9], 16)
 
         # extended linear address record
-        if record_type == 4:
-            address_Hi = int(line[9:13], 16) << 16
+        if record_type == Extended_Linear_Address_Record:
+            address_Hi = int(line[9:13], 16)
 
         # data
-        if record_type == 0:
+        elif record_type == Data_Record:
 
             # 32-bit address
-            address = address_Hi + address_Lo
+            address = (address_Hi << 16) + address_Lo
+            #print "address : 0x%X" % address
 
-            # code size
-            codesize = codesize + byte_count
+            if (address > 0x9D000000) and (address < 0x9FC00000):
+                
+                # code size
+                codesize = codesize + byte_count
 
-            # address calculation
-            if (address > old_address) and (address < 0x9FC00000):
-                max_address = address + byte_count
-                old_address = address
+                # address calculation
+                if (address > old_address):
+                    max_address = address + byte_count
+                    old_address = address
 
             # display
-            print "0x%08X" % address,
-            for i in range(byte_count):
-                print "%02X" % int(line[9 + (2 * i) : 11 + (2 * i)], 16),
-            print
+            #print "%s -> 0x%08X" % (line,address),
+            #for i in range(byte_count):
+            #    print "%02X" % int(line[9 + (2 * i) : 11 + (2 * i)], 16),
+            #print
 
+        # bootloader jump address
+        elif record_type == Start_Linear_Address_Record:
+            print "Reset vector at 0x%X" % address
+
+        # end of file record
+        elif record_type == End_Of_File_Record:
+            break
+            
+        # unsupported record type
+        #Extended_Segment_Address_Record = 02
+        #Start_Segment_Address_Record = 03
+        else:
+
+            print "Caution : unsupported record type in hex file"
+            print "Line %s" % line
 
     fichier.close()
 
@@ -72,11 +98,7 @@ if (len(sys.argv) > 1):
 
     print "code size is : %d bytes (0x%X)" % (codesize, codesize)
     print "max. address : 0x%X" % max_address
-    print "Bootloader's code : edit src/hardware.h and make sure you have :"
-    print "#define ProgramMemStart 0x%X" % (page1024 * 1024)
-    print "IDE : edit p32/lkr/YOUR_PROC/procdefs.ld and make sure you have :"
-    print "kseg0_program_mem    (rx)  : ORIGIN = 0x%X" % (page1024 * 1024)
-    #print
+    print "aligned on 1024 : 0x%X" % (page1024 * 1024)
 else:
     print "No file to proceed"
     print "usage: ./codesize.py filename (without .hex extension)"
