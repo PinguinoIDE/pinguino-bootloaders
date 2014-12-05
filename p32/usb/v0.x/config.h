@@ -11,42 +11,79 @@
 #ifndef _CONFIG_H_
 #define	_CONFIG_H_
 
-// Is the current program compiled with the Pinguino Toolchain ?
 #if defined(__P32GCC__)
+
+    // Microchip added a proprietary set of #pragma config's to their C compiler,
+    // but these are not supported by the Pinguino Toolchain.
+    // So we use this simple solution instead :
+
     #include "devcfg.h"
 
     #if defined(__32MX220F032B__) || \
         defined(__32MX250F128B__) || \
         defined(__32MX270F256B__)
 
-        //0xCFFFFFFF;
-        int DEVCFG3_ __attribute__((section(".devcfg3"))) =
-            DEVCFG3_USERID(0xffff) |    /* User-defined ID */
-            DEVCFG3_FSRSSEL_7 |         /* Assign irq priority 7 to shadow set */
-            DEVCFG3_FMIIEN |            /* Ethernet MII enable */
-            DEVCFG3_FETHIO |            /* Ethernet pins default */
-            DEVCFG3_FCANIO |            /* CAN pins default */
-            DEVCFG3_FUSBIDIO |          /* USBID pin: controlled by USB */
-            DEVCFG3_FVBUSONIO;          /* VBuson pin: controlled by USB */
+        #if 1
 
-        //0xFFF979D9;
-        int DEVCFG2_ __attribute__((section(".devcfg2"))) =
-            DEVCFG2_FPLLIDIV_2 |        /* PLL divider = 1/2 */
-            DEVCFG2_FPLLMUL_20 |        /* PLL multiplier = 20x */
-            DEVCFG2_UPLLIDIV_2 |        /* USB PLL divider = 1/2 */
-            DEVCFG2_FPLLODIV_2;         /* PLL postscaler = 1/2 */
+        const int DEVCFG3_ __attribute__((section(".devcfg3"))) = 0xCFFFFFFF;
+        const int DEVCFG2_ __attribute__((section(".devcfg2"))) = 0xFFF979D9;
+        const int DEVCFG1_ __attribute__((section(".devcfg1"))) = 0xFF601EDB;
+        const int DEVCFG0_ __attribute__((section(".devcfg0"))) = 0x7FFFFFF3;
 
-        //0xFF601EDB;
-        int DEVCFG1_ __attribute__((section(".devcfg1"))) =
-            DEVCFG1_FNOSC_PRIPLL |      /* Primary oscillator with PLL */
-            DEVCFG1_IESO |              /* Internal-external switch over */
-            DEVCFG1_POSCMOD_HS |        /* HS oscillator */
-            DEVCFG1_FPBDIV_2 |          /* Peripheral bus clock = SYSCLK/2 */
-            DEVCFG1_WDTPS_1;            /* Watchdog postscale = 1/1024 */
+        #else
 
-        //0x7FFFFFF3;
-        int DEVCFG0_ __attribute__((section(".devcfg0"))) =
-            DEVCFG0_DEBUG_DISABLED,     /* ICE debugger disabled */
+        const __DEVCFG3bits_t __attribute__((section(".devcfg3"))) devcfg3 =
+        {
+            {
+                .USERID     = DEVCFG3_USERID(0x1234),
+                .PMDL1WAY   = DEVCFG3_PMDL1WAY_MULTI,
+                .IOL1WAY    = DEVCFG3_IOL1WAY_MULTI,
+                .FUSBIDIO   = DEVCFG3_FUSBIDIO_USB,
+                .FVBUSONIO  = DEVCFG3_FVBUSONIO_USB
+            }
+        };
+
+        const __DEVCFG2bits_t __attribute__((section(".devcfg2"))) devcfg2 =
+        {
+            {
+                .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                .FPLLMUL    = DEVCFG2_FPLLMUL_20,
+                .UPLLIDIV   = DEVCFG2_UPLLIDIV_2,
+                .UPLLEN     = DEVCFG2_UPLLEN_ENABLED,
+                .FPLLODIV   = DEVCFG2_FPLLODIV_1
+            }
+        };
+
+        const __DEVCFG1bits_t __attribute__((section(".devcfg1"))) devcfg1 =
+        {
+            {
+                .FNOSC      = DEVCFG1_FNOSC_PRIPLL,
+                .FSOSCEN    = DEVCFG1_FSOSCEN_DISABLED,
+                .IESO       = DEVCFG1_IESO_ENABLED,
+                .POSCMOD    = DEVCFG1_POSCMOD_HS,
+                .OSCIOFNC   = DEVCFG1_OSCIOFNC_DISABLED,
+                .FPBDIV     = DEVCFG1_FPBDIV_2,
+                .FCKSM      = DEVCFG1_CSECMD,
+                .WDTPS      = DEVCFG1_WDTPS_1024,
+                .WINDIS     = DEVCFG1_WINDIS_DISABLED,
+                .FWDTEN     = DEVCFG1_FWDTEN_DISABLED,
+                .FWDTWINSZ  = DEVCFG1_FWDTWINSZ_50
+            }
+        };
+
+        const __DEVCFG0bits_t __attribute__((section(".devcfg0"))) devcfg0 =
+        {
+            {
+                .DEBUG      = DEVCFG0_DEBUG_DISABLED,
+                .JTAGEN     = DEVCFG0_JTAG_DISABLED,
+                .ICESEL     = DEVCFG0_ICESEL2,
+                .PWP        = DEVCFG0_PWP_DISABLED,
+                .BWP        = DEVCFG0_BWP_DISABLED,
+                .CP         = DEVCFG0_CP_DISABLED
+            }
+        };
+        
+        #endif
 
     #else
 

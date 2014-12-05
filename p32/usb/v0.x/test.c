@@ -21,10 +21,14 @@
  * http://www.microchip.com/forums/m481840.aspx
  **********************************************************************/
 
-//const int DEVCFG3_ __attribute__((section(".devcfg3"))) = 0xCFFFFFFF;
-//const int DEVCFG2_ __attribute__((section(".devcfg2"))) = 0xFFF979D9;
-//const int DEVCFG1_ __attribute__((section(".devcfg1"))) = 0xFF601EDB;
-//const int DEVCFG0_ __attribute__((section(".devcfg0"))) = 0x7FFFFFF3;
+#if 1
+
+const int DEVCFG3_ __attribute__((section(".devcfg3"))) = 0xCFFFFFFF;
+const int DEVCFG2_ __attribute__((section(".devcfg2"))) = 0xFFF979D9;
+const int DEVCFG1_ __attribute__((section(".devcfg1"))) = 0xFF601EDB;
+const int DEVCFG0_ __attribute__((section(".devcfg0"))) = 0x7FFFFFF3;
+
+#else
 
 const __DEVCFG3bits_t __attribute__((section(".devcfg3"))) devcfg3 =
 {
@@ -76,7 +80,9 @@ const __DEVCFG0bits_t __attribute__((section(".devcfg0"))) devcfg0 =
         .CP         = DEVCFG0_CP_DISABLED
     }
 };
- 
+
+#endif
+
 /***********************************************************************
  * CONSTANTS
  **********************************************************************/
@@ -128,8 +134,11 @@ int main(void)
 
     while(1)
     {
-        LATAINV = 1 << USERLED;
-        DelayUs(1000);
+        //LATAINV = 1 << USERLED;
+        LATASET = 1 << USERLED;
+        DelayUs(100);
+        LATACLR = 1 << USERLED;
+        DelayUs(900);
     }
 
     return 0;

@@ -14,12 +14,12 @@
 #                                                                      #
 ########################################################################
 
-_TEST_ENABLE_   = true
-_MIPS16_ENABLE_ = false
+_TEST_ENABLE_   = false
+_MIPS16_ENABLE_ = true
 
 # Where to find the gcc-mips-elf toolchain
-#BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
-BINDIR		= /usr/bin
+BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
+#BINDIR		= /usr/bin
 
 # ----------------------------------------------------------------------
 # Version (will override boot.h #define)
@@ -30,7 +30,7 @@ MIN_VER		= 0
 DOT_VER		= 2
 
 # ----------------------------------------------------------------------
-# Project definition
+# Processor family
 # ----------------------------------------------------------------------
 
 ifndef PROC
@@ -38,13 +38,21 @@ ifndef PROC
 	DEFAULT = YES
 endif 
 
+FAMILYMZ	= $(findstring 32MZ,  $(PROC))
+FAMILYMX1	= $(findstring 32MX1, $(PROC))
+FAMILYMX2	= $(findstring 32MX2, $(PROC))
+FAMILY		= $(FAMILYMX1)$(FAMILYMX2)$(FAMILYMZ)
+
 CRYSTAL		= 8
-CPU			= $(PROC)
+
+# ----------------------------------------------------------------------
+# Project's name
+# ----------------------------------------------------------------------
 
 ifeq "$(_TEST_ENABLE_)" "true"
 	PRJ		= Test
 else
-	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(CPU)_X$(CRYSTAL)MHz
+	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)MHz
 endif
 
 # ----------------------------------------------------------------------
@@ -58,18 +66,24 @@ endif
 #		1A		 : checksum
 # ----------------------------------------------------------------------
 
-#ifneq (,$(filter $(CPU),32MX220F032B 32MX250F128B))
-#else
-#endif
-
-FAMILY1		= $(findstring 32MX1, $(PROC))
-FAMILY2		= $(findstring 32MX2, $(PROC))
-FAMILY		= $(FAMILY1)$(FAMILY2)
-
 ifneq (,$(filter $(FAMILY),32MX1 32MX2))
 	BADRECORD   = '^:04000005BFC0000078'
 else
 	BADRECORD   = '^:040000059D006000FA'
+endif
+
+# ----------------------------------------------------------------------
+# MIPS Core
+# ----------------------------------------------------------------------
+# PIC32MX has a MIPS M4K core
+# PIC32MZ has a MIPS microAptiv core
+
+ifeq "$(FAMILY)" "32MZ"
+	CORE		= m14k
+	#CORE		= m14kc
+else
+	#CORE		= 24kc
+	CORE		= m4k
 endif
 
 # ----------------------------------------------------------------------
@@ -135,6 +149,7 @@ MV			= mv
 # ----------------------------------------------------------------------
 # Flags
 # ----------------------------------------------------------------------
+# https://sourceware.org/binutils/docs/ld/Options.html#Options
 
 ifeq "$(_MIPS16_ENABLE_)" "true"
 	# Generate MIPS16 code.
@@ -149,28 +164,28 @@ LDFLAGS		= $(LIBDIRS) $(LIBS)
 #LDFLAGS	   += -G0
 #--verbose
 
-# -Os option leads to errors when non-zero initialized static variable are defined
-#			  -msoft-float \
-#			  -march=m4k \
-#			  -march=24kc \
-
-# PIC32 has a MIPS M4K core
-
-ELF_FLAGS	= -march=m4k \
-			  -EL -msoft-float -nostdlib -static \
+#-nostdlib		Only search library directories explicitly specified on the command line
+#-static		Do not link against shared libraries
+#--strip-all	Omit all symbol information from the output file
+#--gc-sections	Enable garbage collection of unused input sections
+#-Map=mapfile	Print a link map to the file mapfile
+    
+ELF_FLAGS	= -march=$(CORE) \
+			  -EL -nostdlib -static \
 			  -Os $(MIPS16_INTER) \
 			  -ffunction-sections \
 			  -fdata-sections \
+			  -Wl,--strip-all \
 			  -Wl,--gc-sections \
 			  -Wl,-L$(OBJDIR) \
 			  -Wl,-Map=output.map \
+			  -Wl,--script=$(LKRDIR)/$(PROC)/$(PROC).ld \
 			  -D __P32GCC__ \
 			  -D __PIC32MX__ \
-			  -D __$(CPU)__ \
+			  -D __$(PROC)__ \
 			  -D USB_MAJOR_VER=$(MAJ_VER) \
 			  -D USB_MINOR_VER=$(MIN_VER) \
-			  -D USB_DOT_VER=$(DOT_VER) \
-			  -T$(LKRDIR)/$(CPU)/$(CPU).ld
+			  -D USB_DOT_VER=$(DOT_VER)
 
 #			  -T$(LKRDIR)/elf32pic32mx.x
 
@@ -186,8 +201,8 @@ ELF_FLAGS	= -march=m4k \
 #
 #-----------------------------------------------------------------------
 
-#all: start clean copy $(PRJ).elf convert correct size
-all: start clean copy $(PRJ).elf convert size
+all: start clean copy $(PRJ).elf convert fix size
+#all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf
 #all: start
@@ -206,11 +221,11 @@ clean:
 	@$(RM) $(ORIGIN)/obj/*.o		> /dev/null
 	@$(RM) $(ORIGIN)/obj/*.S		> /dev/null
 	@$(RM) $(HEXDIR)/*.elf			> /dev/null
-	@$(RM) $(HEXDIR)/*.hex			> /dev/null
+#	@$(RM) $(HEXDIR)/*.hex			> /dev/null
 
 copy:
-	@echo "Adding $(CPU) SFR definition"
-	@$(CP) $(OBJDIR)/$(CPU).o $(OBJDIR)/processor.o
+	@echo "Adding $(PROC) SFR definition"
+	@$(CP) $(OBJDIR)/$(PROC).o $(OBJDIR)/processor.o
 
 obj/%.o: %.c
 	@echo "Compiling $<"
@@ -227,20 +242,18 @@ $(PRJ).elf: $(OBJS)
 		$(LKRDIR)/crt0.S \
 		$(OBJDIR)/processor.o \
 		$(LIBS)
-
 #		$(INCDIR)/p32xxxx.h \
 
 convert:
 	@echo "Converting elf to hex"
 	@$(OBJCOPY) -O ihex $(HEXDIR)/$(PRJ).elf $(HEXDIR)/$(PRJ).hex
 
-#@sed 's/$(BADRECORD)/$(NEWRECORD)/g' $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
-#@sed '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
-correct:
-	@echo "Fixing bad record"
-	@grep --binary --invert-match $(BADRECORD) $(HEXDIR)/$(PRJ).hex > $(HEXDIR)/temp.hex
-	@rm -f $(HEXDIR)/$(PRJ).hex
-	@mv $(HEXDIR)/temp.hex $(HEXDIR)/$(PRJ).hex
+fix:
+	@echo "Fixing bad records"
+	@sed -i -e 's/:020000049D005D/:020000041D00DD/g' $(HEXDIR)/$(PRJ).hex
+	@sed -i -e 's/:020000049FC09B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
+	@sed -i -e 's/:02000004BFC07B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
+	@sed -i -e '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
 
 size:
 ifdef DEBUG

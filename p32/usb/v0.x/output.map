@@ -1,18 +1,103 @@
 
+Allocating common symbols
+Common symbol       size              file
+
+pDst                0x4               obj/usb.o
+USBDeferINDataStagePackets
+                    0x4               obj/usb.o
+BDT                 0x40              obj/usb.o
+CtrlTrfData         0x40              obj/usb.o
+USBDeferOUTDataStagePackets
+                    0x4               obj/usb.o
+USBDeviceState      0x4               obj/main.o
+controlTransferState
+                    0x1               obj/usb.o
+endpoint_number     0x1               obj/usb.o
+pBDTEntryIn         0x8               obj/usb.o
+ep_data_out         0x8               obj/usb.o
+USBStatusStageEnabledFlag1
+                    0x4               obj/usb.o
+outPipe             0xb               obj/usb.o
+USBStatusStageEnabledFlag2
+                    0x4               obj/usb.o
+pBDTEntryOut        0x8               obj/usb.o
+BothEP0OutUOWNsSet  0x4               obj/usb.o
+pBDTEntryEP0OutNext
+                    0x4               obj/usb.o
+USBBusIsSuspended   0x4               obj/usb.o
+USBStatusStageTimeoutCounter
+                    0x1               obj/usb.o
+SetupPkt            0x8               obj/usb.o
+ep_data_in          0x8               obj/usb.o
+active_protocol     0x1               obj/usb.o
+shortPacketStatus   0x1               obj/usb.o
+pBDTEntryEP0OutCurrent
+                    0x4               obj/usb.o
+USBActiveConfiguration
+                    0x1               obj/usb.o
+RemoteWakeup        0x4               obj/usb.o
+inPipe              0x10              obj/usb.o
+USTATcopy           0x4               obj/usb.o
+USBAlternateInterface
+                    0x1               obj/usb.o
+USBDeferStatusStagePacket
+                    0x4               obj/usb.o
+idle_rate           0x1               obj/usb.o
+
 Discarded input sections
 
- .text          0x0000000000000000        0x0 obj/test.o
- .data          0x0000000000000000        0x0 obj/test.o
- .bss           0x0000000000000000        0x0 obj/test.o
- .pdr           0x0000000000000000       0x60 obj/test.o
- .data          0x0000000000000000        0x0 /tmp/cce6n7LF.o
- .bss           0x0000000000000000        0x0 /tmp/cce6n7LF.o
- .reginfo       0x0000000000000000       0x18 /tmp/cce6n7LF.o
- .pdr           0x0000000000000000       0x60 /tmp/cce6n7LF.o
  .text          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
  .data          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
  .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
  .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .text          0x0000000000000000        0x0 obj/core.o
+ .data          0x0000000000000000        0x0 obj/core.o
+ .bss           0x0000000000000000        0x0 obj/core.o
+ .reginfo       0x0000000000000000       0x18 obj/core.o
+ .pdr           0x0000000000000000       0xc0 obj/core.o
+ .text          0x0000000000000000        0x0 obj/usb.o
+ .data          0x0000000000000000        0x0 obj/usb.o
+ .bss           0x0000000000000000        0x0 obj/usb.o
+ .reginfo       0x0000000000000000       0x18 obj/usb.o
+ .pdr           0x0000000000000000       0xe0 obj/usb.o
+ .rodata.hid_rpt01
+                0x0000000000000000       0x20 obj/usb.o
+ .text          0x0000000000000000        0x0 obj/flash.o
+ .data          0x0000000000000000        0x0 obj/flash.o
+ .bss           0x0000000000000000        0x0 obj/flash.o
+ .reginfo       0x0000000000000000       0x18 obj/flash.o
+ .pdr           0x0000000000000000       0x20 obj/flash.o
+ .text          0x0000000000000000        0x0 obj/main.o
+ .data          0x0000000000000000        0x0 obj/main.o
+ .bss           0x0000000000000000        0x0 obj/main.o
+ .reginfo       0x0000000000000000       0x18 obj/main.o
+ .pdr           0x0000000000000000       0x60 obj/main.o
+ .text          0x0000000000000000        0x0 obj/delay.o
+ .data          0x0000000000000000        0x0 obj/delay.o
+ .bss           0x0000000000000000        0x0 obj/delay.o
+ .reginfo       0x0000000000000000       0x18 obj/delay.o
+ .pdr           0x0000000000000000       0x20 obj/delay.o
+ .text          0x0000000000000000        0x0 obj/serial.o
+ .data          0x0000000000000000        0x0 obj/serial.o
+ .bss           0x0000000000000000        0x0 obj/serial.o
+ .reginfo       0x0000000000000000       0x18 obj/serial.o
+ .pdr           0x0000000000000000       0x80 obj/serial.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/serial.o
+ .text.SerialInit
+                0x0000000000000000      0x120 obj/serial.o
+ .text.SerialPrintChar
+                0x0000000000000000       0x24 obj/serial.o
+ .text.SerialPrint
+                0x0000000000000000       0x14 obj/serial.o
+ .text.SerialPrintNumber
+                0x0000000000000000       0x70 obj/serial.o
+ .comment       0x0000000000000000       0x12 obj/serial.o
+ .gnu.attributes
+                0x0000000000000000       0x10 obj/serial.o
+ .data          0x0000000000000000        0x0 /tmp/ccrxAfvs.o
+ .bss           0x0000000000000000        0x0 /tmp/ccrxAfvs.o
+ .reginfo       0x0000000000000000       0x18 /tmp/ccrxAfvs.o
+ .pdr           0x0000000000000000       0x60 /tmp/ccrxAfvs.o
  .text          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
  .data          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
  .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
@@ -36,9 +121,6 @@ sfrs             0x00000000bf800000 0x0000000000100000
 
 Linker script and memory map
 
-LOAD obj/test.o
-LOAD /tmp/cce6n7LF.o
-LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
 LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
                 0x0000000000000400                PROVIDE (_min_stack_size, 0x400)
                 0x0000000000000000                PROVIDE (_min_heap_size, 0x0)
@@ -49,35 +131,35 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
 
 .reset          0x00000000bfc00000       0x10
  *(.reset)
- .reset         0x00000000bfc00000       0x10 /tmp/cce6n7LF.o
+ .reset         0x00000000bfc00000       0x10 /tmp/ccrxAfvs.o
                 0x00000000bfc00000                _reset
 
 .startup        0x000000009fc00010      0x1a0
  *(.startup)
- .startup       0x000000009fc00010      0x1a0 /tmp/cce6n7LF.o
+ .startup       0x000000009fc00010      0x1a0 /tmp/ccrxAfvs.o
 
 .devcfg
  *(.devcfg)
 
 .devcfg3        0x00000000bfc00bf0        0x4
  *(.devcfg3)
- .devcfg3       0x00000000bfc00bf0        0x4 obj/test.o
-                0x00000000bfc00bf0                devcfg3
+ .devcfg3       0x00000000bfc00bf0        0x4 obj/main.o
+                0x00000000bfc00bf0                DEVCFG3_
 
 .devcfg2        0x00000000bfc00bf4        0x4
  *(.devcfg2)
- .devcfg2       0x00000000bfc00bf4        0x4 obj/test.o
-                0x00000000bfc00bf4                devcfg2
+ .devcfg2       0x00000000bfc00bf4        0x4 obj/main.o
+                0x00000000bfc00bf4                DEVCFG2_
 
 .devcfg1        0x00000000bfc00bf8        0x4
  *(.devcfg1)
- .devcfg1       0x00000000bfc00bf8        0x4 obj/test.o
-                0x00000000bfc00bf8                devcfg1
+ .devcfg1       0x00000000bfc00bf8        0x4 obj/main.o
+                0x00000000bfc00bf8                DEVCFG1_
 
 .devcfg0        0x00000000bfc00bfc        0x4
  *(.devcfg0)
- .devcfg0       0x00000000bfc00bfc        0x4 obj/test.o
-                0x00000000bfc00bfc                devcfg0
+ .devcfg0       0x00000000bfc00bfc        0x4 obj/main.o
+                0x00000000bfc00bfc                DEVCFG0_
 
 .vector_0       0x000000009d000200        0x0
  *(.vector_0)
@@ -335,36 +417,92 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
  *(.vector_63)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_63) <= (_vector_spacing << 0x5))), function at exception vector 63 too large)
 
-.text           0x000000009d001000       0xac
+.text           0x000000009d001000     0x13dc
                 0x000000009d001000                _text_begin = .
  *(.text .stub .text.* .gnu.linkonce.t.*)
+ .text.MemClear
+                0x000000009d001000       0x14 obj/core.o
+                0x000000009d001001                MemClear
+ .text.MemCopy  0x000000009d001014       0x18 obj/core.o
+                0x000000009d001015                MemCopy
+ .text.DisableInterrupt
+                0x000000009d00102c        0x8 obj/core.o
+                0x000000009d00102c                DisableInterrupt
+ .text.SoftReset
+                0x000000009d001034       0x5c obj/core.o
+                0x000000009d001035                SoftReset
+ .text.EnableInterrupt
+                0x000000009d001090        0x8 obj/core.o
+                0x000000009d001090                EnableInterrupt
  .text.ReadCoreTimer
-                0x000000009d001000        0x8 obj/test.o
-                0x000000009d001000                ReadCoreTimer
- .text.DelayUs  0x000000009d001008       0x40 obj/test.o
-                0x000000009d001008                DelayUs
+                0x000000009d001098        0x8 obj/core.o
+                0x000000009d001098                ReadCoreTimer
+ .text.USBCtrlTrfTxService
+                0x000000009d0010a0       0x8c obj/usb.o
+ .text.USBCtrlEPAllowStatusStage
+                0x000000009d00112c       0xe8 obj/usb.o
+ .text.USBCtrlEPAllowDataStage
+                0x000000009d001214       0xdc obj/usb.o
+ .text.USBDeviceInit
+                0x000000009d0012f0      0x198 obj/usb.o
+                0x000000009d0012f1                USBDeviceInit
+ .text.USBDeviceTasks
+                0x000000009d001488      0x92c obj/usb.o
+                0x000000009d001489                USBDeviceTasks
+ .text.USBEnableEndpoint
+                0x000000009d001db4       0x80 obj/usb.o
+                0x000000009d001db5                USBEnableEndpoint
+ .text.USBTransferOnePacket
+                0x000000009d001e34      0x120 obj/usb.o
+                0x000000009d001e35                USBTransferOnePacket
+ .text.FlashOperation
+                0x000000009d001f54       0x7c obj/flash.o
+                0x000000009d001f55                FlashOperation
+ .text.WriteFlashBlock
+                0x000000009d001fd0       0x34 obj/main.o
  .text.startup.main
-                0x000000009d001048       0x54 obj/test.o
-                0x000000009d001048                main
- .text          0x000000009d00109c       0x10 /tmp/cce6n7LF.o
+                0x000000009d002004      0x340 obj/main.o
+                0x000000009d002005                main
+ .text.USBEventHandler
+                0x000000009d002344       0x20 obj/main.o
+                0x000000009d002345                USBEventHandler
+ .text.DelayUs  0x000000009d002364       0x68 obj/delay.o
+                0x000000009d002365                DelayUs
+ .text          0x000000009d0023cc       0x10 /tmp/ccrxAfvs.o
  *(.text.*personality*)
  *(.gnu.warning)
  *(.mips16.fn.*)
  *(.mips16.call.*)
-                0x000000009d0010ac                _text_end = .
+                0x000000009d0023dc                _text_end = .
 
-.rodata         0x000000009d0010ac        0x0
+.rodata         0x000000009d0023dc       0x78
  *(.rodata .rodata.* .gnu.linkonce.r.*)
+ .rodata.USB_SD_Ptr
+                0x000000009d0023dc        0xc obj/usb.o
+                0x000000009d0023dc                USB_SD_Ptr
+ .rodata.sd002  0x000000009d0023e8       0x14 obj/usb.o
+                0x000000009d0023e8                sd002
+ .rodata.sd001  0x000000009d0023fc       0x18 obj/usb.o
+                0x000000009d0023fc                sd001
+ .rodata.configDescriptor1
+                0x000000009d002414       0x2c obj/usb.o
+                0x000000009d002414                configDescriptor1
+ .rodata.device_dsc
+                0x000000009d002440       0x14 obj/usb.o
+                0x000000009d002440                device_dsc
  *(.rodata1)
-                0x000000009d0010ac                . = ALIGN (0x4)
+                0x000000009d002454                . = ALIGN (0x4)
 
-.sdata2         0x000000009d0010ac        0x0
+.rel.dyn        0x000000009d002454        0x0
+ .rel.dyn       0x0000000000000000        0x0 obj/usb.o
+
+.sdata2         0x000000009d002454        0x0
  *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-                0x000000009d0010ac                . = ALIGN (0x4)
+                0x000000009d002454                . = ALIGN (0x4)
 
-.sbss2          0x000000009d0010ac        0x0
+.sbss2          0x000000009d002454        0x0
  *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
-                0x000000009d0010ac                . = ALIGN (0x4)
+                0x000000009d002454                . = ALIGN (0x4)
 
 .eh_frame_hdr
  *(.eh_frame_hdr)
@@ -375,12 +513,12 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
 .dbg_data       0x00000000a0000000        0x0
                 0x00000000a0000000                . = (. + DEFINED (_DEBUGGER)?0x200:0x0)
 
-.data           0x00000000a0000000        0x0 load address 0x000000009d0010ac
+.data           0x00000000a0000000        0x0 load address 0x000000009d002454
                 0x00000000a0000000                _data_begin = .
  *(.data .data.* .gnu.linkonce.d.*)
  *(.gnu.linkonce.d.*personality*)
  *(.data1)
-                0x000000009d0010ac                _data_image_begin = LOADADDR (.data)
+                0x000000009d002454                _data_image_begin = LOADADDR (.data)
 
 .eh_frame
  *(.eh_frame)
@@ -390,54 +528,115 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
  *(.got.plt)
  *(.got)
 
-.sdata          0x00000000a0000000        0x0 load address 0x000000009d0010ac
+.sdata          0x00000000a0000000        0x8 load address 0x000000009d002454
                 0x00000000a0000000                _sdata_begin = .
  *(.sdata .sdata.* .gnu.linkonce.s.*)
-                0x00000000a0000000                _sdata_end = .
+ .sdata.USB_CD_Ptr
+                0x00000000a0000000        0x4 obj/usb.o
+                0x00000000a0000000                USB_CD_Ptr
+ .sdata.sd000   0x00000000a0000004        0x4 obj/usb.o
+                0x00000000a0000004                sd000
+                0x00000000a0000008                _sdata_end = .
 
 .lit8
  *(.lit8)
 
 .lit4
  *(.lit4)
-                0x00000000a0000000                . = ALIGN (0x4)
-                0x00000000a0000000                _data_end = .
-                0x00000000a0000000                _bss_begin = .
+                0x00000000a0000008                . = ALIGN (0x4)
+                0x00000000a0000008                _data_end = .
+                0x00000000a0000008                _bss_begin = .
 
-.sbss           0x00000000a0000000        0x0 load address 0x000000009d0010ac
-                0x00000000a0000000                _sbss_begin = .
+.sbss           0x00000000a0000008       0x88 load address 0x000000009d00245c
+                0x00000000a0000008                _sbss_begin = .
  *(.dynsbss)
  *(.sbss .sbss.* .gnu.linkonce.sb.*)
+ .sbss.led_count.7089
+                0x00000000a0000008        0x4 obj/main.o
+ .sbss.ProgrammedPointer32
+                0x00000000a000000c        0x4 obj/main.o
+ .sbss.BufferedDataIndex32
+                0x00000000a0000010        0x1 obj/main.o
+ .sbss.BootState
+                0x00000000a0000011        0x1 obj/main.o
+ *fill*         0x00000000a0000012        0x2 
+ .sbss.USBInHandle
+                0x00000000a0000014        0x4 obj/main.o
+ .sbss.USBOutHandle
+                0x00000000a0000018        0x4 obj/main.o
  *(.scommon)
-                0x00000000a0000000                _sbss_end = .
+ .scommon       0x00000000a000001c       0x6d obj/usb.o
+                0x00000000a000001c                pDst
+                0x00000000a0000020                USBDeferINDataStagePackets
+                0x00000000a0000024                USBDeferOUTDataStagePackets
+                0x00000000a0000028                controlTransferState
+                0x00000000a0000029                endpoint_number
+                0x00000000a000002c                pBDTEntryIn
+                0x00000000a0000034                ep_data_out
+                0x00000000a000003c                USBStatusStageEnabledFlag1
+                0x00000000a0000040                USBStatusStageEnabledFlag2
+                0x00000000a0000044                pBDTEntryOut
+                0x00000000a000004c                BothEP0OutUOWNsSet
+                0x00000000a0000050                pBDTEntryEP0OutNext
+                0x00000000a0000054                USBBusIsSuspended
+                0x00000000a0000058                USBStatusStageTimeoutCounter
+                0x00000000a000005c                SetupPkt
+                0x00000000a0000064                ep_data_in
+                0x00000000a000006c                active_protocol
+                0x00000000a000006d                shortPacketStatus
+                0x00000000a0000070                pBDTEntryEP0OutCurrent
+                0x00000000a0000074                USBActiveConfiguration
+                0x00000000a0000078                RemoteWakeup
+                0x00000000a000007c                USTATcopy
+                0x00000000a0000080                USBAlternateInterface
+                0x00000000a0000084                USBDeferStatusStagePacket
+                0x00000000a0000088                idle_rate
+ *fill*         0x00000000a0000089        0x3 
+ .scommon       0x00000000a000008c        0x4 obj/main.o
+                0x00000000a000008c                USBDeviceState
+                0x00000000a0000090                _sbss_end = .
 
-.bss            0x00000000a0000000        0x0 load address 0x000000009d0010ac
+.bss            0x00000000a0000200      0x2a0 load address 0x000000009d00245c
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
+ .bss.ProgrammingBuffer32
+                0x00000000a0000200       0x38 obj/main.o
+ .bss.PacketFromPCBuffer
+                0x00000000a0000238       0x40 obj/main.o
+ .bss.PacketToPC
+                0x00000000a0000278       0x40 obj/main.o
+ .bss.PacketFromPC
+                0x00000000a00002b8       0x40 obj/main.o
  *(COMMON)
-                0x00000000a0000000                . = ALIGN (0x4)
-                0x00000000a0000000                . = ALIGN (0x4)
-                0x00000000a0000000                _end = .
-                0x00000000a0000000                _bss_end = .
+ *fill*         0x00000000a00002f8      0x108 
+ COMMON         0x00000000a0000400       0xa0 obj/usb.o
+                0x00000000a0000400                BDT
+                0x00000000a0000440                CtrlTrfData
+                0x00000000a0000480                outPipe
+                0x00000000a0000490                inPipe
+                0x00000000a00004a0                . = ALIGN (0x4)
+                0x00000000a00004a0                . = ALIGN (0x4)
+                0x00000000a00004a0                _end = .
+                0x00000000a00004a0                _bss_end = .
 
-.heap           0x00000000a0000000        0x0
-                0x00000000a0000000                _heap = .
-                0x00000000a0000000                . = (. + _min_heap_size)
+.heap           0x00000000a00004a0        0x0
+                0x00000000a00004a0                _heap = .
+                0x00000000a00004a0                . = (. + _min_heap_size)
 
-.stack          0x00000000a0000000      0x400
-                0x00000000a0000000                _splim = .
-                0x00000000a0000000                _SPLIM = .
-                0x00000000a0000400                . = (. + _min_stack_size)
- *fill*         0x00000000a0000000      0x400 
+.stack          0x00000000a00004a0      0x400
+                0x00000000a00004a0                _splim = .
+                0x00000000a00004a0                _SPLIM = .
+                0x00000000a00008a0                . = (. + _min_stack_size)
+ *fill*         0x00000000a00004a0      0x400 
 
-.ramfunc        0x00000000a0000800        0x0 load address 0x000000009d0010ac
-                0x00000000a0000800                _ramfunc_begin = .
+.ramfunc        0x00000000a0001000        0x0 load address 0x000000009d00245c
+                0x00000000a0001000                _ramfunc_begin = .
  *(.ramfunc .ramfunc.*)
-                0x00000000a0000800                . = ALIGN (0x4)
-                0x00000000a0000800                _ramfunc_end = .
-                0x000000009d0010ac                _ramfunc_image_begin = LOADADDR (.ramfunc)
+                0x00000000a0001000                . = ALIGN (0x4)
+                0x00000000a0001000                _ramfunc_end = .
+                0x000000009d00245c                _ramfunc_image_begin = LOADADDR (.ramfunc)
                 0x0000000000000000                _ramfunc_length = SIZEOF (.ramfunc)
-                0x0000000000000800                _bmxdkpba_address = (_ramfunc_begin - ORIGIN (kseg1_data_mem))
+                0x0000000000001000                _bmxdkpba_address = (_ramfunc_begin - ORIGIN (kseg1_data_mem))
                 0x0000000000010000                _bmxdudba_address = 0x10000
                 0x0000000000010000                _bmxdupba_address = 0x10000
                 0x00000000a0010000                _stack = (_ramfunc_length > 0x0)?(_ramfunc_begin - 0x4):(ORIGIN (kseg1_data_mem) + 0x10000)
@@ -446,19 +645,42 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
 .pdr
  *(.pdr)
 
-.reginfo        0x0000000000000000       0x18
+.reginfo
  *(.reginfo)
- .reginfo       0x0000000000000000       0x18 obj/test.o
-OUTPUT(hex/Test.elf elf32-littlemips)
+LOAD obj/core.o
+LOAD obj/usb.o
+LOAD obj/flash.o
+LOAD obj/main.o
+LOAD obj/delay.o
+LOAD obj/serial.o
+LOAD /tmp/ccrxAfvs.o
+LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+OUTPUT(hex/Bootloader_v0.0.2_32MX270F256B_X8MHz.elf elf32-littlemips)
 
 .mdebug.abi32   0x0000000000000000        0x0
- .mdebug.abi32  0x0000000000000000        0x0 obj/test.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/core.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/usb.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/flash.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/main.o
+ .mdebug.abi32  0x0000000000000000        0x0 obj/delay.o
 
 .comment        0x0000000000000000       0x11
- .comment       0x0000000000000000       0x11 obj/test.o
+ .comment       0x0000000000000000       0x11 obj/core.o
                                          0x12 (size before relaxing)
+ .comment       0x0000000000000000       0x12 obj/usb.o
+ .comment       0x0000000000000000       0x12 obj/flash.o
+ .comment       0x0000000000000000       0x12 obj/main.o
+ .comment       0x0000000000000000       0x12 obj/delay.o
 
 .gnu.attributes
                 0x0000000000000000       0x10
  .gnu.attributes
-                0x0000000000000000       0x10 obj/test.o
+                0x0000000000000000       0x10 obj/core.o
+ .gnu.attributes
+                0x0000000000000010       0x10 obj/usb.o
+ .gnu.attributes
+                0x0000000000000020       0x10 obj/flash.o
+ .gnu.attributes
+                0x0000000000000030       0x10 obj/main.o
+ .gnu.attributes
+                0x0000000000000040       0x10 obj/delay.o

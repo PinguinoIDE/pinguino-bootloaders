@@ -8,9 +8,10 @@
 	This file is part of Pinguino (http://www.pinguino.cc)
 	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
 
- * 0.0.0    Microchip USB HID Bootloader adaptation to Pinguino
- * 0.0.1    First operational bootloader
- * 0.0.2    Fixed QUERY_DEVICE and GET_DATA issues (work in progress)
+ * 0.0.0    Microchip USB HID Bootloader adaptation to Pinguino - NOT WORKING -
+ * 0.0.1    Fixed APP_RESET_ADDR and procdefs.ld to work with XC32 toolchain
+ * 0.0.2    Fixed Config. Bits and $(PROC).ld to work with Pinguino toolchain 
+ * 0.0.3    Goal : Fixed QUERY_DEVICE and GET_DATA issues (work in progress)
 *******************************************************************************/
 
 #ifndef _BOOT_H_
