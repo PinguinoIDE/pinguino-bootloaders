@@ -49,16 +49,16 @@ Microchip PIC32 Memory-Usage Report
 kseg0 Program-Memory Usage
 section                    address  length [bytes]      (dec)  Description
 -------                 ----------  -------------------------  -----------
-.text                   0x9d001000         0x21d0        8656  App's exec code 
-.rodata                 0x9d0031d0          0x170         368  Read-only const 
-.dinit                  0x9d003438           0x20          32   
-      Total kseg0_program_mem used  :      0x2360        9056  88.4% of 0x2800
+.text                   0x9d001000         0x21cc        8652  App's exec code 
+.rodata                 0x9d0031cc          0x170         368  Read-only const 
+.dinit                  0x9d003434           0x20          32   
+      Total kseg0_program_mem used  :      0x235c        9052  88.4% of 0x2800
 
 kseg0 Boot-Memory Usage
 section                    address  length [bytes]      (dec)  Description
 -------                 ----------  -------------------------  -----------
-.startup                0x9fc00010          0x1b0         432  C startup code 
-         Total kseg0_boot_mem used  :       0x1b0         432  84.4% of 0x200
+.startup                0x9fc00010          0x1a0         416  C startup code 
+         Total kseg0_boot_mem used  :       0x1a0         416  81.2% of 0x200
 
 Exception-Memory Usage 
 section                    address  length [bytes]      (dec)  Description
@@ -71,7 +71,7 @@ section                    address  length [bytes]      (dec)  Description
 .reset                  0xbfc00000           0x10          16  Reset handler 
          Total kseg1_boot_mem used  :        0x10          16  100.0% of 0x10
         --------------------------------------------------------------------------
-         Total Program Memory used  :      0x2520        9504  63.9% of 0x3a10
+         Total Program Memory used  :      0x250c        9484  63.8% of 0x3a10
         --------------------------------------------------------------------------
 
 
@@ -144,9 +144,9 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
  .reset         0xbfc00000       0x10 build/32MX270/production/_ext/1360930308/crt0.o
                 0xbfc00000                _reset
 
-.startup        0x9fc00010      0x1b0
+.startup        0x9fc00010      0x1a0
  *(.startup)
- .startup       0x9fc00010      0x1b0 build/32MX270/production/_ext/1360930308/crt0.o
+ .startup       0x9fc00010      0x1a0 build/32MX270/production/_ext/1360930308/crt0.o
 
 .config_BFC00BF0
                 0xbfc00bf0        0x4
@@ -428,63 +428,63 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
  *(.vector_63)
                 0x00000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_63) <= (_vector_spacing << 0x5))), function at exception vector 63 too large)
 
-.text           0x9d001000     0x21d0
+.text           0x9d001000     0x21cc
                 0x9d001000                _text_begin = .
  *(.text .stub .text.* .gnu.linkonce.t.*)
- .text          0x9d001000       0x14 build/32MX270/production/_ext/1360930308/crt0.o
- .text          0x9d001014      0x798 build/32MX270/production/_ext/1472/main.o
-                0x9d001074                main
-                0x9d001778                USBEventHandler
- .text          0x9d0017ac      0x2ac build/32MX270/production/_ext/1472/serial.o
-                0x9d0017ac                SerialInit
-                0x9d0018f4                SerialPrintChar
-                0x9d00192c                SerialPrint
-                0x9d001968                SerialPrintNumber
- .text          0x9d001a58       0xb0 build/32MX270/production/_ext/1472/flash.o
-                0x9d001a58                FlashOperation
- .text          0x9d001b08       0x98 build/32MX270/production/_ext/1472/delay.o
-                0x9d001b08                DelayUs
- .text          0x9d001ba0       0xf0 build/32MX270/production/_ext/1472/core.o
-                0x9d001ba0                MemClear
-                0x9d001bc8                MemCopy
-                0x9d001bf8                DisableInterrupt
-                0x9d001c00                SoftReset
-                0x9d001c80                EnableInterrupt
-                0x9d001c88                ReadCoreTimer
- .text          0x9d001c90     0x1540 build/32MX270/production/_ext/1472/usb.o
-                0x9d002080                USBDeviceInit
-                0x9d00224c                USBDeviceTasks
-                0x9d003060                USBEnableEndpoint
-                0x9d0030d0                USBTransferOnePacket
- .text          0x9d0031d0        0x0 /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../pic32mx/lib/./proc/32MX270F256B/processor.o
+ .text          0x9d001000       0x10 build/32MX270/production/_ext/1360930308/crt0.o
+ .text          0x9d001010      0x798 build/32MX270/production/_ext/1472/main.o
+                0x9d001070                main
+                0x9d001774                USBEventHandler
+ .text          0x9d0017a8      0x2ac build/32MX270/production/_ext/1472/serial.o
+                0x9d0017a8                SerialInit
+                0x9d0018f0                SerialPrintChar
+                0x9d001928                SerialPrint
+                0x9d001964                SerialPrintNumber
+ .text          0x9d001a54       0xb0 build/32MX270/production/_ext/1472/flash.o
+                0x9d001a54                FlashOperation
+ .text          0x9d001b04       0x98 build/32MX270/production/_ext/1472/delay.o
+                0x9d001b04                DelayUs
+ .text          0x9d001b9c       0xf0 build/32MX270/production/_ext/1472/core.o
+                0x9d001b9c                MemClear
+                0x9d001bc4                MemCopy
+                0x9d001bf4                DisableInterrupt
+                0x9d001bfc                SoftReset
+                0x9d001c7c                EnableInterrupt
+                0x9d001c84                ReadCoreTimer
+ .text          0x9d001c8c     0x1540 build/32MX270/production/_ext/1472/usb.o
+                0x9d00207c                USBDeviceInit
+                0x9d002248                USBDeviceTasks
+                0x9d00305c                USBEnableEndpoint
+                0x9d0030cc                USBTransferOnePacket
+ .text          0x9d0031cc        0x0 /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../pic32mx/lib/./proc/32MX270F256B/processor.o
  *(.text.*personality*)
  *(.gnu.warning)
  *(.mips16.fn.*)
  *(.mips16.call.*)
-                0x9d0031d0                _text_end = .
+                0x9d0031cc                _text_end = .
 
-.rodata         0x9d0031d0      0x170
+.rodata         0x9d0031cc      0x170
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x9d0031d0       0xd0 build/32MX270/production/_ext/1472/main.o
- .rodata        0x9d0032a0       0xa0 build/32MX270/production/_ext/1472/usb.o
-                0x9d0032a0                device_dsc
-                0x9d0032b4                configDescriptor1
-                0x9d0032e0                sd000
-                0x9d0032e4                sd001
-                0x9d0032fc                sd002
-                0x9d003310                hid_rpt01
-                0x9d003330                USB_CD_Ptr
-                0x9d003334                USB_SD_Ptr
+ .rodata        0x9d0031cc       0xd0 build/32MX270/production/_ext/1472/main.o
+ .rodata        0x9d00329c       0xa0 build/32MX270/production/_ext/1472/usb.o
+                0x9d00329c                device_dsc
+                0x9d0032b0                configDescriptor1
+                0x9d0032dc                sd000
+                0x9d0032e0                sd001
+                0x9d0032f8                sd002
+                0x9d00330c                hid_rpt01
+                0x9d00332c                USB_CD_Ptr
+                0x9d003330                USB_SD_Ptr
  *(.rodata1)
-                0x9d003340                . = ALIGN (0x4)
+                0x9d00333c                . = ALIGN (0x4)
 
-.sdata2         0x9d003340        0x0
+.sdata2         0x9d00333c        0x0
  *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-                0x9d003340                . = ALIGN (0x4)
+                0x9d00333c                . = ALIGN (0x4)
 
-.sbss2          0x9d003340        0x0
+.sbss2          0x9d00333c        0x0
  *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
-                0x9d003340                . = ALIGN (0x4)
+                0x9d00333c                . = ALIGN (0x4)
 
 .eh_frame_hdr
  *(.eh_frame_hdr)
@@ -495,7 +495,7 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
 .dbg_data       0xa0000000        0x0
                 0xa0000000                . = (. + DEFINED (_DEBUGGER)?0x200:0x0)
 
-.data           0xa0000000        0x0 load address 0x9d003340
+.data           0xa0000000        0x0 load address 0x9d00333c
                 0xa0000000                _data_begin = .
  *(.data .data.* .gnu.linkonce.d.*)
  .data          0xa0000000        0x0 build/32MX270/production/_ext/1360930308/crt0.o
@@ -508,7 +508,7 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
  .data          0xa0000000        0x0 /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../pic32mx/lib/./proc/32MX270F256B/processor.o
  *(.gnu.linkonce.d.*personality*)
  *(.data1)
-                0x9d003340                _data_image_begin = LOADADDR (.data)
+                0x9d00333c                _data_image_begin = LOADADDR (.data)
 
 .eh_frame
  *(.eh_frame)
@@ -518,7 +518,7 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
  *(.got.plt)
  *(.got)
 
-.sdata          0xa0000000        0x0 load address 0x9d003340
+.sdata          0xa0000000        0x0 load address 0x9d00333c
                 0xa0000000                _sdata_begin = .
  *(.sdata .sdata.* .gnu.linkonce.s.*)
                 0xa0000000                _sdata_end = .
@@ -573,7 +573,7 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
                 0xa0000504                idle_rate
                 0xa0000505                _sbss_end = .
 
-.bss            0xa0000508       0xf8 load address 0x9d003340
+.bss            0xa0000508       0xf8 load address 0x9d00333c
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
  .bss           0xa0000508        0x0 build/32MX270/production/_ext/1360930308/crt0.o
@@ -601,12 +601,12 @@ LOAD /opt/microchip/xc32/v1.33/bin/bin/../../lib/gcc/pic32mx/4.5.2/../../../../p
  *fill*         0xa0000600      0x400 
  .stack         0xa0000a00        0x8 stack
 
-.ramfunc        0xa0001000        0x0 load address 0x9d003340
+.ramfunc        0xa0001000        0x0 load address 0x9d00333c
                 0xa0001000                _ramfunc_begin = .
  *(.ramfunc .ramfunc.*)
                 0xa0001000                . = ALIGN (0x4)
                 0xa0001000                _ramfunc_end = .
-                0x9d003340                _ramfunc_image_begin = LOADADDR (.ramfunc)
+                0x9d00333c                _ramfunc_image_begin = LOADADDR (.ramfunc)
                 0x00000000                _ramfunc_length = SIZEOF (.ramfunc)
                 0x00001000                _bmxdkpba_address = (_ramfunc_begin - ORIGIN (kseg1_data_mem))
                 0x00010000                _bmxdudba_address = 0x10000
@@ -670,5 +670,5 @@ LOAD data_init
                 0x00000000        0x0
  .mdebug.abi32  0x00000000        0x0 build/32MX270/production/_ext/1472/main.o
 
-.dinit          0x9d003438       0x20
- .dinit         0x9d003438       0x20 data_init
+.dinit          0x9d003434       0x20
+ .dinit         0x9d003434       0x20 data_init

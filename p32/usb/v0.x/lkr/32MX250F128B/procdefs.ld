@@ -35,7 +35,6 @@ PROVIDE(_min_heap_size = 0) ;
 /**********************************************************************
  * For interrupt vector handling
  * base address of interrupt vector table (length = 0x1000)
- * placed at the end of flash memory (0x40000 - 0x1000 = 0x3F000)
  * _ebase_address value MUST BE same as the ORIGIN value of exception_mem
  **********************************************************************/
 
@@ -64,13 +63,6 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
  * - kseg0_boot_mem contains C startup module (cacheable)
  * - debug_exec_mem containing debug supporting code for running ICD3/RealICE during a debug session (non-cacheable)
  * - configuration words (non-cacheable)
- **********************************************************************
- * Cacheable (KSEG0) and non-cacheable (KSEG1)
- * KSEG0 PROGRAM FLASH [0x9D000000:0x9D03FFFF]
- * KSEG1 PROGRAM FLASH [0xBD000000:0xBD03FFFF]
- * KSEG0    BOOT FLASH [0x9FC00000:0x9FC00BEF]
- * KSEG1    BOOT FLASH [0xBFC00000:0xBFC00BEF]
- * KSEG1           RAM [0xA0000000:0xA000FFFF]
  **********************************************************************/
 
 MEMORY
@@ -125,7 +117,7 @@ configsfrs                 : ORIGIN = 0xBFC00BF0, LENGTH = 0x10
 sfrs                       : ORIGIN = 0xBF800000, LENGTH = 0x100000
 
 /**********************************************************************
- * PIC32MX250F128B has 64 KB RAM, or 0x10000
+ * PIC32MX250F128B has 32 KB RAM, or 0x8000
  **********************************************************************/
 
 kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 32K
