@@ -82,6 +82,10 @@ kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x2800
 
 /**********************************************************************
  * kseg1_boot_mem value MUST BE same as the _RESET_ADDR value
+ * bfc00000:    c09f1a3c     lui    k0,0x9fc0
+ * bfc00004:    10005a27     addiu  k0,k0,16
+ * bfc00008:    08004003     jr     k0
+ * bfc0000c:    00000000     nop
  **********************************************************************/
 
 kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10
@@ -103,11 +107,11 @@ kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 32K
  * Device Configuration Registers (configuration bits)
  **********************************************************************/
 
-config3                    : ORIGIN = 0xBFC00BF0, LENGTH = 0x4
-config2                    : ORIGIN = 0xBFC00BF4, LENGTH = 0x4
-config1                    : ORIGIN = 0xBFC00BF8, LENGTH = 0x4
-config0                    : ORIGIN = 0xBFC00BFC, LENGTH = 0x4
-configsfrs                 : ORIGIN = 0xBFC00BF0, LENGTH = 0x10
+devcfg3                    : ORIGIN = 0xBFC00BF0, LENGTH = 0x4
+devcfg2                    : ORIGIN = 0xBFC00BF4, LENGTH = 0x4
+devcfg1                    : ORIGIN = 0xBFC00BF8, LENGTH = 0x4
+devcfg0                    : ORIGIN = 0xBFC00BFC, LENGTH = 0x4
+devcfg                     : ORIGIN = 0xBFC00BF0, LENGTH = 0x10
 
 /**********************************************************************
  * all SFRS
@@ -153,25 +157,11 @@ SECTIONS
     *** Config. Sections
     ********************************************************************/
 
-    .config_BFC00BF0 :
-    {
-    KEEP(*(.config_BFC00BF0))
-    } > config3
-
-    .config_BFC00BF4 :
-    {
-    KEEP(*(.config_BFC00BF4))
-    } > config2
-
-    .config_BFC00BF8 :
-    {
-    KEEP(*(.config_BFC00BF8))
-    } > config1
-
-    .config_BFC00BFC :
-    {
-    KEEP(*(.config_BFC00BFC))
-    } > config0
+    .devcfg  : { KEEP(*(.devcfg )) } > devcfg
+    .devcfg3 : { KEEP(*(.devcfg3)) } > devcfg3
+    .devcfg2 : { KEEP(*(.devcfg2)) } > devcfg2
+    .devcfg1 : { KEEP(*(.devcfg1)) } > devcfg1
+    .devcfg0 : { KEEP(*(.devcfg0)) } > devcfg0
 
     /********************************************************************
     *** Debug Sections
