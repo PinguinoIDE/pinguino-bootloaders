@@ -15,7 +15,7 @@
 #include "typedefs.h"
 #include "flash.h"
 #include "hardware.h"
-#include "delay.h"
+#include "delay.h"              // Delayus
 #include "core.h"
 #if defined(DEBUG)              // defined in hardware.h
 #include "serial.h"             // UART functions
@@ -67,7 +67,7 @@ void FlashOperation(UINT32 op, void* addr, UINT32 data)
     NVMCON = _NVMCON_WREN_MASK | op;
 
     // 2-Wait for LVD to become stable (at least 6us).
-    DelayUs(7);
+    Delayus(7);
 
     // 3-Write unlock sequence before the WR bit is set
     NVMKEY = 0xAA996655;

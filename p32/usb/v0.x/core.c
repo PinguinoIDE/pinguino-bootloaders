@@ -121,7 +121,7 @@ void MIPS32 EnableMultiVectoredInt(void)
 /*******************************************************************
  * Reset the Core Timer
  *******************************************************************/
-#if 0
+#if (TEST)
 void MIPS32 ResetCoreTimer(void)
 {
     asm volatile("mtc0	%0, $9" : : "r" (0));

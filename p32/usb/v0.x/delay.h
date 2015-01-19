@@ -13,6 +13,7 @@
 
 #include "typedefs.h"
 
-void DelayUs(UINT32);
+void Delayus(UINT32);
+void Delayms(UINT32);
 
 #endif // _DELAY_H_

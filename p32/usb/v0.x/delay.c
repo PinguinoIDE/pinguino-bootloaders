@@ -21,9 +21,13 @@
 #include "serial.h"         // UART functions
 #endif
 
-void DelayUs(UINT32 usec)
+/*	--------------------------------------------------------------------
+    Wait for us microseconds
+    ------------------------------------------------------------------*/
+
+void Delayus(UINT32 us)
 {
-    UINT32 stop = ReadCoreTimer() + usec * (UINT32)(FCP0 / 1000UL);
+    UINT32 stop = ReadCoreTimer() + us * (UINT32)(FCP0 / 1000000UL);
 
     #if 0 && defined(DEBUG)
         SerialPrint("start = ");
@@ -37,5 +41,20 @@ void DelayUs(UINT32 usec)
     // valid only when using a signed type
     while ((int) (ReadCoreTimer() - stop) < 0);
 }
+
+/*	--------------------------------------------------------------------
+    Wait for ms milliseconds
+    ------------------------------------------------------------------*/
+
+#if defined(TEST)
+void Delayms(UINT32 ms)
+{
+    do
+    {
+        Delayus(1000); // 1 ms
+    }
+    while(--ms);
+}
+#endif
 
 #endif // __DELAY_C

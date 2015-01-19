@@ -78,7 +78,7 @@ exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
  * Bootloader Interrupt Vector Table is placed between 0x9D000000 to 0x9D001000
  **********************************************************************/
 
-kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x2800
+kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x3000
 
 /**********************************************************************
  * kseg1_boot_mem value MUST BE same as the _RESET_ADDR value

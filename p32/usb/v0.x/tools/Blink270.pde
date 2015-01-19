@@ -20,12 +20,13 @@ void setup()
 
 void loop()
 {
-    /*
+    u32 timeEnd = millis() + 1000; // 1000 ms = 1 sec
+    while (millis() < timeEnd);
     toggle(USERLED);
-    delay(500);
-    */
+    /*
     digitalWrite(USERLED, ON);
     delay(100);
     digitalWrite(USERLED, OFF);
     delay(900);
+    */
 }

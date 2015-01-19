@@ -2,7 +2,7 @@
 	Title:	USB Pinguino Bootloader
 	File:	usb.c
 	Descr.: USB routines for PIC32 processors
-	Author:	Régis Blanchot <rblanchot@gmail.com>
+	Author:	RÃ©gis Blanchot <rblanchot@gmail.com>
 
 	This file is part of Pinguino (http://www.pinguino.cc)
 	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
@@ -45,7 +45,7 @@ const USB_DEVICE_DESCRIPTOR device_dsc=
 const UINT8 configDescriptor1[]={
     /* Configuration Descriptor */
     0x09,//sizeof(USB_CFG_DSC), // Size of this descriptor in bytes
-    USB_DESCRIPTOR_CONFIGURATION,                // CONFIGURATION descriptor type
+    USB_DESCRIPTOR_CONFIGURATION,// CONFIGURATION descriptor type
     0x29,0x00,                  // Total length of data for this cfg
     USB_MAX_NUM_INT,            // Number of interfaces in this cfg
     1,                          // Index value of this configuration
@@ -65,7 +65,7 @@ const UINT8 configDescriptor1[]={
     0,                          // Interface string index
 
     /* HID Class-Specific Descriptor */
-    0x09,//sizeof(USB_HID_DSC)+3,    // Size of this descriptor in bytes RRoj hack
+    0x09,//sizeof(USB_HID_DSC)+3,// Size of this descriptor in bytes RRoj hack
     DSC_HID,                    // HID descriptor type
     0x11,0x01,                  // HID Spec Release Number in BCD format (1.11)
     0x00,                       // Country Code (0x00 for Not supported)
@@ -345,7 +345,7 @@ void USBDeviceTasks(void)
     //if we are in the detached state
     if (USBDeviceState == DETACHED_STATE)
     {
-	//Initialize register to known value
+        //Initialize register to known value
         U1CONCLR = 0xFF;
 
         // Mask all USB interrupts
@@ -366,7 +366,7 @@ void USBDeviceTasks(void)
     }
     #endif  //#if defined(USB_POLLING)
 
-    if(USBDeviceState == ATTACHED_STATE)
+    if (USBDeviceState == ATTACHED_STATE)
     {
         /*
          * After enabling the USB module, it takes some time for the
@@ -377,7 +377,7 @@ void USBDeviceTasks(void)
          * as a USB bus reset from the USB host.
          */
 
-        if(!USBSE0Event)
+        if (!USBSE0Event)                   // RB20141210 : always true
         {
             U1IRCLR = 0xFF;                 // Clear all USB interrupts
             #if defined(USB_POLLING)
@@ -399,7 +399,9 @@ void USBDeviceTasks(void)
     {
         //USBClearInterruptFlag(USBActivityIFReg,USBActivityIFBitNum);
         U1OTGIRCLR = _U1OTGIR_ACTVIF_MASK;
-        //USBWakeFromSuspend();
+        #if 1
+        USBWakeFromSuspend();
+        #endif
         USBBusIsSuspended = FALSE;
 
         /*
@@ -436,7 +438,7 @@ void USBDeviceTasks(void)
      * cause a USB reset event during these two states.
      */
 
-    if(U1IRbits.URSTIF && U1IEbits.URSTIE)
+    if (U1IRbits.URSTIF && U1IEbits.URSTIE)
     {
         USBDeviceInit();
 
@@ -456,7 +458,9 @@ void USBDeviceTasks(void)
     //if(USBIdleIF && USBIdleIE)
     if (U1IRbits.IDLEIF && U1IEbits.IDLEIE)
     {
-        //USBSuspend();
+        #if 1
+        USBSuspend();
+        #endif
         // Enable bus activity interrupt
         U1OTGIESET = _U1OTGIE_ACTVIE_MASK; //USBActivityIE = 1;
         //USBClearInterruptFlag(USBIdleIFReg,USBIdleIFBitNum);
@@ -511,7 +515,10 @@ void USBDeviceTasks(void)
     //if(USBStallIF && USBStallIE)
     if (U1IRbits.STALLIF && U1IEbits.STALLIE)
     {
-        //USBStallHandler();
+        #if 1
+        USBStallHandler();
+        #endif
+        
         if(U1EP0bits.EPSTALL)
         {
             // UOWN - if 0, owned by CPU, if 1, owned by SIE
@@ -614,7 +621,7 @@ void USBDeviceTasks(void)
  Function:        void USBStallHandler(void)
  Handles the event of a STALL occuring on the bus
  *******************************************************************/
-#if 0
+#if 1
 static void USBStallHandler(void)
 {
     /*
@@ -646,7 +653,7 @@ static void USBStallHandler(void)
 /********************************************************************
  Handles if the host tries to suspend the device
  *******************************************************************/
-#if 0
+#if 1
 static void USBSuspend(void)
 {
     // Enable bus activity interrupt
@@ -666,7 +673,7 @@ static void USBSuspend(void)
 /********************************************************************
  Wake from suspend mode
  *******************************************************************/
-#if 0
+#if 1
 static void USBWakeFromSuspend(void)
 {
     USBBusIsSuspended = FALSE;
@@ -823,11 +830,10 @@ static void USBCtrlTrfSetupHandler(void)
     //Check for standard USB "Chapter 9" requests.
     USBCheckStdRequest();
     //Check for USB device class specific requests
-    //USB_DISABLE_NONSTANDARD_EP0_REQUEST_HANDLER(EVENT_EP0_REQUEST,0,0);
-    #if 0
-    USBEventHandler(EVENT_EP0_REQUEST);//,0,0);
+    #if 1
+    USBCheckHIDRequest();
     #endif
-
+    
     //--------------------------------------------------------------------------
     //3. Re-arm EP0 IN and EP0 OUT endpoints, based on the control transfer in
     //   progress.  If one of the above handlers (in step 2) knew how to process
@@ -990,28 +996,7 @@ static void USBCheckStdRequest(void)
 
     switch(SetupPkt.bRequest)
     {
-        case USB_REQUEST_SET_ADDRESS:
-            inPipe.info.bits.busy = 1;            // This will generate a zero length packet
-            USBDeviceState = ADR_PENDING_STATE;       // Update state only
-            /* See USBCtrlTrfInHandler() for the next step */
-            break;
-
-        case USB_REQUEST_GET_DESCRIPTOR:
-            USBStdGetDscHandler();
-            break;
-
-        case USB_REQUEST_SET_CONFIGURATION:
-            USBStdSetCfgHandler();
-            break;
-
-        #if 0
-        case USB_REQUEST_GET_CONFIGURATION:
-            inPipe.pSrc.bRam = (UINT8*)&USBActiveConfiguration;         // Set Source
-            inPipe.info.bits.ctrl_trf_mem = USB_EP0_RAM;               // Set memory type
-            inPipe.wCount.v[0] = 1;                         // Set data count
-            inPipe.info.bits.busy = 1;
-            break;
-
+        #if 1
         case USB_REQUEST_GET_STATUS:
             USBStdGetStatusHandler();
             break;
@@ -1020,7 +1005,35 @@ static void USBCheckStdRequest(void)
         case USB_REQUEST_SET_FEATURE:
             USBStdFeatureReqHandler();
             break;
+        #endif
 
+        case USB_REQUEST_SET_ADDRESS:
+            inPipe.info.bits.busy = 1;                          // Generate a zero length packet
+            USBDeviceState = ADR_PENDING_STATE;                 // Update state only
+            break;
+
+        case USB_REQUEST_GET_DESCRIPTOR:
+            USBStdGetDscHandler();
+            break;
+
+        #if 1
+        case USB_REQUEST_SET_DESCRIPTOR:
+            //USB_SET_DESCRIPTOR_HANDLER(EVENT_SET_DESCRIPTOR,0,0);
+            break;
+        
+        case USB_REQUEST_GET_CONFIGURATION:
+            inPipe.pSrc.bRam = (UINT8*)&USBActiveConfiguration; // Set Source
+            inPipe.info.bits.ctrl_trf_mem = USB_EP0_RAM;        // Set memory type
+            inPipe.wCount.v[0] = 1;                             // Set data count
+            inPipe.info.bits.busy = 1;
+            break;
+        #endif
+
+        case USB_REQUEST_SET_CONFIGURATION:
+            USBStdSetCfgHandler();
+            break;
+
+        #if 1
         case USB_REQUEST_GET_INTERFACE:
             inPipe.pSrc.bRam = (UINT8*)&USBAlternateInterface[SetupPkt.bIntfID];  // Set source
             inPipe.info.bits.ctrl_trf_mem = USB_EP0_RAM;               // Set memory type
@@ -1033,21 +1046,114 @@ static void USBCheckStdRequest(void)
             USBAlternateInterface[SetupPkt.bIntfID] = SetupPkt.bAltID;
             break;
 
-        case USB_REQUEST_SET_DESCRIPTOR:
-            USB_SET_DESCRIPTOR_HANDLER(EVENT_SET_DESCRIPTOR,0,0);
-            break;
         case USB_REQUEST_SYNCH_FRAME:
-        #endif
-
+            break;
+            
         default:
             break;
+        #endif
     }
 }//end USBCheckStdRequest
 
 /********************************************************************
+ * Handles HID specific request that happen on EP0.
+ *******************************************************************/
+#if 1
+void USBCheckHIDRequest(void)
+{
+    if (SetupPkt.Recipient != USB_SETUP_RECIPIENT_INTERFACE_BITFIELD)
+    {
+        return;
+    }
+
+    if (SetupPkt.bIntfID != HID_INTF_ID)
+    {
+        return;
+    }
+
+    if (SetupPkt.bRequest == USB_REQUEST_GET_DESCRIPTOR)
+    {
+        switch (SetupPkt.bDescriptorType)
+        {
+            case DSC_HID: //HID Descriptor
+                if (USBActiveConfiguration == 1)
+                {
+                    //USBEP0SendROMPtr((const UINT8*)&configDescriptor1 + 18, sizeof(USB_HID_DSC)+3, USB_EP0_INCLUDE_ZERO);
+                    //18 is a magic number.
+                    //It is the offset from start of the configuration
+                    //descriptor to the start of the HID descriptor.
+                    inPipe.pSrc.bRom = (const UINT8*)&configDescriptor1 + 18;
+                    inPipe.wCount.Val = sizeof(USB_HID_DSC)+3;
+                    inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_ROM;
+                }
+                break;
+
+            case DSC_RPT:  //Report Descriptor
+                if (USBActiveConfiguration == 1)
+                {
+                    //USBEP0SendROMPtr((const UINT8*)&hid_rpt01, sizeof(hid_rpt01), USB_EP0_INCLUDE_ZERO);
+                    inPipe.pSrc.bRom = (const UINT8*)&hid_rpt01;
+                    inPipe.wCount.Val = sizeof(hid_rpt01);
+                    inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_ROM;
+                }
+                break;
+        }
+    }
+
+    if (SetupPkt.RequestType != USB_SETUP_TYPE_CLASS_BITFIELD)
+    {
+        return;
+    }
+
+    switch (SetupPkt.bRequest)
+    {
+        #if 0
+        case GET_REPORT:
+            #if defined USER_GET_REPORT_HANDLER
+                USER_GET_REPORT_HANDLER();
+            #endif
+            break;
+
+        case SET_REPORT:
+            #if defined USER_SET_REPORT_HANDLER
+                USER_SET_REPORT_HANDLER();
+            #endif
+            break;
+        #endif
+
+        case GET_IDLE:
+            //USBEP0SendRAMPtr( (UINT8*)&idle_rate, 1, USB_EP0_INCLUDE_ZERO);
+            inPipe.pSrc.bRam = (UINT8*)&idle_rate;
+            inPipe.wCount.Val = 1;
+            inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_RAM;
+            break;
+
+        case SET_IDLE:
+            //USBEP0Transmit(USB_EP0_NO_DATA);
+            inPipe.info.Val = USB_EP0_NO_DATA | USB_EP0_BUSY;
+            idle_rate = SetupPkt.W_Value.byte.HB;
+            break;
+
+        case GET_PROTOCOL:
+            //USBEP0SendRAMPtr( (UINT8*)&active_protocol, 1, USB_EP0_NO_OPTIONS);
+            inPipe.pSrc.bRam = (UINT8*)&active_protocol;
+            inPipe.wCount.Val = 1;
+            inPipe.info.Val = USB_EP0_NO_OPTIONS | USB_EP0_BUSY | USB_EP0_RAM;
+            break;
+
+        case SET_PROTOCOL:
+            //USBEP0Transmit(USB_EP0_NO_DATA);
+            inPipe.info.Val = USB_EP0_NO_DATA | USB_EP0_BUSY;
+            active_protocol = SetupPkt.W_Value.byte.LB;
+            break;
+    }
+}
+#endif
+
+/********************************************************************
  * Handles the standard SET & CLEAR FEATURES requests
  *******************************************************************/
-#if 0
+#if 1
 static void USBStdFeatureReqHandler(void)
 {
     BDT_ENTRY *p;
@@ -1109,7 +1215,7 @@ static void USBStdFeatureReqHandler(void)
             pBDTEntryIn[SetupPkt.EPNum] = (volatile BDT_ENTRY *)p;
         }
 
-	//Check if it was a SET_FEATURE endpoint halt request
+        //Check if it was a SET_FEATURE endpoint halt request
         if(SetupPkt.bRequest == USB_REQUEST_SET_FEATURE)
         {
             if(p->STAT.UOWN == 1)
@@ -1361,7 +1467,7 @@ static void USBStdGetDscHandler(void)
 /********************************************************************
  * Handles the standard GET_STATUS request
  *******************************************************************/
-#if 0
+#if 1
 static void USBStdGetStatusHandler(void)
 {
     CtrlTrfData[0] = 0;                 // Initialize content
@@ -1792,8 +1898,9 @@ static void USBStdSetCfgHandler(void)
     {
         USBAlternateInterface[i] = 0x00;
     }
-    #endif
+    #else
     USBAlternateInterface[0] = 0;
+    #endif
 
     //Stop trying to reset ping pong buffer pointers
     //USBPingPongBufferReset = 0;
@@ -1801,7 +1908,7 @@ static void USBStdSetCfgHandler(void)
 
     pBDTEntryIn[0] = (volatile BDT_ENTRY*)&BDT[EP0_IN_EVEN];
 
-	//Set the next out to the current out packet
+    //Set the next out to the current out packet
     pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[EP0_OUT_EVEN];
     pBDTEntryEP0OutNext = pBDTEntryEP0OutCurrent;
 
@@ -2015,14 +2122,14 @@ static void USBStallEndpoint(UINT8 ep, UINT8 dir)
 //USB_HANDLE USBTransferOnePacket(UINT8 ep, UINT8 dir, UINT8* data, UINT8 len)
 USB_HANDLE USBTransferOnePacket(UINT8 dir, UINT8* data)
 {
-    volatile BDT_ENTRY* handle;
+    volatile BDT_ENTRY *handle;
 
     //If the direction is IN point to the IN BDT of the specified endpoint
     if (dir == IN_TO_HOST)
     {
         handle = pBDTEntryIn[HID_EP];
     }
-    else
+    else // OUT_FROM_HOST
     {
         handle = pBDTEntryOut[HID_EP];
     }
@@ -2032,7 +2139,7 @@ USB_HANDLE USBTransferOnePacket(UINT8 dir, UINT8* data)
     //is initialized before using it.
     if (handle == 0)
     {
-	return 0;
+        return 0;
     }
 
     //Set the data pointer, data length, and enable the endpoint
@@ -2053,106 +2160,5 @@ USB_HANDLE USBTransferOnePacket(UINT8 dir, UINT8* data)
     
     return (USB_HANDLE)handle;
 }
-
-/********************************************************************
- * Handles HID specific request that happen on EP0.
- *******************************************************************/
-#if 0
-void USBCheckHIDRequest(void)
-{
-    if(SetupPkt.Recipient != USB_SETUP_RECIPIENT_INTERFACE_BITFIELD)
-    {
-        return;
-    }
-
-    if(SetupPkt.bIntfID != HID_INTF_ID)
-    {
-        return;
-    }
-
-    /*
-     * There are two standard requests that hid.c may support.
-     * 1. GET_DSC(DSC_HID,DSC_RPT,DSC_PHY);
-     * 2. SET_DSC(DSC_HID,DSC_RPT,DSC_PHY);
-     */
-
-    if(SetupPkt.bRequest == USB_REQUEST_GET_DESCRIPTOR)
-    {
-        switch(SetupPkt.bDescriptorType)
-        {
-            case DSC_HID: //HID Descriptor
-                if (USBActiveConfiguration == 1)
-                {
-                    //USBEP0SendROMPtr((const UINT8*)&configDescriptor1 + 18, sizeof(USB_HID_DSC)+3, USB_EP0_INCLUDE_ZERO);
-                    //18 is a magic number.
-                    //It is the offset from start of the configuration
-                    //descriptor to the start of the HID descriptor.
-                    inPipe.pSrc.bRom = (const UINT8*)&configDescriptor1 + 18;
-                    inPipe.wCount.Val = sizeof(USB_HID_DSC)+3;
-                    inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_ROM;
-                }
-                break;
-
-            case DSC_RPT:  //Report Descriptor
-                if (USBActiveConfiguration == 1)
-                {
-                    //USBEP0SendROMPtr((const UINT8*)&hid_rpt01, sizeof(hid_rpt01), USB_EP0_INCLUDE_ZERO);
-                    inPipe.pSrc.bRom = (const UINT8*)&hid_rpt01;
-                    inPipe.wCount.Val = sizeof(hid_rpt01);
-                    inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_ROM;
-                }
-                break;
-        }
-    }
-
-    if(SetupPkt.RequestType != USB_SETUP_TYPE_CLASS_BITFIELD)
-    {
-        return;
-    }
-
-    switch(SetupPkt.bRequest)
-    {
-        #if 0
-        case GET_REPORT:
-            #if defined USER_GET_REPORT_HANDLER
-                USER_GET_REPORT_HANDLER();
-            #endif
-            break;
-
-        case SET_REPORT:
-            #if defined USER_SET_REPORT_HANDLER
-                USER_SET_REPORT_HANDLER();
-            #endif
-            break;
-        #endif
-
-        case GET_IDLE:
-            //USBEP0SendRAMPtr( (UINT8*)&idle_rate, 1, USB_EP0_INCLUDE_ZERO);
-            inPipe.pSrc.bRam = (UINT8*)&idle_rate;
-            inPipe.wCount.Val = 1;
-            inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_RAM;
-            break;
-
-        case SET_IDLE:
-            //USBEP0Transmit(USB_EP0_NO_DATA);
-            inPipe.info.Val = USB_EP0_NO_DATA | USB_EP0_BUSY;
-            idle_rate = SetupPkt.W_Value.byte.HB;
-            break;
-
-        case GET_PROTOCOL:
-            //USBEP0SendRAMPtr( (UINT8*)&active_protocol, 1, USB_EP0_NO_OPTIONS);
-            inPipe.pSrc.bRam = (UINT8*)&active_protocol;
-            inPipe.wCount.Val = 1;
-            inPipe.info.Val = USB_EP0_NO_OPTIONS | USB_EP0_BUSY | USB_EP0_RAM;
-            break;
-
-        case SET_PROTOCOL:
-            //USBEP0Transmit(USB_EP0_NO_DATA);
-            inPipe.info.Val = USB_EP0_NO_DATA | USB_EP0_BUSY;
-            active_protocol = SetupPkt.W_Value.byte.LB;
-            break;
-    }
-}
-#endif
 
 #endif // __USB_C

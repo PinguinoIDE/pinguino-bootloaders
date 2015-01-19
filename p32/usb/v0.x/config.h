@@ -11,7 +11,7 @@
 #ifndef _CONFIG_H_
 #define	_CONFIG_H_
 
-#if defined(__P32GCC__)
+#if defined(__P32GCC__) // PINGUINO/P32-GCC
 
     // Microchip added a proprietary set of #pragma config's to their C compiler,
     // but these are not supported by the Pinguino Toolchain.
@@ -23,14 +23,12 @@
         defined(__32MX250F128B__) || \
         defined(__32MX270F256B__)
 
-        #if 1
-
-        const int DEVCFG3_ __attribute__((section(".devcfg3"))) = 0xCFFFFFFF;
-        const int DEVCFG2_ __attribute__((section(".devcfg2"))) = 0xFFF979D9;
-        const int DEVCFG1_ __attribute__((section(".devcfg1"))) = 0xFF601EDB;
-        const int DEVCFG0_ __attribute__((section(".devcfg0"))) = 0x7FFFFFF3;
-
-        #else
+        #if 0
+        const int devcfg3 __attribute__((section(".devcfg3"))) = 0xCFFFFFFF;
+        const int devcfg2 __attribute__((section(".devcfg2"))) = 0xFFF979D9;
+        const int devcfg0 __attribute__((section(".devcfg0"))) = 0x7FFFFFF3;
+        const int devcfg1 __attribute__((section(".devcfg1"))) = 0xFF601EDB;
+        #endif
 
         const __DEVCFG3bits_t __attribute__((section(".devcfg3"))) devcfg3 =
         {
@@ -43,14 +41,37 @@
             }
         };
 
+        // FCPUMHZ is defined in the Makefile
         const __DEVCFG2bits_t __attribute__((section(".devcfg2"))) devcfg2 =
         {
             {
-                .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
-                .FPLLMUL    = DEVCFG2_FPLLMUL_20,
+                #if   (FCPUMHZ==42)
+                    .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                    .FPLLMUL    = DEVCFG2_FPLLMUL_21,
+                    .FPLLODIV   = DEVCFG2_FPLLODIV_2,
+                #elif (FCPUMHZ==48)
+                    .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                    .FPLLMUL    = DEVCFG2_FPLLMUL_24,
+                    .FPLLODIV   = DEVCFG2_FPLLODIV_2,
+                #elif (FCPUMHZ==60)
+                    .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                    .FPLLMUL    = DEVCFG2_FPLLMUL_15,
+                    .FPLLODIV   = DEVCFG2_FPLLODIV_1,
+                #elif (FCPUMHZ==64)
+                    .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                    .FPLLMUL    = DEVCFG2_FPLLMUL_16,
+                    .FPLLODIV   = DEVCFG2_FPLLODIV_1,
+                #elif (FCPUMHZ==68)
+                    .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                    .FPLLMUL    = DEVCFG2_FPLLMUL_17,
+                    .FPLLODIV   = DEVCFG2_FPLLODIV_1,
+                #else // 40MHz
+                    .FPLLIDIV   = DEVCFG2_FPLLIDIV_2,
+                    .FPLLMUL    = DEVCFG2_FPLLMUL_20,
+                    .FPLLODIV   = DEVCFG2_FPLLODIV_2,
+                #endif
                 .UPLLIDIV   = DEVCFG2_UPLLIDIV_2,
-                .UPLLEN     = DEVCFG2_UPLLEN_ENABLED,
-                .FPLLODIV   = DEVCFG2_FPLLODIV_1
+                .UPLLEN     = DEVCFG2_UPLLEN_ENABLED
             }
         };
 
@@ -62,12 +83,12 @@
                 .IESO       = DEVCFG1_IESO_ENABLED,
                 .POSCMOD    = DEVCFG1_POSCMOD_HS,
                 .OSCIOFNC   = DEVCFG1_OSCIOFNC_DISABLED,
-                .FPBDIV     = DEVCFG1_FPBDIV_2,
+                .FPBDIV     = DEVCFG1_FPBDIV_1,
                 .FCKSM      = DEVCFG1_CSECMD,
                 .WDTPS      = DEVCFG1_WDTPS_1024,
                 .WINDIS     = DEVCFG1_WINDIS_DISABLED,
-                .FWDTEN     = DEVCFG1_FWDTEN_DISABLED,
-                .FWDTWINSZ  = DEVCFG1_FWDTWINSZ_50
+                .FWDTEN     = DEVCFG1_FWDTEN_DISABLED
+                //.FWDTWINSZ  = DEVCFG1_FWDTWINSZ_50
             }
         };
 
@@ -82,8 +103,6 @@
                 .CP         = DEVCFG0_CP_DISABLED
             }
         };
-        
-        #endif
 
     #else
 
@@ -91,7 +110,7 @@
 
     #endif
 
-#else
+#else // MPLABX/XC32-GCC
  
     #if defined(__32MX220F032B__) || \
         defined(__32MX250F128B__) || \

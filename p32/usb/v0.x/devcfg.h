@@ -91,8 +91,8 @@
 #define DEVCFG1_WINDIS_ENABLED  0           /* Watchdog Window mode enable */
 #define DEVCFG1_WINDIS_DISABLED 1           /* Watchdog Window mode disabled */
 
-#define DEVCFG1_FWDTEN_ENABLED  0           /* Watchdog enable */
-#define DEVCFG1_FWDTEN_DISABLED 1           /* Watchdog disable */
+#define DEVCFG1_FWDTEN_ENABLED  1           /* Watchdog enable */
+#define DEVCFG1_FWDTEN_DISABLED 0           /* Watchdog disable */
 
 #define DEVCFG1_FWDTWINSZ_25    3           /* Window size is 25% */
 #define DEVCFG1_FWDTWINSZ_37    2           /* Window size is 37.5% */

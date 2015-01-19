@@ -35,10 +35,10 @@
 #define CTRL_TRF_RETURN void
 #define CTRL_TRF_PARAMS void
 
-//USB_HANDLE is a pointer to an entry in the BDT.  This pointer can be used
-//  to read the length of the last transfer, the status of the last transfer,
-//  and various other information.  Insure to initialize USB_HANDLE objects
-//  to NULL so that they are in a known state during their first usage.
+// USB_HANDLE is a pointer to an entry in the BDT.  This pointer can be used
+// to read the length of the last transfer, the status of the last transfer,
+// and various other information.  Insure to initialize USB_HANDLE objects
+// to NULL so that they are in a known state during their first usage.
 #define USB_HANDLE void*
 
 //Device descriptor - if these two definitions are not defined then
@@ -883,6 +883,7 @@ and properties of the data transfer.
 </code>
 */
 
+
 typedef union
 {
     UINT8    bitmap;
@@ -983,7 +984,7 @@ typedef struct _USB_HID_DSC
  Macros
 *******************************************************************************/
 
-#define USBHandleBusy(handle)           (handle==0?0:((volatile BDT_ENTRY*)handle)->STAT.UOWN)
+#define USBHandleBusy(handle) (handle==0?0:((volatile BDT_ENTRY*)handle)->STAT.UOWN)
 
 // advance the passed pointer to the next buffer state
 #define USBAdvancePingPongBuffer(buffer) ((BYTE_VAL*)buffer)->Val ^= USB_NEXT_PING_PONG;
@@ -1013,25 +1014,25 @@ extern void USBEventHandler(void); // defined in main.c
 //Internal Functions
 void USBDeviceInit(void);
 void USBDeviceTasks(void);
-//void USBCheckHIDRequest(void);
+void USBCheckHIDRequest(void);
 void USBEnableEndpoint(UINT8, UINT8);
 USB_HANDLE USBTransferOnePacket(UINT8, UINT8*);
 //USB_HANDLE USBTransferOnePacket(UINT8, UINT8, UINT8*, UINT8);
 //BOOL USBHandleBusy(USB_HANDLE);
 
-//static void USBStallHandler(void);
-//static void USBSuspend(void);
-//static void USBWakeFromSuspend(void);
+static void USBStallHandler(void);
+static void USBSuspend(void);
+static void USBWakeFromSuspend(void);
 static void USBCtrlEPService(void);
 static void USBCtrlTrfSetupHandler(void);
 static void USBCtrlTrfOutHandler(void);
 static void USBCtrlTrfInHandler(void);
 static void USBCheckStdRequest(void);
-//static void USBStdFeatureReqHandler(void);
+static void USBStdFeatureReqHandler(void);
 static void USBCtrlEPAllowStatusStage(void);
 static void USBCtrlEPAllowDataStage(void);
 static void USBStdGetDscHandler(void);
-//static void USBStdGetStatusHandler(void);
+static void USBStdGetStatusHandler(void);
 static void USBCtrlEPServiceComplete(void);
 static void USBCtrlTrfTxService(void);
 static void USBCtrlTrfRxService(void);

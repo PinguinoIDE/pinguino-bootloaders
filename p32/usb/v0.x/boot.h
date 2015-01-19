@@ -11,7 +11,9 @@
  * 0.0.0    Microchip USB HID Bootloader adaptation to Pinguino - NOT WORKING -
  * 0.0.1    Fixed APP_RESET_ADDR and procdefs.ld to work with XC32 toolchain
  * 0.0.2    Fixed Config. Bits and $(PROC).ld to work with Pinguino toolchain 
- * 0.0.3    Goal : Fixed QUERY_DEVICE and GET_DATA issues (work in progress)
+ * 0.0.3    Fixed interrupt issue (Boot & App. must not share the same IVT)
+Next :
+ * 0.0.4    Goal : Fixed QUERY_DEVICE and GET_DATA issues (work in progress)
 *******************************************************************************/
 
 #ifndef _BOOT_H_
@@ -27,7 +29,7 @@
 #define USB_MINOR_VER                       0       // Firmware version, minor release number.
 #endif
 #ifndef USB_DOT_VER
-#define USB_DOT_VER                         2       // Firmware version, dot release number.
+#define USB_DOT_VER                         3       // Firmware version, dot release number.
 #endif
 
 // Specific to USB Pinguino Device

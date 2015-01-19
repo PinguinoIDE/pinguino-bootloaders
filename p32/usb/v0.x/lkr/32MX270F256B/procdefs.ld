@@ -53,8 +53,8 @@ _ebase_address = 0x9D000000;
  **********************************************************************/
 
 _RESET_ADDR              = 0xBFC00000;
-
 _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
+_BEV_EXCPT_ADDR          = _RESET_ADDR + 0x380;
 
 /**********************************************************************
  * Memory Regions
@@ -93,7 +93,7 @@ exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
  * 0x40000 - 0x1000 = 0x3F000 bytes free
  **********************************************************************/
 
-kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x2800
+kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x3000
 
 /**********************************************************************
  * Reset (0x0), Boot (0x380) and Debug (0x480) vectors
@@ -102,14 +102,16 @@ kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x2800
  * vector's length = 0x10 ?
  **********************************************************************/
 
-kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10
+/*kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10*/
+kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x400
 
 /**********************************************************************
  * Startup code (about 0x200 bytes long)
  * in cacheable BOOT FLASH
  **********************************************************************/
 
-kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200
+/*kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200*/
+kseg0_boot_mem             : ORIGIN = 0x9FC00400, LENGTH = 0x200
 
 /**********************************************************************
  * Device Configuration Registers (configuration bits)
@@ -155,7 +157,6 @@ SECTIONS
     *** Exception Vectors
     ********************************************************************/
 
-    /*
     .bev_excpt _BEV_EXCPT_ADDR :
     {
     KEEP(*(.bev_handler))
@@ -165,7 +166,6 @@ SECTIONS
     {
     KEEP(*(.gen_handler))
     } > exception_mem
-    */
 
     /********************************************************************
     *** Config. Sections

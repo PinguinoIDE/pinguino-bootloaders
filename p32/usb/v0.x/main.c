@@ -35,7 +35,7 @@
 #include "hardware.h"                           // Pinguino boards hardware description
 #include "flash.h"                              // Flash write and flash erase functions
 #include "core.h"                               // MemCopy, MemClear, core timer functions
-#include "delay.h"                              // DelayUs
+#include "delay.h"                              // Delayus
 #include "usb.h"                                // USB device framework definitions
 #include "debug.h"                              // Debug functions
 
@@ -169,26 +169,31 @@ int main(void)
     mSWITCH_Init();
 
     #if defined(DEBUG)
-        SerialInit(115200);
+        SerialInit(9600);
         SerialPrintChar(12); // CLS
         SerialPrint("*** PINGUINO ***\r\n");
-        SerialPrint("BOOTLOADER V");
-        SerialPrintNumber(USB_MAJOR_VER,10);
+        SerialPrint("BOOTLOADER v");
+        SerialPrintNumber(USB_MAJOR_VER, 10);
         SerialPrint(".");
-        SerialPrintNumber(USB_MINOR_VER,10);
+        SerialPrintNumber(USB_MINOR_VER, 10);
         SerialPrint(".");
-        SerialPrintNumber(USB_DOT_VER,10);
+        SerialPrintNumber(USB_DOT_VER, 10);
         SerialPrint("\r\n");
         SerialPrint("FCPU ");
-        SerialPrintNumber(FCPU/1000000,10);
+        SerialPrintNumber(FCPU/1000000, 10);
         SerialPrint("MHz\r\n");
         SerialPrint("FPB  ");
-        SerialPrintNumber(FPB/1000000,10);
+        SerialPrintNumber(FPB/1000000, 10);
         SerialPrint("MHz\r\n");
-        SerialPrintNumber(DATA_MEM_LENGTH/1024,10);
+        SerialPrintNumber(DATA_MEM_LENGTH/1024, 10);
         SerialPrint("K RAM SYSTEM\r\n");
-        SerialPrintNumber(APP_PROGRAM_LENGTH/1024,10);
+        SerialPrintNumber(APP_PROGRAM_LENGTH/1024, 10);
         SerialPrint("K FLASH FREE\r\n");
+        /*
+        SerialPrint("0x");
+        SerialPrintNumber(APP_EBASE_ADDR, 16);
+        SerialPrint("\r\n");
+        */
         SerialPrint("READY\r\n");
     #endif
 
@@ -196,7 +201,8 @@ int main(void)
     while(1)
     {
         mLED_1_Toggle();
-        DelayUs(300);
+        for (led_count = 0; led_count < 100; led_count++)
+            Delayus(1000);
     }
     #endif
 
@@ -223,7 +229,7 @@ int main(void)
     {
         // Check bus status and service USB interrupts.
         USBDeviceTasks();
-
+        
         if (led_count == 0)
             led_count = 10000;
 
@@ -251,22 +257,22 @@ static void USBPacketHandler(void)
     UINT8 nwords32;
     UINT8 index32;
 
+    // *** RB20141210 : OK ***
     if (BootState == IdleState)
     {
         // Are we done sending the last response ?
+        // Check USBOutHandle->STAT.UOWN
         if (!USBHandleBusy(USBInHandle))
         {
             // Did we receive a command ?
+            // Check USBOutHandle->STAT.UOWN
             if (!USBHandleBusy(USBOutHandle))
             {
                 // Make a copy of received data.
-                // void memcopy (void *from, void *to, UINT32 nbytes)
+                // void Memcopy (void *from, void *to, UINT32 nbytes)
                 MemCopy(&PacketFromPCBuffer, &PacketFromPC, TotalPacketSize8);
 
                 // Restart receiver, to be ready for a next packet.
-                //#define USBRxOnePacket(ep,data,len)      USBTransferOnePacket(ep,OUT_FROM_HOST,data,len)
-                //USBOutHandle = USBRxOnePacket(HID_EP, (UINT8*)&PacketFromPCBuffer, TotalPacketSize8);
-                //USBOutHandle = USBTransferOnePacket(HID_EP, OUT_FROM_HOST, (UINT8*)&PacketFromPCBuffer, TotalPacketSize8);
                 USBOutHandle = USBTransferOnePacket(OUT_FROM_HOST, (UINT8*)&PacketFromPCBuffer);
                 BootState = NotIdleState;
 
@@ -275,6 +281,7 @@ static void USBPacketHandler(void)
             }
         }
     }
+
     else //(BootState Not in Idle State)
     {
         switch (PacketFromPC.Command)
@@ -283,10 +290,6 @@ static void USBPacketHandler(void)
 //******************************************************************************
             case QUERY_DEVICE:
 //******************************************************************************
-
-                #if defined(DEBUG)
-                SerialPrint("QUERY_DEVICE:\r\n");
-                #endif
 
                 // Prepare a response packet
                 PacketToPC.Command1     = (UINT8)  QUERY_DEVICE;
@@ -318,10 +321,6 @@ static void USBPacketHandler(void)
             case GET_DATA:
 //******************************************************************************
 
-                #if defined(DEBUG)
-                SerialPrint("GET_DATA:\r\n");
-                #endif
-
                 // Prepare a response packet
                 PacketToPC.Command = GET_DATA;
                 PacketToPC.Address = PacketFromPC.Address;
@@ -347,10 +346,6 @@ static void USBPacketHandler(void)
 //******************************************************************************
             case ERASE_DEVICE:
 //******************************************************************************
-
-                #if defined(DEBUG)
-                SerialPrint("ERASE_DEVICE:\r\n");
-                #endif
 
                 //void* pFlash = (void*) UserAppMemStart;
 
@@ -378,10 +373,6 @@ static void USBPacketHandler(void)
 //******************************************************************************
             case PROGRAM_DEVICE:
 //******************************************************************************
-
-                #if defined(DEBUG)
-                SerialPrint("PROGRAM_DEVICE:\r\n");
-                #endif
 
                 // number of 32-bit words to write
                 nwords32 = PacketFromPC.Size / WORDSIZE;
@@ -421,10 +412,6 @@ static void USBPacketHandler(void)
             case PROGRAM_COMPLETE:
 //******************************************************************************
 
-                #if defined(DEBUG)
-                SerialPrint("PROGRAM_COMPLETE:\r\n");
-                #endif
-
                 WriteFlashBlock();
                 //Reinitialize pointer to an invalid range, so we know the next
                 //PROGRAM_DEVICE will be the start address of a contiguous section.
@@ -436,16 +423,12 @@ static void USBPacketHandler(void)
             case RESET_DEVICE:
 //******************************************************************************
 
-                #if defined(DEBUG)
-                SerialPrint("RESET_DEVICE:\r\n");
-                #endif
-
                 // Disable the USB module and wait for the USB cable
                 // capacitance to discharge down to disconnected (SE0) state.
                 // Otherwise host might not realize we disconnected/reconnected
                 // when we do the reset.
                 U1CONCLR = 0xFF;
-                DelayUs(1000);
+                Delayus(1000);
                 SoftReset();
                 break;
 

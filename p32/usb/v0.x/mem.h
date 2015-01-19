@@ -43,28 +43,18 @@
 #define DATA_MEM_LENGTH                 BMXDRMSZ
 #endif
 
+#define BOOT_PROGRAM_LENGTH             0x3000  // 10K
+
 /**********************************************************************
- * BOOTLOADER and APPLICATION (ex. PIC32MX270F256B)
- * IVT = from 0x9D000000 to 0x9D001000
+ * BOOTLOADER
  **********************************************************************/
 
+// IVT from 0x9D000000 to 0x9D001000
 #define BOOT_EBASE_ADDR                 FLASH_MEM_START
 #define BOOT_GEN_EXCPT_ADDR             (BOOT_EBASE_ADDR + 0x180)
 #define BOOT_EXCEPTION_MEM              BOOT_EBASE_ADDR
 #define BOOT_EXCEPTION_MEM_LENGTH       0x1000
-
-#define APP_EBASE_ADDR                  FLASH_MEM_START
-#define APP_GEN_EXCPT_ADDR              (APP_EBASE_ADDR + 0x180)
-#define APP_EXCEPTION_MEM               APP_EBASE_ADDR
-#define APP_EXCEPTION_MEM_LENGTH        0x1000
-
-/**********************************************************************
- * BOOTLOADER (ex. PIC32MX270F256B)
- **********************************************************************/
-
-#define BOOT_PROGRAM_LENGTH             0x2800  // 10K
-
-// from 0x9D001000 to 0x9D003400
+// BOOTLOADER from 0x9D001000 to 0x9D004000
 #define BOOT_KSEG0_PROGRAM_MEM          (BOOT_EXCEPTION_MEM + BOOT_EXCEPTION_MEM_LENGTH)
 #define BOOT_KSEG0_PROGRAM_MEM_LENGTH   BOOT_PROGRAM_LENGTH
 // from 0xBFC00000 to 0xBFC00010
@@ -76,11 +66,18 @@
 #define BOOT_KSEG0_BOOT_MEM_LENGTH      STARTUP_MEM_LENGTH
 
 /**********************************************************************
- * APPLICATION (ex. PIC32MX270F256B)
+ * APPLICATION
  **********************************************************************/
 
-// from 0x9D003400 to 0x9D040000
-#define APP_KSEG0_PROGRAM_MEM           (BOOT_KSEG0_PROGRAM_MEM + BOOT_KSEG0_PROGRAM_MEM_LENGTH)
+// IVT from 0x9D004000 to 0x9D005000
+//#define APP_EBASE_ADDR                  FLASH_MEM_START
+#define APP_EBASE_ADDR                  (BOOT_KSEG0_PROGRAM_MEM + BOOT_KSEG0_PROGRAM_MEM_LENGTH)
+#define APP_GEN_EXCPT_ADDR              (APP_EBASE_ADDR + 0x180)
+#define APP_EXCEPTION_MEM               APP_EBASE_ADDR
+#define APP_EXCEPTION_MEM_LENGTH        0x1000
+// APPLICATION from 0x9D005000 to 0x9D040000
+//#define APP_KSEG0_PROGRAM_MEM           (BOOT_KSEG0_PROGRAM_MEM + BOOT_KSEG0_PROGRAM_MEM_LENGTH)
+#define APP_KSEG0_PROGRAM_MEM           (APP_EXCEPTION_MEM + APP_EXCEPTION_MEM_LENGTH)
 #define APP_KSEG0_PROGRAM_MEM_LENGTH    (FLASH_MEM_START + FLASH_TOTAL_LENGTH - APP_KSEG0_PROGRAM_MEM)
 
 #define APP_PROGRAM_ADDR_START          APP_KSEG0_PROGRAM_MEM

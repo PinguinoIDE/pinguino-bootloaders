@@ -14,8 +14,9 @@
 #                                                                      #
 ########################################################################
 
-_TEST_ENABLE_   = false
-_MIPS16_ENABLE_ = true
+_MIPS16_ENABLE_	= true
+_OVCLCK_ENABLE_	= false
+_TEST_ENABLE_	= false
 
 # Where to find the gcc-mips-elf toolchain
 BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
@@ -27,7 +28,7 @@ BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
 
 MAJ_VER		= 0
 MIN_VER		= 0
-DOT_VER		= 2
+DOT_VER		= 3
 
 # ----------------------------------------------------------------------
 # Processor family
@@ -44,6 +45,17 @@ FAMILYMX2	= $(findstring 32MX2, $(PROC))
 FAMILY		= $(FAMILYMX1)$(FAMILYMX2)$(FAMILYMZ)
 
 CRYSTAL		= 8
+TOOL		= PK3
+
+# ----------------------------------------------------------------------
+# Overclock (possible value : 42, 48, 60, 64)
+# ----------------------------------------------------------------------
+
+ifeq "$(_OVCLCK_ENABLE_)" "true"
+	FCPU=64
+else
+	FCPU=40
+endif
 
 # ----------------------------------------------------------------------
 # Project's name
@@ -52,18 +64,19 @@ CRYSTAL		= 8
 ifeq "$(_TEST_ENABLE_)" "true"
 	PRJ		= Test
 else
+#	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)-$(FCPU)MHz
 	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)MHz
 endif
 
 # ----------------------------------------------------------------------
 # Unsupported record in hex file / Jean-pierre Mandon 2012
 # ----------------------------------------------------------------------
-#		04		 : 4 bytes
-#		0000	 : address
-#		05		 : record type = Start_Linear_Address_Record
-#		9D004000 : address where the user program should start
-#				 : _RESET_ADDR (see lkr/procdefs.ld)
-#		1A		 : checksum
+#	04		 : 4 bytes
+#	0000	 : address
+#	05		 : record type = Start_Linear_Address_Record
+#	9D004000 : address where the user program should start
+#			 : _RESET_ADDR (see lkr/procdefs.ld)
+#	1A		 : checksum
 # ----------------------------------------------------------------------
 
 ifneq (,$(filter $(FAMILY),32MX1 32MX2))
@@ -96,6 +109,9 @@ YELLOW=\033[33;1m
 BLUE=\033[34;1m
 TERM=\033[m
 
+BOLD=\033\[0;1;31m
+NORM=\033\[0m
+
 WARNING=$(YELLOW)
 ERROR=$(RED)
 NORMAL=$(GREEN)
@@ -126,7 +142,7 @@ LIBDIRS		=
 # ----------------------------------------------------------------------
 
 ifeq "$(_TEST_ENABLE_)" "true"
-	SRCS	= test.c
+	SRCS	= test.c delay.c core.c serial.c
 else
 	ALLSRCS	= $(wildcard *.c)
 	SRCS	= $(filter-out test.c, $(ALLSRCS))
@@ -183,6 +199,7 @@ ELF_FLAGS	= -march=$(CORE) \
 			  -D __P32GCC__ \
 			  -D __PIC32MX__ \
 			  -D __$(PROC)__ \
+			  -D FCPUMHZ=$(FCPU) \
 			  -D USB_MAJOR_VER=$(MAJ_VER) \
 			  -D USB_MINOR_VER=$(MIN_VER) \
 			  -D USB_DOT_VER=$(DOT_VER)
@@ -201,7 +218,8 @@ ELF_FLAGS	= -march=$(CORE) \
 #
 #-----------------------------------------------------------------------
 
-all: start clean copy $(PRJ).elf convert fix size
+all: start clean copy $(PRJ).elf convert fix size burn
+#all: start clean copy $(PRJ).elf convert fix size
 #all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf
@@ -263,5 +281,14 @@ else
 	@tools/codesize.py $(HEXDIR)/$(PRJ).hex
 endif
 
+#http://denethor.wlu.ca/cp316/software/Readme_for_IPECMD.txt
+#java -jar ipecmd.jar /P16F877 /Fc:\mycode.hex /M
+# or
+#java -jar ipecmd.jar PM3CMD -1 -P16F877 -Fc:\mycode.hex -M
 burn:
-	@tools/pic32prog -S -p $(HEXDIR)/$(PRJ).hex
+#	@tools/pic32prog -S -p $(HEXDIR)/$(PRJ).hex
+#	C:\Program Files\Microchip\MPLABX\mplab_ide\bin
+	@echo "Burning $(PRJ).hex file"
+	@java -jar /opt/microchip/mplabx/mplab_ipe/ipecmd.jar -TP$(TOOL) -P$(PROC) -M -F$(HEXDIR)/$(PRJ).hex
+	@$(RM) MPLABXLog.* > /dev/null
+	@$(RM) log.* > /dev/null
