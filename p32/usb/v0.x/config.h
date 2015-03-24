@@ -13,6 +13,9 @@
 
 #if defined(__P32GCC__) // PINGUINO/P32-GCC
 
+    #include "p32xxxx.h"                            // Registers definitions
+    #include "typedefs.h"                           // UINT8, UINT32, ...
+
     // Microchip added a proprietary set of #pragma config's to their C compiler,
     // but these are not supported by the Pinguino Toolchain.
     // So we use this simple solution instead :
@@ -23,12 +26,14 @@
         defined(__32MX250F128B__) || \
         defined(__32MX270F256B__)
 
-        #if 0
-        const int devcfg3 __attribute__((section(".devcfg3"))) = 0xCFFFFFFF;
-        const int devcfg2 __attribute__((section(".devcfg2"))) = 0xFFF979D9;
-        const int devcfg0 __attribute__((section(".devcfg0"))) = 0x7FFFFFF3;
-        const int devcfg1 __attribute__((section(".devcfg1"))) = 0xFF601EDB;
-        #endif
+        #if 1
+        
+        const UINT32 __attribute__((section(".devcfg3"))) devcfg3 = 0xCFFFFFFF;
+        const UINT32 __attribute__((section(".devcfg2"))) devcfg2 = 0xFFF979D9;
+        const UINT32 __attribute__((section(".devcfg1"))) devcfg1 = 0xFF601EDB;
+        const UINT32 __attribute__((section(".devcfg0"))) devcfg0 = 0x7FFFFFF3;
+
+        #else
 
         const __DEVCFG3bits_t __attribute__((section(".devcfg3"))) devcfg3 =
         {
@@ -104,6 +109,8 @@
             }
         };
 
+        #endif
+    
     #else
 
         #error "Configuration Bits for this proc. must still be defined. in config.h"

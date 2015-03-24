@@ -41,17 +41,6 @@
 // to NULL so that they are in a known state during their first usage.
 #define USB_HANDLE void*
 
-//Device descriptor - if these two definitions are not defined then
-//  a ROM USB_DEVICE_DESCRIPTOR variable by the exact name of device_dsc
-//  must exist.
-#define USB_USER_DEVICE_DESCRIPTOR &device_dsc
-#define USB_USER_DEVICE_DESCRIPTOR_INCLUDE extern const USB_DEVICE_DESCRIPTOR device_dsc
-
-//Configuration descriptors - if these two definitions do not exist then
-//  a ROM UINT8 *ROM variable named exactly USB_CD_Ptr[] must exist.
-#define USB_USER_CONFIG_DESCRIPTOR USB_CD_Ptr
-#define USB_USER_CONFIG_DESCRIPTOR_INCLUDE extern const UINT8 *const USB_CD_Ptr[]
-
 #define USB_EP0_ROM                 0x00     //Data comes from RAM
 #define USB_EP0_RAM                 0x01     //Data comes from ROM
 #define USB_EP0_BUSY                0x80     //The PIPE is busy
@@ -98,7 +87,10 @@
 #define HID_INT_OUT_EP_SIZE         HID_INT_EP_SIZE
 #define HID_INT_IN_EP_SIZE          HID_INT_EP_SIZE
 #define HID_NUM_OF_DSC              1
-#define HID_RPT01_SIZE              29
+#define HID_RPT01_SIZE              29 // 63
+#define HID_INPUT_REPORT            0x01
+#define HID_OUTPUT_REPORT           0x02
+#define HID_FEATURE_REPORT          0x03
 
 /********************************************************************
  * Standard Request Codes
@@ -346,15 +338,15 @@ typedef enum
 
 } USB_DEVICE_STACK_EVENTS;
 
-#define USB_NEXT_EP0_OUT_PING_PONG          0x0008
-#define USB_NEXT_EP0_IN_PING_PONG           0x0008
-#define USB_NEXT_PING_PONG                  0x0008
-#define EP0_OUT_EVEN                        0
-#define EP0_OUT_ODD                         1
-#define EP0_IN_EVEN                         2
-#define EP0_IN_ODD                          3
-#define EP(ep,dir,pp)                       (4*ep+2*dir+pp)
-#define BD(ep,dir,pp)                       (8*(4*ep+2*dir+pp))
+#define USB_NEXT_PING_PONG                      0x0008
+#define USB_NEXT_EP0_OUT_PING_PONG              (USB_NEXT_PING_PONG)
+#define USB_NEXT_EP0_IN_PING_PONG               (USB_NEXT_PING_PONG)
+#define EP0_OUT_EVEN                            0
+#define EP0_OUT_ODD                             1
+#define EP0_IN_EVEN                             2
+#define EP0_IN_ODD                              3
+#define EP(ep,dir,pp)                           (4*ep+2*dir+pp)
+#define BD(ep,dir,pp)                           (8*(4*ep+2*dir+pp))
 
 /* Short Packet States - Used by Control Transfer Read  - CTRL_TRF_TX */
 #define SHORT_PKT_NOT_USED                      0
@@ -604,20 +596,20 @@ the correct fields when used on some device architectures.
 */
 typedef struct __attribute__ ((packed)) _USB_DEVICE_DESCRIPTOR
 {
-    UINT8 bLength;               // Length of this descriptor.
-    UINT8 bDescriptorType;       // DEVICE descriptor type (USB_DESCRIPTOR_DEVICE).
+    UINT8  bLength;               // Length of this descriptor.
+    UINT8  bDescriptorType;       // DEVICE descriptor type (USB_DESCRIPTOR_DEVICE).
     UINT16 bcdUSB;                // USB Spec Release Number (BCD).
-    UINT8 bDeviceClass;          // Class code (assigned by the USB-IF). 0xFF-Vendor specific.
-    UINT8 bDeviceSubClass;       // Subclass code (assigned by the USB-IF).
-    UINT8 bDeviceProtocol;       // Protocol code (assigned by the USB-IF). 0xFF-Vendor specific.
-    UINT8 bMaxPacketSize0;       // Maximum packet size for endpoint 0.
+    UINT8  bDeviceClass;          // Class code (assigned by the USB-IF). 0xFF-Vendor specific.
+    UINT8  bDeviceSubClass;       // Subclass code (assigned by the USB-IF).
+    UINT8  bDeviceProtocol;       // Protocol code (assigned by the USB-IF). 0xFF-Vendor specific.
+    UINT8  bMaxPacketSize0;       // Maximum packet size for endpoint 0.
     UINT16 idVendor;              // Vendor ID (assigned by the USB-IF).
     UINT16 idProduct;             // Product ID (assigned by the manufacturer).
     UINT16 bcdDevice;             // Device release number (BCD).
-    UINT8 iManufacturer;         // Index of String Descriptor describing the manufacturer.
-    UINT8 iProduct;              // Index of String Descriptor describing the product.
-    UINT8 iSerialNumber;         // Index of String Descriptor with the device's serial number.
-    UINT8 bNumConfigurations;    // Number of possible configurations.
+    UINT8  iManufacturer;         // Index of String Descriptor describing the manufacturer.
+    UINT8  iProduct;              // Index of String Descriptor describing the product.
+    UINT8  iSerialNumber;         // Index of String Descriptor with the device's serial number.
+    UINT8  bNumConfigurations;    // Number of possible configurations.
 } USB_DEVICE_DESCRIPTOR;
 
 // *****************************************************************************
@@ -629,14 +621,14 @@ the correct fields when used on some device architectures.
 */
 typedef struct __attribute__ ((packed)) _USB_CONFIGURATION_DESCRIPTOR
 {
-    UINT8 bLength;               // Length of this descriptor.
-    UINT8 bDescriptorType;       // CONFIGURATION descriptor type (USB_DESCRIPTOR_CONFIGURATION).
+    UINT8  bLength;               // Length of this descriptor.
+    UINT8  bDescriptorType;       // CONFIGURATION descriptor type (USB_DESCRIPTOR_CONFIGURATION).
     UINT16 wTotalLength;          // Total length of all descriptors for this configuration.
-    UINT8 bNumInterfaces;        // Number of interfaces in this configuration.
-    UINT8 bConfigurationValue;   // Value of this configuration (1 based).
-    UINT8 iConfiguration;        // Index of String Descriptor describing the configuration.
-    UINT8 bmAttributes;          // Configuration characteristics.
-    UINT8 bMaxPower;             // Maximum power consumed by this configuration.
+    UINT8  bNumInterfaces;        // Number of interfaces in this configuration.
+    UINT8  bConfigurationValue;   // Value of this configuration (1 based).
+    UINT8  iConfiguration;        // Index of String Descriptor describing the configuration.
+    UINT8  bmAttributes;          // Configuration characteristics.
+    UINT8  bMaxPower;             // Maximum power consumed by this configuration.
 } USB_CONFIGURATION_DESCRIPTOR;
 
 // *****************************************************************************
@@ -668,12 +660,12 @@ the correct fields when used on some device architectures.
 */
 typedef struct __attribute__ ((packed)) _USB_ENDPOINT_DESCRIPTOR
 {
-    UINT8 bLength;               // Length of this descriptor.
-    UINT8 bDescriptorType;       // ENDPOINT descriptor type (USB_DESCRIPTOR_ENDPOINT).
-    UINT8 bEndpointAddress;      // Endpoint address. Bit 7 indicates direction (0=OUT, 1=IN).
-    UINT8 bmAttributes;          // Endpoint transfer type.
+    UINT8  bLength;               // Length of this descriptor.
+    UINT8  bDescriptorType;       // ENDPOINT descriptor type (USB_DESCRIPTOR_ENDPOINT).
+    UINT8  bEndpointAddress;      // Endpoint address. Bit 7 indicates direction (0=OUT, 1=IN).
+    UINT8  bmAttributes;          // Endpoint transfer type.
     UINT16 wMaxPacketSize;        // Maximum packet size.
-    UINT8 bInterval;             // Polling interval in frames.
+    UINT8  bInterval;             // Polling interval in frames.
 } USB_ENDPOINT_DESCRIPTOR;
 
 /* Descriptor IDs
@@ -682,9 +674,9 @@ GET_DESCRIPTOR request
 */
 typedef struct
 {
-    UINT8    index;
-    UINT8    type;
-    UINT16  language_id;
+    UINT8  index;
+    UINT8  type;
+    UINT16 language_id;
 
 } DESCRIPTOR_ID;
 
@@ -704,13 +696,18 @@ typedef struct
 // array of unicode characters making up the string, must be allocated
 // immediately following this header with no padding between them.
 
-typedef struct __attribute__ ((packed)) _USB_STRING_DSC
+typedef struct __attribute__ ((packed)) _USB_STRING_DESCRIPTOR
 {
     UINT8   bLength;             // Size of this descriptor
     UINT8   bDescriptorType;     // Type, USB_DSC_STRING
 
 } USB_STRING_DESCRIPTOR;
 
+#define USB_STRING_INIT(nchars) struct {\
+    UINT8  bLength;          \
+    UINT8  bDescriptorType;  \
+    UINT16 string[nchars];  \
+}
 // ******************************************************************
 // Section: USB Device Qualifier Descriptor Structure
 // ******************************************************************
@@ -721,6 +718,7 @@ typedef struct __attribute__ ((packed)) _USB_STRING_DSC
 // Note: A high-speed device may support "other" speeds (ie. full or low).
 // If so, it may need to implement the the device qualifier and other
 // speed descriptors.
+
 #if 0
 typedef struct __attribute__ ((packed)) _USB_DEVICE_QUALIFIER_DESCRIPTOR
 {
@@ -738,6 +736,44 @@ typedef struct __attribute__ ((packed)) _USB_DEVICE_QUALIFIER_DESCRIPTOR
 #endif
 
 // ******************************************************************
+// Section: USB HID Descriptor Structure
+// ******************************************************************
+// USB HID Descriptor as detailed in section "6.2.1 HID Descriptor"
+// of the HID class definition specification
+
+typedef struct __attribute__ ((packed)) _USB_HID_DESCRIPTOR
+{
+    UINT8  bLength;              // Length of this descriptor
+    UINT8  bDescriptorType;      // INTERFACE descriptor type
+    UINT16 bcdHID;               //
+    UINT8  bCountryCode;         //
+    UINT8  bNumDescriptors;      //
+    UINT8  bRDescriptorType;     //
+    UINT16 wDescriptorLength;    //
+} USB_HID_DESCRIPTOR;
+
+#if 0
+typedef struct _USB_HID_DSC
+{
+    UINT8 bLength;		//offset 0
+    UINT8 bDescriptorType;	//offset 1
+    UINT16 bcdHID;		//offset 2
+    UINT8 bCountryCode;		//offset 4
+    UINT8 bNumDsc;		//offset 5
+
+    //USB_HID_DSC_HEADER hid_dsc_header[HID_NUM_OF_DSC];
+    /* HID_NUM_OF_DSC is defined in usbcfg.h */
+
+} USB_HID_DSC;
+
+typedef struct _USB_HID_DSC_HEADER
+{
+    UINT8 bDescriptorType;	//offset 9
+    UINT16 wDscLength;		//offset 10
+} USB_HID_DSC_HEADER;
+#endif
+
+// ******************************************************************
 // Section: USB Setup Packet Structure
 // ******************************************************************
 // This structure describes the data contained in a USB standard device
@@ -752,27 +788,27 @@ typedef union __attribute__ ((packed))
     /** Standard Device Requests ***********************************/
     struct __attribute__ ((packed))
     {
-        UINT8 bmRequestType; //from table 9-2 of USB2.0 spec
-        UINT8 bRequest; //from table 9-2 of USB2.0 spec
-        UINT16 wValue; //from table 9-2 of USB2.0 spec
-        UINT16 wIndex; //from table 9-2 of USB2.0 spec
-        UINT16 wLength; //from table 9-2 of USB2.0 spec
+        UINT8  bmRequestType; //from table 9-2 of USB2.0 spec
+        UINT8  bRequest;      //from table 9-2 of USB2.0 spec
+        UINT16 wValue;        //from table 9-2 of USB2.0 spec
+        UINT16 wIndex;        //from table 9-2 of USB2.0 spec
+        UINT16 wLength;       //from table 9-2 of USB2.0 spec
     };
     struct __attribute__ ((packed))
     {
         unsigned :8;
         unsigned :8;
-        WORD_VAL W_Value; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
-        WORD_VAL W_Index; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
-        WORD_VAL W_Length; //from table 9-2 of USB2.0 spec, allows byte/bitwise access
+        WORD_VAL W_Value;     //from table 9-2 of USB2.0 spec, allows byte/bitwise access
+        WORD_VAL W_Index;     //from table 9-2 of USB2.0 spec, allows byte/bitwise access
+        WORD_VAL W_Length;    //from table 9-2 of USB2.0 spec, allows byte/bitwise access
     };
     struct __attribute__ ((packed))
     {
-        unsigned Recipient:5;   //Device,Interface,Endpoint,Other
-        unsigned RequestType:2; //Standard,Class,Vendor,Reserved
-        unsigned DataDir:1;     //Host-to-device,Device-to-host
+        unsigned Recipient:5;  //Device,Interface,Endpoint,Other
+        unsigned RequestType:2;//Standard,Class,Vendor,Reserved
+        unsigned DataDir:1;    //Host-to-device,Device-to-host
         unsigned :8;
-        UINT8 bFeature;          //DEVICE_REMOTE_WAKEUP,ENDPOINT_HALT
+        UINT8 bFeature;        //DEVICE_REMOTE_WAKEUP,ENDPOINT_HALT
         unsigned :8;
         unsigned :8;
         unsigned :8;
@@ -781,9 +817,9 @@ typedef union __attribute__ ((packed))
     };
     struct __attribute__ ((packed))
     {
-        union                           // offset   description
-        {                               // ------   ------------------------
-            UINT8 bmRequestType;         //   0      Bit-map of request type
+        union                               // offset   description
+        {                                   // ------   ------------------------
+            UINT8 bmRequestType;            //   0      Bit-map of request type
             struct
             {
                 unsigned    recipient:  5;  //          Recipient of the request
@@ -796,9 +832,9 @@ typedef union __attribute__ ((packed))
     {
         unsigned :8;
         unsigned :8;
-        UINT8 bDscIndex;         //For Configuration and String DSC Only
+        UINT8 bDscIndex;                //For Configuration and String DSC Only
         UINT8 bDescriptorType;          //Device,Configuration,String
-        UINT16 wLangID;           //Language ID
+        UINT16 wLangID;                 //Language ID
         unsigned :8;
         unsigned :8;
     };
@@ -859,7 +895,17 @@ typedef union __attribute__ ((packed))
         unsigned :8;
         unsigned :8;
     };
-
+    struct __attribute__ ((packed))
+    {
+         unsigned :8;
+         unsigned :8;
+         BYTE bReportType;    // wValue highByte
+         BYTE bReportID;        // wValue lowByte
+         unsigned :8;
+         unsigned :8;
+         unsigned :8;
+         unsigned :8;
+     };
     /** End: Standard Device Requests ******************************/
 
 } CTRL_TRF_SETUP, SETUP_PKT, *PSETUP_PKT;
@@ -955,31 +1001,6 @@ typedef union __USTAT
     UINT8 Val;
 } USTAT_FIELDS;
 
-//USB HID Descriptor header as detailed in section
-//"6.2.1 HID Descriptor" of the HID class definition specification
-#if 0
-typedef struct _USB_HID_DSC_HEADER
-{
-    UINT8 bDescriptorType;	//offset 9
-    UINT16 wDscLength;		//offset 10
-} USB_HID_DSC_HEADER;
-#endif
-
-//USB HID Descriptor header as detailed in section
-//"6.2.1 HID Descriptor" of the HID class definition specification
-typedef struct _USB_HID_DSC
-{
-    UINT8 bLength;		//offset 0
-    UINT8 bDescriptorType;	//offset 1
-    UINT16 bcdHID;		//offset 2
-    UINT8 bCountryCode;		//offset 4
-    UINT8 bNumDsc;		//offset 5
-
-    //USB_HID_DSC_HEADER hid_dsc_header[HID_NUM_OF_DSC];
-    /* HID_NUM_OF_DSC is defined in usbcfg.h */
-
-} USB_HID_DSC;
-
 /*******************************************************************************
  Macros
 *******************************************************************************/
@@ -987,9 +1008,9 @@ typedef struct _USB_HID_DSC
 #define USBHandleBusy(handle) (handle==0?0:((volatile BDT_ENTRY*)handle)->STAT.UOWN)
 
 // advance the passed pointer to the next buffer state
-#define USBAdvancePingPongBuffer(buffer) ((BYTE_VAL*)buffer)->Val ^= USB_NEXT_PING_PONG;
-#define USBHALPingPongSetToOdd(buffer)   {((BYTE_VAL*)buffer)->Val |= USB_NEXT_PING_PONG;}
-#define USBHALPingPongSetToEven(buffer)  {((BYTE_VAL*)buffer)->Val &= ~USB_NEXT_PING_PONG;}
+//#define USBAdvancePingPongBuffer(buffer) ((BYTE_VAL*)buffer)->Val ^= USB_NEXT_PING_PONG;
+//#define USBHALPingPongSetToOdd(buffer)   {((BYTE_VAL*)buffer)->Val |= USB_NEXT_PING_PONG;}
+//#define USBHALPingPongSetToEven(buffer)  {((BYTE_VAL*)buffer)->Val &= ~USB_NEXT_PING_PONG;}
 
 // transform decimal to bcd number
 #define BCD(x)   ((( x / 10 ) << 4) | ( x % 10 ))
@@ -1013,6 +1034,7 @@ extern void USBEventHandler(void); // defined in main.c
 
 //Internal Functions
 void USBDeviceInit(void);
+void USBCheckCable(void);
 void USBDeviceTasks(void);
 void USBCheckHIDRequest(void);
 void USBEnableEndpoint(UINT8, UINT8);
@@ -1021,8 +1043,6 @@ USB_HANDLE USBTransferOnePacket(UINT8, UINT8*);
 //BOOL USBHandleBusy(USB_HANDLE);
 
 static void USBStallHandler(void);
-static void USBSuspend(void);
-static void USBWakeFromSuspend(void);
 static void USBCtrlEPService(void);
 static void USBCtrlTrfSetupHandler(void);
 static void USBCtrlTrfOutHandler(void);

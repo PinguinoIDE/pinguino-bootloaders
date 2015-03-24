@@ -62,7 +62,8 @@ typedef enum _BOOL { FALSE = 0, TRUE } BOOL;	// Undefined size
 #define NULL    ((void *)0)
 #endif
 
-#define	PUBLIC                                  // Function attributes
+// Function attributes
+#define	PUBLIC
 #define PROTECTED
 #define PRIVATE   static
 

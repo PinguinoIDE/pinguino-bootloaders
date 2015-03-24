@@ -9,14 +9,19 @@
 */
 
 INPUT("processor.o")
+
 /*
-OUTPUT_FORMAT("elf32-littlemips")
-OUTPUT_ARCH(mips)
+#ifdef __P32GCC__
+    OUTPUT_FORMAT("elf32-littlemips")
+    OUTPUT_ARCH(mips)
+#else
+    OUTPUT_FORMAT("elf32-tradlittlemips")
+    OUTPUT_ARCH(pic32mx)
+#endif
+
 ENTRY(_reset)
 */
-OUTPUT_FORMAT("elf32-tradlittlemips")
-OUTPUT_ARCH(pic32mx)
-ENTRY(_reset)
+
 
 /**********************************************************************
  * Provide for a minimum stack and heap size
@@ -31,19 +36,10 @@ ENTRY(_reset)
 EXTERN (_min_stack_size _min_heap_size)
 PROVIDE(_min_stack_size = 0x400) ;
 PROVIDE(_min_heap_size = 0) ;
-
-/**********************************************************************
- * For interrupt vector handling
- * base address of interrupt vector table (length = 0x1000)
- * placed at the end of flash memory (0x40000 - 0x1000 = 0x3F000)
- * _ebase_address value MUST BE same as the ORIGIN value of exception_mem
- **********************************************************************/
-
 PROVIDE(_vector_spacing = 0x00000001);
 
-_ebase_address = 0x9D000000;
-
 /**********************************************************************
+ * _ebase_address value MUST BE same as the ORIGIN value of exception_mem
  * _RESET_ADDR value MUST BE same as the ORIGIN value of kseg1_boot_mem
  * When the PIC is reset, it goes to the reset address 0xBFC00000,
  * which is the location of the boot flash, and executes the code there:
@@ -52,18 +48,13 @@ _ebase_address = 0x9D000000;
  * which resides in the KSEG0 program flash (kseg0_boot_mem) memory block.
  **********************************************************************/
 
+_ebase_address           = 0x9D000000;
 _RESET_ADDR              = 0xBFC00000;
 _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
-_BEV_EXCPT_ADDR          = _RESET_ADDR + 0x380;
+/*_BEV_EXCPT_ADDR          = _RESET_ADDR + 0x380;*/
 
 /**********************************************************************
  * Memory Regions
- **********************************************************************
- * - exception_mem  contains interrupt vector table starting at ebase (cacheable)
- * - kseg1_boot_mem contains reset vector, bootstrap exception handler, debug exception handler (non-cacheable)
- * - kseg0_boot_mem contains C startup module (cacheable)
- * - debug_exec_mem containing debug supporting code for running ICD3/RealICE during a debug session (non-cacheable)
- * - configuration words (non-cacheable)
  **********************************************************************
  * Cacheable (KSEG0) and non-cacheable (KSEG1)
  * KSEG0 PROGRAM FLASH [0x9D000000:0x9D03FFFF]
@@ -77,41 +68,36 @@ MEMORY
 {
 
 /**********************************************************************
- * interrupt vector table in PROGRAM FLASH starting at ebase
+ * exception_mem  contains INTERRUPT VECTOR TABLE starting at ebase (cacheable)
  * exception_mem value MUST BE same as value of _ebase_address
+ * exception_mem must align with 4K address boundary
+ * SPACE SHARED BETWEEN THE BOOTLOADER AND THE PINGUINO APPLICATION
+ * 0x200 + 64 vectors * 32 bytes = 0xA00 < 0xBF0
  **********************************************************************/
 
 exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
 
 /**********************************************************************
- * Bootloader code
- * in cacheable PROGRAM FLASH
- * from 0x9D000000 to 0x9D040000 (PIC32MX270F256B = 256 KB flash = 0x40000)
- * Bootloader Interrupt Vector Table is placed between 0x9D000000 to 0x9D001000
- * User Program Interrupt Vector Table is placed between 0x9D001000 to 0x9D002000
- * Bootloader code is then placed between 0x9D002000 and 0x9D007000
- * 0x40000 - 0x1000 = 0x3F000 bytes free
+ * BOOTLOADER CODE is less than 0x3000 bytes long
  **********************************************************************/
 
 kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x3000
 
 /**********************************************************************
- * Reset (0x0), Boot (0x380) and Debug (0x480) vectors
- * kseg1_boot_mem value MUST BE same as the _RESET_ADDR value
- * in non-cacheable BOOT FLASH
- * vector's length = 0x10 ?
+ * kseg1_boot_mem (non-cacheable) contains
+ * - Reset vector (0x000)
+ * - Bootstrap exception handler (0x380)
+ * - Debug exception handler (0x480)
+ * _RESET_ADDR must be where the Reset Vector is
  **********************************************************************/
 
-/*kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10*/
-kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x400
+kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10
 
 /**********************************************************************
- * Startup code (about 0x200 bytes long)
- * in cacheable BOOT FLASH
+ * STARTUP CODE (crt0.S) is 0x1B0 bytes long
  **********************************************************************/
 
-/*kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200*/
-kseg0_boot_mem             : ORIGIN = 0x9FC00400, LENGTH = 0x200
+kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200
 
 /**********************************************************************
  * Device Configuration Registers (configuration bits)
@@ -133,69 +119,78 @@ sfrs                       : ORIGIN = 0xBF800000, LENGTH = 0x100000
  * PIC32MX270F256B has 64 KB RAM, or 0x10000
  **********************************************************************/
 
-kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 64K
+boot_software_key          : ORIGIN = 0xA0000000, LENGTH = 0x4
+kseg1_data_mem       (w!x) : ORIGIN = 0xA0000004, LENGTH = 0xFFFC
 
 }
 
 SECTIONS
 {
     /********************************************************************
-    *** Boot Sections
-    ********************************************************************/
-
-    .reset _RESET_ADDR :
-    {
-    KEEP(*(.reset))
-    } > kseg1_boot_mem
-
-    .startup ORIGIN(kseg0_boot_mem) :
-    {
-    KEEP(*(.startup))
-    } > kseg0_boot_mem
-
-    /********************************************************************
-    *** Exception Vectors
-    ********************************************************************/
-
-    .bev_excpt _BEV_EXCPT_ADDR :
-    {
-    KEEP(*(.bev_handler))
-    } > kseg1_boot_mem
-
-    .app_excpt _GEN_EXCPT_ADDR :
-    {
-    KEEP(*(.gen_handler))
-    } > exception_mem
-
-    /********************************************************************
     *** Config. Sections
     ********************************************************************/
 
     .config_BFC00BF0 :
     {
-    KEEP(*(.config_BFC00BF0))
+        KEEP(*(.config_BFC00BF0))
     } > config3
 
     .config_BFC00BF4 :
     {
-    KEEP(*(.config_BFC00BF4))
+        KEEP(*(.config_BFC00BF4))
     } > config2
 
     .config_BFC00BF8 :
     {
-    KEEP(*(.config_BFC00BF8))
+        KEEP(*(.config_BFC00BF8))
     } > config1
 
     .config_BFC00BFC :
     {
-    KEEP(*(.config_BFC00BFC))
+        KEEP(*(.config_BFC00BFC))
     } > config0
+
+    /********************************************************************
+    *** Boot Sections
+    ********************************************************************/
+
+    .reset _RESET_ADDR :
+    {
+        KEEP(*(.reset))
+    } > kseg1_boot_mem
+
+    .startup ORIGIN(kseg0_boot_mem) :
+    {
+        KEEP(*(.startup))
+    } > kseg0_boot_mem
+
+    /********************************************************************
+    *** Exception Vectors
+    ********************************************************************/
+/*
+    .bev_excpt _BEV_EXCPT_ADDR :
+    {
+        KEEP(*(.bev_handler))
+    } > kseg1_boot_mem
+*/
+    .app_excpt _GEN_EXCPT_ADDR :
+    {
+        KEEP(*(.gen_handler))
+    } > exception_mem
+
+    /*********************************************************************
+    *** Key Section
+    ********************************************************************/
+
+    .boot_software_key_sec :
+    {
+        *(.boot_software_key_sec)
+    } > boot_software_key
 
     /********************************************************************
     *** Debug Sections
     ********************************************************************/
-
-    /*
+/*
     .dbg_excpt _DBG_EXCPT_ADDR (NOLOAD) :
     {
     . += (DEFINED (_DEBUGGER) ? 0x8 : 0x0);
@@ -205,8 +200,7 @@ SECTIONS
     {
     . += (DEFINED (_DEBUGGER) ? 0xFF0 : 0x0);
     } > debug_exec_mem
-    */
-
+*/
     /********************************************************************
     *** Vector Sections
     ********************************************************************/

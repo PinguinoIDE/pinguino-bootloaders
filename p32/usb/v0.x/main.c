@@ -56,27 +56,27 @@
 //#define LOCKCONFIG			0x01	//lock Configs Command Definitions
 #define PROGRAM_DEVICE			0x05	//If host is going to send a full DataBlockSize8 to be programmed, it uses this command.
 #define	PROGRAM_COMPLETE		0x06	//If host send less than a DataBlockSize8 to be programmed, or if it wished to program whatever was left in the buffer, it uses this command.
-#define GET_DATA			0x07	//The host sends this command in order to read out memory from the device.  Used during verify (and read/export hex operations)
+#define GET_DATA                0x07	//The host sends this command in order to read out memory from the device.  Used during verify (and read/export hex operations)
 #define	RESET_DEVICE			0x08	//Resets the microcontroller, so it can update the config bits (if they were programmed, and so as to leave the bootloader (and potentially go back into the main application)
 
 //Query Device Response "Types" 
 #define	TypeProgramMemory		0x01    //When the host sends a QUERY_DEVICE command, need to respond by populating a list of valid memory regions that exist in the device (and should be programmed)
-#define TypeEEPROM			0x02
+#define TypeEEPROM              0x02
 #define TypeConfigWords			0x03
 #define	TypeEndOfTypeList		0xFF    //Sort of serves as a "null terminator" like number, which denotes the end of the memory region list has been reached.
 
 //BootState Variable States
-#define	IdleState			0x00
+#define	IdleState               0x00
 #define NotIdleState			0x01
 
 //OtherConstants
 #define InvalidAddress			0xFFFFFFFF
 
 //Application and Microcontroller constants
-#define DEVICE_FAMILY                   0x03    //0x01 for PIC18, 0x02 for PIC24, 0x03 for PIC32
+#define DEVICE_FAMILY           0x03    //0x01 for PIC18, 0x02 for PIC24, 0x03 for PIC32
 
-#define	TotalPacketSize8                HID_INT_EP_SIZE
-#define DataBlockSize8                  56      //Number of bytes in the "Data" field of a standard request to/from the PC.  Must be an even number from 2 to 56.
+#define	TotalPacketSize8        HID_INT_EP_SIZE
+#define DataBlockSize8          56      //Number of bytes in the "Data" field of a standard request to/from the PC.  Must be an even number from 2 to 56.
 #define BufferSize32 			(DataBlockSize8/WORDSIZE)
 
 /*******************************************************************************
@@ -160,9 +160,6 @@ int main(void)
     UserAppPtr = (UINT32*)APP_RESET_ADDR;
     UserApp    = (void (*)(void))APP_RESET_ADDR;
 
-    //Initialize Interrupts
-    //EnableMultiVectoredInt();
-
     //Initialize LEDs and push button
     mLED_Init();
     mLED_Both_Off();
@@ -170,15 +167,15 @@ int main(void)
 
     #if defined(DEBUG)
         SerialInit(9600);
-        SerialPrintChar(12); // CLS
-        SerialPrint("*** PINGUINO ***\r\n");
+        SerialPrint("\r\n\f");// CLS
+        SerialPrint("www.PINGUINO.cc \r\n");
         SerialPrint("BOOTLOADER v");
         SerialPrintNumber(USB_MAJOR_VER, 10);
         SerialPrint(".");
         SerialPrintNumber(USB_MINOR_VER, 10);
-        SerialPrint(".");
-        SerialPrintNumber(USB_DOT_VER, 10);
-        SerialPrint("\r\n");
+        SerialPrint("b\r\n");
+        SerialPrint("rblanchot@gmail.com\r\n");
+        #if 0
         SerialPrint("FCPU ");
         SerialPrintNumber(FCPU/1000000, 10);
         SerialPrint("MHz\r\n");
@@ -189,35 +186,44 @@ int main(void)
         SerialPrint("K RAM SYSTEM\r\n");
         SerialPrintNumber(APP_PROGRAM_LENGTH/1024, 10);
         SerialPrint("K FLASH FREE\r\n");
-        /*
-        SerialPrint("0x");
-        SerialPrintNumber(APP_EBASE_ADDR, 16);
+        //SerialPrint("RAM memory size %d KB\r\n", (BMXDRMSZ>>10));
+        //SerialPrint("FLASH memory size %d KB\r\n", (BMXPFMSZ>>10));
+        //SerialPrint("BOOT memory size %d KB\r\n", (BMXBOOTSZ>>10));
+        #else
+        SerialPrint("EBASE_ADDR = 0x");
+        SerialPrintNumber(EBASE_ADDR, 16);
         SerialPrint("\r\n");
-        */
+        SerialPrint("APP_RESET_ADDR = 0x");
+        SerialPrintNumber(APP_RESET_ADDR, 16);
+        SerialPrint("\r\n");
+        SerialPrint("APP_PROGRAM_ADDR_START = 0x");
+        SerialPrintNumber(APP_PROGRAM_ADDR_START, 16);
+        SerialPrint("\r\n");
+        SerialPrint("APP_PROGRAM_ADDR_END = 0x");
+        SerialPrintNumber(APP_PROGRAM_ADDR_END, 16);
+        SerialPrint("\r\n");
+        #endif
         SerialPrint("READY\r\n");
     #endif
 
     #if 0
+
     while(1)
     {
         mLED_1_Toggle();
         for (led_count = 0; led_count < 100; led_count++)
             Delayus(1000);
     }
-    #endif
 
-    //Call the user application if the switch button is not pressed.
+    #else
+
+    // Call the user application if the switch button is not pressed.
+    // If there's no application, we just go on.
 
     if (!mSWITCH_Pressed() && *UserAppPtr != InvalidAddress)
-    {
         UserApp();
-        //while(1);
-    }
 
-    // Initializes USB module SFRs and firmware
-    USBDeviceInit();
-
-    //Initialize the variable holding the handle for the last transmission
+    // Initializes the variable holding the handle for the last transmission
     USBOutHandle = 0;
     USBInHandle = 0;
 
@@ -225,26 +231,28 @@ int main(void)
     ProgrammedPointer32 = InvalidAddress;
     BufferedDataIndex32 = 0;
 
-    while (1)
-    {
-        // Check bus status and service USB interrupts.
-        USBDeviceTasks();
-        
-        if (led_count == 0)
-            led_count = 10000;
+    // Initializes USB module SFRs and firmware
+    USBDeviceInit();
+    USBCheckCable();
 
+    while(1)
+    {
+        // Blink the led
+        if (led_count == 0)
+        {
+            led_count = 10000;
+            mLED_1_Toggle();
+        }
         led_count--;
 
-        //Handle packets and blink the led
-        //only if device is configured and not suspended
-        //if ( !USBSuspendControl && USBDeviceState == CONFIGURED_STATE )
+        // Check bus status and service USB interrupts.
+        USBDeviceTasks();
+
+        //Handle packets only if device is configured and not suspended
         if ( !U1PWRCbits.USUSPEND && USBDeviceState == CONFIGURED_STATE )
-        {
-            if (led_count == 0)
-                mLED_1_Toggle();
             USBPacketHandler();
-        }
     }
+    #endif
 }
 
 /*******************************************************************************
@@ -256,6 +264,10 @@ static void USBPacketHandler(void)
     UINT32 i;
     UINT8 nwords32;
     UINT8 index32;
+
+    #if defined(DEBUG)
+    //SerialPrint("> USBPacketHandler\r\n");
+    #endif
 
     // *** RB20141210 : OK ***
     if (BootState == IdleState)
@@ -284,6 +296,12 @@ static void USBPacketHandler(void)
 
     else //(BootState Not in Idle State)
     {
+        #if defined(DEBUG)
+        SerialPrint("> Received command ");
+        SerialPrintNumber(PacketFromPC.Command, 10);
+        SerialPrint("\r\n");
+        #endif
+
         switch (PacketFromPC.Command)
         {
 
@@ -326,18 +344,33 @@ static void USBPacketHandler(void)
                 PacketToPC.Address = PacketFromPC.Address;
                 PacketToPC.Size = PacketFromPC.Size;
 
-                nwords32 = PacketFromPC.Size / WORDSIZE;
+                //nwords32 = PacketFromPC.Size / WORDSIZE;
 
                 // void memcopy (void *from, void *to, UINT32 nbytes)
                 // memcopy from PacketFromPC.Address to PacketToPC.Data32
+                #if defined(DEBUG)
+                SerialPrint("> Reading 0x");
+                SerialPrintNumber(ConvertFlashToVirtualAddress(PacketFromPC.Address), 16);
+                #endif
+                
+                #if 0
                 MemCopy( (void*) (ConvertFlashToVirtualAddress(PacketFromPC.Address)),
-                         (void*) (PacketToPC.Data32 + BufferSize32 - nwords32),
-                         nwords32 );
+                            (void*) (PacketToPC.Data32 + BufferSize32 - nwords32),
+                            nwords32 );
+                #else
+                MemCopy( (void*) ConvertFlashToVirtualAddress(PacketFromPC.Address),
+                         (void*) PacketToPC.Data32,
+                         PacketFromPC.Size );
+                #endif
+                
+                #if defined(DEBUG)
+                SerialPrint("Erasing 0x");
+                SerialPrintNumber(PacketToPC.Data32[0], 16);
+                SerialPrint(" ...\r\n");
+                #endif
 
                 if (!USBHandleBusy(USBInHandle))
                 {
-                    //USBInHandle = USBTxOnePacket(HID_EP, (UINT8*)&PacketToPC, TotalPacketSize8);
-                    //USBInHandle = USBTransferOnePacket(HID_EP, IN_TO_HOST, (UINT8*)&PacketToPC, TotalPacketSize8);
                     USBInHandle = USBTransferOnePacket(IN_TO_HOST, (UINT8*)&PacketToPC);
                     BootState = IdleState;
                 }
@@ -347,26 +380,23 @@ static void USBPacketHandler(void)
             case ERASE_DEVICE:
 //******************************************************************************
 
-                //void* pFlash = (void*) UserAppMemStart;
-
-                //for (i = 0; i < MaxPageToErase; i++)
-                for (i = APP_PROGRAM_ADDR_START; i < APP_PROGRAM_ADDR_END; i = i + FLASH_PAGE_SIZE)
+                for (i = APP_PROGRAM_ADDR_START;
+                     i < APP_PROGRAM_ADDR_END;
+                     i = i + FLASH_PAGE_SIZE)
                 {
-                    //NVMErasePage(pFlash + (temp * FLASH_PAGE_SIZE));
-                    //FlashErasePage(pFlash + (temp * FLASH_PAGE_SIZE));
-                    //FlashErasePage((void*) UserAppMemStart + (p * FLASH_PAGE_SIZE));
-                    //FlashOperation(FLASH_PAGE_ERASE, UserAppMemStart + i * FLASH_PAGE_SIZE, 0);
+                    #if defined(DEBUG)
+                    SerialPrint(" = 0x");
+                    SerialPrintNumber(i, 16);
+                    SerialPrint("\r\n");
+                    #endif
+
                     FlashOperation(FLASH_PAGE_ERASE,  (void*)i, 0);
-                    //Call USBDriverService() periodically to prevent falling off
+                    //Call USBDeviceTasks() periodically to prevent falling off
                     //the bus if any SETUP packets should happen to arrive.
-                    USBDeviceTasks();
+                    //USBDeviceTasks();
+                    //IFS1CLR = _IFS1_USBIF_MASK;
                 }
 
-                //Good practice to clear WREN bit anytime we are not expecting
-                //to do erase/write operations, further reducing probability of accidental activation.
-                //NVMCONbits.WREN = 0;
-                //NVMCONCLR = _NVMCON_WREN_MASK;
-                
                 BootState = IdleState;
                 break;
 
@@ -427,7 +457,7 @@ static void USBPacketHandler(void)
                 // capacitance to discharge down to disconnected (SE0) state.
                 // Otherwise host might not realize we disconnected/reconnected
                 // when we do the reset.
-                U1CONCLR = 0xFF;
+                U1CON = 0x00;
                 Delayus(1000);
                 SoftReset();
                 break;

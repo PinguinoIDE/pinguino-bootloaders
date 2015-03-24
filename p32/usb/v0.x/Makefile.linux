@@ -26,8 +26,8 @@ BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
 # ----------------------------------------------------------------------
 
 MAJ_VER		= 0
-MIN_VER		= 0
-DOT_VER		= 2
+MIN_VER		= 5
+#DOT_VER		= 2
 
 # ----------------------------------------------------------------------
 # Processor family
@@ -52,7 +52,7 @@ CRYSTAL		= 8
 ifeq "$(_TEST_ENABLE_)" "true"
 	PRJ		= Test
 else
-	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)MHz
+	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(PROC)_X$(CRYSTAL)MHz
 endif
 
 # ----------------------------------------------------------------------

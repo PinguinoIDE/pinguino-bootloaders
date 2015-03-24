@@ -60,7 +60,8 @@ if (len(sys.argv) > 1):
             address = (address_Hi << 16) + address_Lo
             #print "address : 0x%X" % address
 
-            if (address > 0x1D000000) and (address < 0x1FC00000):
+            # code starts at 0x1D001000 and can't be upon 0x1D080000
+            if (address > 0x1D001000) and (address < 0x1D080000):
                 
                 # code size
                 codesize = codesize + byte_count

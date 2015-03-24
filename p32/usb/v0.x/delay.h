@@ -14,6 +14,8 @@
 #include "typedefs.h"
 
 void Delayus(UINT32);
+#if (TEST)
 void Delayms(UINT32);
+#endif
 
 #endif // _DELAY_H_

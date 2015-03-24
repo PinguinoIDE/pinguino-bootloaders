@@ -13,11 +13,20 @@
 
 #include "p32xxxx.h"                    // Registers definitions
 
-#define FLASH_MEM_START                 0x9D000000
-#define DATA_MEM_START                  0xA0000000
-#define KSEG1_BOOT_MEM_START            0xBFC00000
+// Cacheable memory is in KSEG0
+#define KSEG0_FLASH_MEM_START           0x9D000000
 #define KSEG0_BOOT_MEM_START            0x9FC00000
+
+// Non-Cacheable memory is in KSEG1
+#define KSEG1_FLASH_MEM_START           0xBD000000
+#define KSEG1_BOOT_MEM_START            0xBFC00000
+
+// RAM (Vitual)
+#define DATA_MEM_START                  0xA0000000
+
+#define VECTORS_MEM_LENGTH              0x10            // RESET VECTOR ONLY
 #define STARTUP_MEM_LENGTH              0x200
+#define IVT_MEM_LENGTH                  0x1000           // 0x200 + 64 vectors * 32 bytes
 
 // The Flash page size is
 // - 1 KB on PIC32MX-1XX/2XX devices
@@ -43,62 +52,55 @@
 #define DATA_MEM_LENGTH                 BMXDRMSZ
 #endif
 
+#define FLASH_MEM_END                   (KSEG0_FLASH_MEM_START + FLASH_TOTAL_LENGTH)
 #define BOOT_PROGRAM_LENGTH             0x3000  // 10K
+
+#if 0
+/**********************************************************************
+ * BOOTLOADER and APPLICATION
+ **********************************************************************/
+
+// IVT = EXCEPTION_MEM in KSEG0_FLASH_MEM_START (4K aligned)
+#define EXCEPTION_MEM                   KSEG0_FLASH_MEM_START
 
 /**********************************************************************
  * BOOTLOADER
  **********************************************************************/
 
-// IVT from 0x9D000000 to 0x9D001000
-#define BOOT_EBASE_ADDR                 FLASH_MEM_START
-#define BOOT_GEN_EXCPT_ADDR             (BOOT_EBASE_ADDR + 0x180)
-#define BOOT_EXCEPTION_MEM              BOOT_EBASE_ADDR
-#define BOOT_EXCEPTION_MEM_LENGTH       0x1000
-// BOOTLOADER from 0x9D001000 to 0x9D004000
-#define BOOT_KSEG0_PROGRAM_MEM          (BOOT_EXCEPTION_MEM + BOOT_EXCEPTION_MEM_LENGTH)
-#define BOOT_KSEG0_PROGRAM_MEM_LENGTH   BOOT_PROGRAM_LENGTH
-// from 0xBFC00000 to 0xBFC00010
-#define BOOT_RESET_ADDR                 KSEG1_BOOT_MEM_START
-#define BOOT_KSEG1_BOOT_MEM             BOOT_RESET_ADDR
-#define BOOT_KSEG1_BOOT_MEM_LENGTH      0x10
-// from 0x9FC00010 to 0x9FC00210
-#define BOOT_KSEG0_BOOT_MEM             (KSEG0_BOOT_MEM_START + BOOT_KSEG1_BOOT_MEM_LENGTH)
-#define BOOT_KSEG0_BOOT_MEM_LENGTH      STARTUP_MEM_LENGTH
+// RESET VECTOR must be in KSEG1 (non-cacheable)
+#define BOOT_RESET_VECTOR_MEM           KSEG1_BOOT_MEM_START
+// STARTUP SEQUENCE must be in KSEG0 (cacheable)
+#define BOOT_STARTUP_MEM                (KSEG0_BOOT_MEM_START + VECTORS_MEM_LENGTH)
+// BOOTLOADER CODE after STARTUP SEQUENCE in KSEG0
+#define BOOT_PROGRAM_MEM                (KSEG0_FLASH_MEM_START + IVT_MEM_LENGTH)
 
 /**********************************************************************
  * APPLICATION
  **********************************************************************/
 
-// IVT from 0x9D004000 to 0x9D005000
-//#define APP_EBASE_ADDR                  FLASH_MEM_START
-#define APP_EBASE_ADDR                  (BOOT_KSEG0_PROGRAM_MEM + BOOT_KSEG0_PROGRAM_MEM_LENGTH)
-#define APP_GEN_EXCPT_ADDR              (APP_EBASE_ADDR + 0x180)
-#define APP_EXCEPTION_MEM               APP_EBASE_ADDR
-#define APP_EXCEPTION_MEM_LENGTH        0x1000
-// APPLICATION from 0x9D005000 to 0x9D040000
-//#define APP_KSEG0_PROGRAM_MEM           (BOOT_KSEG0_PROGRAM_MEM + BOOT_KSEG0_PROGRAM_MEM_LENGTH)
-#define APP_KSEG0_PROGRAM_MEM           (APP_EXCEPTION_MEM + APP_EXCEPTION_MEM_LENGTH)
-#define APP_KSEG0_PROGRAM_MEM_LENGTH    (FLASH_MEM_START + FLASH_TOTAL_LENGTH - APP_KSEG0_PROGRAM_MEM)
+// RESET VECTOR must be in KSEG1 (non-cacheable) after BOOTLOADER CODE in KSEG1
+#define APP_RESET_VECTOR_MEM            (BOOT_PROGRAM_MEM + BOOT_PROGRAM_LENGTH)
+// STARTUP SEQUENCE must be in KSEG0 (cacheable)
+#define APP_STARTUP_MEM                 (APP_RESET_VECTOR_MEM + VECTORS_MEM_LENGTH)
+// APPLICATION CODE after STARTUP SEQUENCE in KSEG0
+#define APP_PROGRAM_MEM                 (APP_STARTUP_MEM  + STARTUP_MEM_LENGTH)
 
-#define APP_PROGRAM_ADDR_START          APP_KSEG0_PROGRAM_MEM
-#define APP_PROGRAM_LENGTH              APP_KSEG0_PROGRAM_MEM_LENGTH
-#define APP_PROGRAM_ADDR_END            (FLASH_MEM_START + FLASH_TOTAL_LENGTH)
+/**********************************************************************
+ * OTHERS
+ **********************************************************************/
 
-#define APP_RESET_ADDR                  APP_KSEG0_PROGRAM_MEM
-#define APP_KSEG1_BOOT_MEM              APP_RESET_ADDR
-#define APP_KSEG1_BOOT_MEM_LENGTH       0x10
+#define EBASE_ADDR                      EXCEPTION_MEM
+#define BOOT_RESET_ADDR                 BOOT_RESET_VECTOR_MEM
+#define APP_RESET_ADDR                  APP_RESET_VECTOR_MEM
+#define APP_PROGRAM_ADDR_START          APP_PROGRAM_MEM
+#define APP_PROGRAM_ADDR_END            FLASH_MEM_END
+#define APP_PROGRAM_LENGTH              (APP_PROGRAM_ADDR_END - APP_PROGRAM_ADDR_START)
+#endif
 
-#define APP_KSEG0_BOOT_MEM              (APP_KSEG1_BOOT_MEM + APP_KSEG1_BOOT_MEM_LENGTH)
-#define APP_KSEG0_BOOT_MEM_LENGTH       STARTUP_MEM_LENGTH
-
-/*
-// from 0xBFC00400 to 0xBFC00410
-#define APP_RESET_ADDR                  (KSEG1_BOOT_MEM_START + FLASH_PAGE_SIZE)
-#define APP_KSEG1_BOOT_MEM              APP_RESET_ADDR
-#define APP_KSEG1_BOOT_MEM_LENGTH       0x10
-// from 0x9FC00410 to 0x9FC00610
-#define APP_KSEG0_BOOT_MEM              (KSEG0_BOOT_MEM_START + FLASH_PAGE_SIZE + APP_KSEG1_BOOT_MEM_LENGTH)
-#define APP_KSEG0_BOOT_MEM_LENGTH       STARTUP_MEM_LENGTH
-*/
+#define EBASE_ADDR                      0x9D000000
+#define APP_RESET_ADDR                  0x9D004000
+#define APP_PROGRAM_ADDR_START          0x9D005000
+#define APP_PROGRAM_ADDR_END            FLASH_MEM_END
+#define APP_PROGRAM_LENGTH              (APP_PROGRAM_ADDR_END - APP_PROGRAM_ADDR_START)
 
 #endif /* _MEM_H_ */

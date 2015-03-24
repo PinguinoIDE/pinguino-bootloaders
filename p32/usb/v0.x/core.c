@@ -24,7 +24,8 @@ void SoftReset(void)
     // Suspend or Disable all Interrupts
     DisableInterrupt();
 
-    if (! (DMACON & _DMACON_SUSPEND_MASK) )
+    //if (!(DMACON & _DMACON_SUSPEND_MASK) )
+    if (!DMACONbits.SUSPEND)
     {
         DMACONSET = _DMACON_SUSPEND_MASK;
         while (DMACON & _DMACON_DMABUSY_MASK);
@@ -105,6 +106,7 @@ UINT32 MIPS32 EnableInterrupt(void)
 /*******************************************************************
  * Enable hardware interrupts.
  *******************************************************************/
+
 #if 0
 void MIPS32 EnableMultiVectoredInt(void)
 {
@@ -118,15 +120,18 @@ void MIPS32 EnableMultiVectoredInt(void)
     EnableInterrupt();
 }
 #endif
+
 /*******************************************************************
  * Reset the Core Timer
  *******************************************************************/
+
 #if (TEST)
 void MIPS32 ResetCoreTimer(void)
 {
     asm volatile("mtc0	%0, $9" : : "r" (0));
 }
 #endif
+
 /*******************************************************************
  * Read the Core Timer
  *******************************************************************/

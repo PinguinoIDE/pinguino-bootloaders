@@ -31,8 +31,8 @@ UINT32 MIPS32 EnableInterrupt(void);
 UINT32 MIPS32 ReadCoreTimer(void);
 //void   MIPS32 ResetCoreTimer(void);
 
-void memclear (void *, UINT32);
-void memcopy  (void *, void *, UINT32);
+void MemClear (void *, UINT32);
+void MemCopy  (void *, void *, UINT32);
 
 void SoftReset(void);
 

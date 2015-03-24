@@ -39,14 +39,14 @@ void Delayus(UINT32 us)
     #endif
 
     // valid only when using a signed type
-    while ((int) (ReadCoreTimer() - stop) < 0);
+    while ((INT32) (ReadCoreTimer() - stop) < 0);
 }
 
 /*	--------------------------------------------------------------------
     Wait for ms milliseconds
     ------------------------------------------------------------------*/
 
-#if defined(TEST)
+#if (TEST)
 void Delayms(UINT32 ms)
 {
     do

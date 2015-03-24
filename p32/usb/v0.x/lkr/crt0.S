@@ -31,15 +31,15 @@ _startup:
         ##################################################################
         # If entered because of an NMI, jump to the NMI handler.
         ##################################################################
-        #mfc0    k0,_CP0_STATUS
-        #ext     k0,k0,19,1              # Extract NMI bit
-        #beqz    k0,_no_nmi
+        mfc0    k0,_CP0_STATUS
+        ext     k0,k0,19,1              # Extract NMI bit
+        beqz    k0,_no_nmi
+        nop
+        #la      k0,_nmi_handler
+        #jr      k0
         #nop
-        # AF la      k0,_nmi_handler
-        # AF jr      k0
-        #nop
-#_no_nmi:
 
+_no_nmi:
         ##################################################################
         # Initialize Stack Pointer
         #   _stack is initialized by the linker script to point to the
@@ -74,8 +74,8 @@ _startup:
         ##################################################################
         # Call the "on reset" procedure
         ##################################################################
-        # AF la      t0,_on_reset
-        # AF jalr    t0
+        #la      t0,_on_reset
+        #jalr    t0
         #nop
 
         ##################################################################
@@ -248,30 +248,29 @@ _ramfunc_done:
         # Boot Exception Vector Handler
         # Jumps to _bootstrap_exception_handler
         ##################################################################
-        #.section .bev_handler,"ax",@progbits
-        #.set noreorder
-        #.ent _bev_exception
-#_bev_exception:
-        # AF la      k0,_bootstrap_exception_handler
-        # AF jr      k0
-        #nop
+        .section .bev_handler,"ax",@progbits
+        .set noreorder
+        .ent _bev_exception
+_bev_exception:
+        #la      k0,_bootstrap_exception_handler
+        #jr      k0
+        nop
 
-        #.end _bev_exception
+        .end _bev_exception
                         
         ##################################################################
         # General Exception Vector Handler
         # Jumps to _general_exception_handler
         ##################################################################
-        #.section .gen_handler,"ax",@progbits
-        #.set noreorder
-        #.ent _gen_exception
-#_gen_exception:
-        # AF la      k0,_general_exception_context
-        # AF jr      k0
-        #nop
+        .section .gen_handler,"ax",@progbits
+        .set noreorder
+        .ent _gen_exception
+_gen_exception:
+        #la      k0,_general_exception_context
+        #jr      k0
+        nop
 
-        #.end _gen_exception
-
+        .end _gen_exception
 
         .text
         .ent _main_entry
@@ -279,7 +278,7 @@ _main_entry:
         ##################################################################
         # Call main
         ##################################################################
-        jal main
+        jal     main
         nop
 
         ##################################################################

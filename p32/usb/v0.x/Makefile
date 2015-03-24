@@ -26,9 +26,9 @@ BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
 # Version (will override boot.h #define)
 # ----------------------------------------------------------------------
 
-MAJ_VER		= 0
-MIN_VER		= 0
-DOT_VER		= 3
+MAJ_VER		= 1
+MIN_VER		= 1
+#DOT_VER		= 3
 
 # ----------------------------------------------------------------------
 # Processor family
@@ -64,8 +64,8 @@ endif
 ifeq "$(_TEST_ENABLE_)" "true"
 	PRJ		= Test
 else
-#	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)-$(FCPU)MHz
-	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)MHz
+#	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(PROC)_$(FCPU)MHz
+	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(PROC)_X$(CRYSTAL)MHz
 endif
 
 # ----------------------------------------------------------------------
@@ -107,15 +107,13 @@ RED=\033[31;1m
 GREEN=\033[32;1m
 YELLOW=\033[33;1m
 BLUE=\033[34;1m
-TERM=\033[m
-
-BOLD=\033\[0;1;31m
-NORM=\033\[0m
+BOLD=\033[0;1;31m
+NORM=\033[0m
 
 WARNING=$(YELLOW)
 ERROR=$(RED)
 NORMAL=$(GREEN)
-END=$(TERM)
+END=$(NORM)
 
 # ----------------------------------------------------------------------
 # Directories
@@ -133,8 +131,8 @@ INCLUDEDIRS	= -I$(LKRDIR) \
 			  -I$(INCDIR) \
 			  -I$(INCDIR)/non-free
 
-#-lm -lgcc -lc
-LIBS		=
+# -lm -lgcc 
+LIBS		= -lc
 LIBDIRS		=
 
 # ----------------------------------------------------------------------
@@ -195,15 +193,18 @@ ELF_FLAGS	= -march=$(CORE) \
 			  -Wl,--gc-sections \
 			  -Wl,-L$(OBJDIR) \
 			  -Wl,-Map=output.map \
-			  -Wl,--script=$(LKRDIR)/$(PROC)/$(PROC).ld \
 			  -D __P32GCC__ \
 			  -D __PIC32MX__ \
 			  -D __$(PROC)__ \
+			  -D TEST=$(_TEST_ENABLE_) \
 			  -D FCPUMHZ=$(FCPU) \
 			  -D USB_MAJOR_VER=$(MAJ_VER) \
 			  -D USB_MINOR_VER=$(MIN_VER) \
-			  -D USB_DOT_VER=$(DOT_VER)
+			  -T$(LKRDIR)/$(PROC).ld \
+			  -T$(LKRDIR)/elf32pic32mx.x
 
+#			  -D USB_DOT_VER=$(DOT_VER) \
+#			  -Wl,--script=$(LKRDIR)/$(PROC).ld
 #			  -T$(LKRDIR)/elf32pic32mx.x
 
 #-----------------------------------------------------------------------
@@ -218,12 +219,14 @@ ELF_FLAGS	= -march=$(CORE) \
 #
 #-----------------------------------------------------------------------
 
-all: start clean copy $(PRJ).elf convert fix size burn
+#all: start clean copy $(PRJ).elf convert fix size burn
+all: start clean copy $(PRJ).elf convert size burn
 #all: start clean copy $(PRJ).elf convert fix size
 #all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf
 #all: start
+#all: burn
 
 start:
 ifeq ($(DEFAULT), YES)
@@ -259,8 +262,8 @@ $(PRJ).elf: $(OBJS)
 	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex/$@ $^ \
 		$(LKRDIR)/crt0.S \
 		$(OBJDIR)/processor.o \
+		$(INCDIR)/p32xxxx.h \
 		$(LIBS)
-#		$(INCDIR)/p32xxxx.h \
 
 convert:
 	@echo "Converting elf to hex"
@@ -271,7 +274,7 @@ fix:
 	@sed -i -e 's/:020000049D005D/:020000041D00DD/g' $(HEXDIR)/$(PRJ).hex
 	@sed -i -e 's/:020000049FC09B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
 	@sed -i -e 's/:02000004BFC07B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
-	@sed -i -e '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
+#	@sed -i -e '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
 
 size:
 ifdef DEBUG
@@ -281,14 +284,23 @@ else
 	@tools/codesize.py $(HEXDIR)/$(PRJ).hex
 endif
 
-#http://denethor.wlu.ca/cp316/software/Readme_for_IPECMD.txt
-#java -jar ipecmd.jar /P16F877 /Fc:\mycode.hex /M
-# or
-#java -jar ipecmd.jar PM3CMD -1 -P16F877 -Fc:\mycode.hex -M
+# cf. IPECMD.txt
+# COMMAND		MEANING					DEFAULT
+# -TP<tool>		Tool Selection			None
+# -P<proc>		Processor Selection		None 
+# -F<file>		Hex File Selection		None 
+# -M			Program Device			Do Not Program 
+# -W			Externally power target	Power from PM3 
+
 burn:
 #	@tools/pic32prog -S -p $(HEXDIR)/$(PRJ).hex
 #	C:\Program Files\Microchip\MPLABX\mplab_ide\bin
 	@echo "Burning $(PRJ).hex file"
-	@java -jar /opt/microchip/mplabx/mplab_ipe/ipecmd.jar -TP$(TOOL) -P$(PROC) -M -F$(HEXDIR)/$(PRJ).hex
+	@java -jar /opt/microchip/mplabx/mplab_ipe/ipecmd.jar \
+			-W \
+			-M \
+			-TP$(TOOL) \
+			-P$(PROC) \
+			-F$(HEXDIR)/$(PRJ).hex
 	@$(RM) MPLABXLog.* > /dev/null
 	@$(RM) log.* > /dev/null

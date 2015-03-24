@@ -63,7 +63,7 @@ void SerialInit(UINT32 baudrate)
 void SerialPrintChar(char c)
 {
     // Wait for transmitter shift register empty.
-    while (! (U1STA & _U1STA_TRMT_MASK));
+    while (!(U1STA & _U1STA_TRMT_MASK));
 
     // Send byte
     U1TXREG = c;
