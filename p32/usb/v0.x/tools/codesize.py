@@ -61,7 +61,7 @@ if (len(sys.argv) > 1):
             #print "address : 0x%X" % address
 
             # code starts at 0x1D001000 and can't be upon 0x1D080000
-            if (address > 0x1D001000) and (address < 0x1D080000):
+            if (address > 0x9D001000) and (address < 0x9D080000):
                 
                 # code size
                 codesize = codesize + byte_count
@@ -79,8 +79,9 @@ if (len(sys.argv) > 1):
 
         # bootloader jump address
         elif record_type == Start_Linear_Address_Record:
-            print "Reset vector at 0x%X" % address
-
+            #print "Reset vector at 0x%X" % address
+            break
+            
         # end of file record
         elif record_type == End_Of_File_Record:
             break

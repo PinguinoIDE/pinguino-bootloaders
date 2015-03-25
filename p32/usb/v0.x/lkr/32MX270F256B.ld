@@ -77,7 +77,8 @@ MEMORY
      * PIC32MX270F256B has 64 KB RAM, or 0x10000
      **********************************************************************/
 
-    kseg1_data_mem       (w!x) : ORIGIN = 0xA0000000, LENGTH = 64K
+    boot_software_key          : ORIGIN = 0xA0000000, LENGTH = 0x4
+    kseg1_data_mem       (w!x) : ORIGIN = 0xA0000004, LENGTH = 0xFFFC
 
     /**********************************************************************
      * Device Configuration Registers (configuration bits)

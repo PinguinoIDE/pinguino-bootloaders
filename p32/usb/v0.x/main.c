@@ -353,15 +353,9 @@ static void USBPacketHandler(void)
                 SerialPrintNumber(ConvertFlashToVirtualAddress(PacketFromPC.Address), 16);
                 #endif
                 
-                #if 0
-                MemCopy( (void*) (ConvertFlashToVirtualAddress(PacketFromPC.Address)),
-                            (void*) (PacketToPC.Data32 + BufferSize32 - nwords32),
-                            nwords32 );
-                #else
                 MemCopy( (void*) ConvertFlashToVirtualAddress(PacketFromPC.Address),
                          (void*) PacketToPC.Data32,
                          PacketFromPC.Size );
-                #endif
                 
                 #if defined(DEBUG)
                 SerialPrint("Erasing 0x");

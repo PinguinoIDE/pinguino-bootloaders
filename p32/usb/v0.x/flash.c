@@ -29,7 +29,7 @@
 
 void FlashOperation(UINT32 op, void* addr, UINT32 data)
 {
-    UINT32 status;
+    //UINT32 status;
 
     // NVMADDR only accept Physical Address
     NVMADDR = ConvertToPhysicalAddress(addr);
@@ -58,7 +58,7 @@ void FlashOperation(UINT32 op, void* addr, UINT32 data)
     NVMDATA = data;
 
     // Suspend or Disable all Interrupts
-    status = DisableInterrupt();
+    //status = DisableInterrupt();
 
     // Enable Flash Write/Erase Operations
 
@@ -83,11 +83,11 @@ void FlashOperation(UINT32 op, void* addr, UINT32 data)
     NVMCONCLR = _NVMCON_WREN_MASK;
 
     // Restore Interrupts if necessary
+    #if 0
     if (status & 1)
     {
         EnableInterrupt();
     }
-    #if 0
     else
         DisableInterrupt();
     #endif

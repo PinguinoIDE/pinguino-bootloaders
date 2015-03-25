@@ -219,8 +219,8 @@ ELF_FLAGS	= -march=$(CORE) \
 #
 #-----------------------------------------------------------------------
 
-#all: start clean copy $(PRJ).elf convert fix size burn
-all: start clean copy $(PRJ).elf convert size burn
+all: start clean copy $(PRJ).elf convert fix size burn
+#all: start clean copy $(PRJ).elf convert size burn
 #all: start clean copy $(PRJ).elf convert fix size
 #all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
