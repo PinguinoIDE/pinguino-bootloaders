@@ -19,8 +19,9 @@ PARTIALLY WORKING
  * 0.6  Modified supported interrupts
 OPERATIONAL
  * 1.0  Fixed GET_DATA issue (bad call of MemCopy)
-Actual :
- * 1.1  Goal : reducing code size
+ * 1.1  Fixed linker scripts (IVT must be placed after bootloader)
+ * 1.2  Updated Erase operation to start from ebase address (enable IVT writing)
+ * 1.3  Updated linker scripts to get more free flash space
 *******************************************************************************/
 
 #ifndef _BOOT_H_
@@ -33,7 +34,7 @@ Actual :
 #define USB_MAJOR_VER                       1       // Firmware version, major release number.
 #endif
 #ifndef USB_MINOR_VER
-#define USB_MINOR_VER                       1       // Firmware version, minor release number.
+#define USB_MINOR_VER                       3       // Firmware version, minor release number.
 #endif
 
 // Specific to USB Pinguino Device

@@ -980,8 +980,8 @@ typedef union __attribute__ ((packed))__BDT
     };
     struct __attribute__ ((packed))
     {
-        UINT32      res  :16;
-        UINT32      count:10;
+        unsigned    res  :16;
+        unsigned    count:10;
     };
     UINT32          w[2];
     UINT16          v[4];

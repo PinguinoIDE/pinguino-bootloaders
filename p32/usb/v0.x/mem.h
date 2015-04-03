@@ -15,29 +15,35 @@
 
 // Cacheable memory is in KSEG0
 #define KSEG0_FLASH_MEM_START           0x9D000000
-#define KSEG0_BOOT_MEM_START            0x9FC00000
+//#define KSEG0_BOOT_MEM_START            0x9FC00000
 
 // Non-Cacheable memory is in KSEG1
-#define KSEG1_FLASH_MEM_START           0xBD000000
-#define KSEG1_BOOT_MEM_START            0xBFC00000
+//#define KSEG1_FLASH_MEM_START           0xBD000000
+//#define KSEG1_BOOT_MEM_START            0xBFC00000
 
 // RAM (Vitual)
-#define DATA_MEM_START                  0xA0000000
+//#define DATA_MEM_START                  0xA0000000
 
-#define VECTORS_MEM_LENGTH              0x10            // RESET VECTOR ONLY
-#define STARTUP_MEM_LENGTH              0x200
-#define IVT_MEM_LENGTH                  0x1000           // 0x200 + 64 vectors * 32 bytes
+//#define VECTORS_MEM_LENGTH              0x10            // RESET VECTOR ONLY
+//#define STARTUP_MEM_LENGTH              0x200
+//#define IVT_MEM_LENGTH                  0x1000           // 0x200 + 64 vectors * 32 bytes
 
 // The Flash page size is
 // - 1 KB on PIC32MX-1XX/2XX devices
 // - 4 KB on PIC32MX-3XX/7XX devices
 
-#if defined(__32MX220F032B__) || defined(__32MX250F128B__) || defined(__32MX270F256B__)
+#if defined(__32MX220F032B__) || \
+    defined(__32MX250F128B__) || \
+    defined(__32MX270F256B__)
+
 #define FLASH_PAGE_SIZE                 0x400
 #define KSEG_BOOT_MEM_LENGTH            0xBF0
+
 #else
+
 #define FLASH_PAGE_SIZE                 0x1000
 #define KSEG_BOOT_MEM_LENGTH            0x2FF0
+
 #endif
 
 // PIC32MX270F256B issues
@@ -45,11 +51,15 @@
 // - BMXDRMSZ returns 128K instead of 64K
 
 #if defined(__32MX270F256B__)
+
 #define FLASH_TOTAL_LENGTH              (BMXPFMSZ/2)
 #define DATA_MEM_LENGTH                 (BMXDRMSZ/2)
+
 #else
+
 #define FLASH_TOTAL_LENGTH              BMXPFMSZ
 #define DATA_MEM_LENGTH                 BMXDRMSZ
+
 #endif
 
 #define FLASH_MEM_END                   (KSEG0_FLASH_MEM_START + FLASH_TOTAL_LENGTH)
@@ -97,9 +107,16 @@
 #define APP_PROGRAM_LENGTH              (APP_PROGRAM_ADDR_END - APP_PROGRAM_ADDR_START)
 #endif
 
-#define EBASE_ADDR                      0x9D000000
-#define APP_RESET_ADDR                  0x9D004000
-#define APP_PROGRAM_ADDR_START          0x9D005000
+#if defined(__32MX220F032B__) || \
+    defined(__32MX250F128B__) || \
+    defined(__32MX270F256B__)
+
+    #define APP_EBASE_ADDR                  0x9D003000
+    #define APP_RESET_ADDR                  0x9D004000
+    #define APP_PROGRAM_ADDR_START          0x9D004010
+
+#endif
+
 #define APP_PROGRAM_ADDR_END            FLASH_MEM_END
 #define APP_PROGRAM_LENGTH              (APP_PROGRAM_ADDR_END - APP_PROGRAM_ADDR_START)
 

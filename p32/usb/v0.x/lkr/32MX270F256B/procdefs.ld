@@ -41,17 +41,16 @@ PROVIDE(_vector_spacing = 0x00000001);
 /**********************************************************************
  * _ebase_address value MUST BE same as the ORIGIN value of exception_mem
  * _RESET_ADDR value MUST BE same as the ORIGIN value of kseg1_boot_mem
- * When the PIC is reset, it goes to the reset address 0xBFC00000,
+ * After any kind of reset, the PIC32 CPU will jump to the reset vector,
+ * that resides at the fixed virtual address 0x9FC00000 (0xBFC00000).
  * which is the location of the boot flash, and executes the code there:
  * crt0.S which takes care of some initialization tasks,
  * then calls the code for the bootloader,
  * which resides in the KSEG0 program flash (kseg0_boot_mem) memory block.
  **********************************************************************/
 
-_ebase_address           = 0x9D000000;
+_ebase_address           = 0x9D003000;
 _RESET_ADDR              = 0xBFC00000;
-_GEN_EXCPT_ADDR          = _ebase_address + 0x180;
-/*_BEV_EXCPT_ADDR          = _RESET_ADDR + 0x380;*/
 
 /**********************************************************************
  * Memory Regions
@@ -68,36 +67,36 @@ MEMORY
 {
 
 /**********************************************************************
- * exception_mem  contains INTERRUPT VECTOR TABLE starting at ebase (cacheable)
- * exception_mem value MUST BE same as value of _ebase_address
- * exception_mem must align with 4K address boundary
- * SPACE SHARED BETWEEN THE BOOTLOADER AND THE PINGUINO APPLICATION
- * 0x200 + 64 vectors * 32 bytes = 0xA00 < 0xBF0
- **********************************************************************/
-
-exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
-
-/**********************************************************************
- * BOOTLOADER CODE is less than 0x3000 bytes long
- **********************************************************************/
-
-kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x3000
-
-/**********************************************************************
  * kseg1_boot_mem (non-cacheable) contains
- * - Reset vector (0x000)
+ * - Reset vector (_RESET_ADDR)  (0x000)
  * - Bootstrap exception handler (0x380)
- * - Debug exception handler (0x480)
- * _RESET_ADDR must be where the Reset Vector is
+ * - Debug exception handler     (0x480)
+ * _RESET_ADDR must be aligned with 4K address boundary
  **********************************************************************/
 
-kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x10
+kseg1_boot_mem             : ORIGIN = 0xBFC00000, LENGTH = 0x010
 
 /**********************************************************************
  * STARTUP CODE (crt0.S) is 0x1B0 bytes long
  **********************************************************************/
 
 kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200
+
+/**********************************************************************
+ * BOOTLOADER CODE is less than 0x3000 bytes long
+ **********************************************************************/
+
+kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000
+
+/**********************************************************************
+ * exception_mem  contains INTERRUPT VECTOR TABLE starting at ebase (cacheable)
+ * exception_mem value MUST BE same as value of _ebase_address
+ * exception_mem must be aligned with 4K address boundary
+ * SPACE SHARED BETWEEN THE BOOTLOADER AND THE PINGUINO APPLICATION
+ * 0x200 + 64 vectors * 32 bytes = 0xA00 < 0xBF0
+ **********************************************************************/
+
+exception_mem              : ORIGIN = 0x9D003000, LENGTH = 0xA00
 
 /**********************************************************************
  * Device Configuration Registers (configuration bits)
@@ -172,12 +171,12 @@ SECTIONS
     {
         KEEP(*(.bev_handler))
     } > kseg1_boot_mem
-*/
+
     .app_excpt _GEN_EXCPT_ADDR :
     {
         KEEP(*(.gen_handler))
     } > exception_mem
-
+*/
     /*********************************************************************
     *** Key Section
     ********************************************************************/

@@ -155,10 +155,10 @@ int main(void)
     static UINT32 led_count = 0;
     //User App. hard-coded virtual memory address
     UINT32 *UserAppPtr;
-    void (*UserApp)(void);
+    void  (*UserAppFnc)(void);
 
     UserAppPtr = (UINT32*)APP_RESET_ADDR;
-    UserApp    = (void (*)(void))APP_RESET_ADDR;
+    UserAppFnc = (void (*)(void))APP_RESET_ADDR;
 
     //Initialize LEDs and push button
     mLED_Init();
@@ -190,8 +190,8 @@ int main(void)
         //SerialPrint("FLASH memory size %d KB\r\n", (BMXPFMSZ>>10));
         //SerialPrint("BOOT memory size %d KB\r\n", (BMXBOOTSZ>>10));
         #else
-        SerialPrint("EBASE_ADDR = 0x");
-        SerialPrintNumber(EBASE_ADDR, 16);
+        SerialPrint("APP_EBASE_ADDR = 0x");
+        SerialPrintNumber(APP_EBASE_ADDR, 16);
         SerialPrint("\r\n");
         SerialPrint("APP_RESET_ADDR = 0x");
         SerialPrintNumber(APP_RESET_ADDR, 16);
@@ -221,7 +221,7 @@ int main(void)
     // If there's no application, we just go on.
 
     if (!mSWITCH_Pressed() && *UserAppPtr != InvalidAddress)
-        UserApp();
+        UserAppFnc();
 
     // Initializes the variable holding the handle for the last transmission
     USBOutHandle = 0;
@@ -373,8 +373,10 @@ static void USBPacketHandler(void)
 //******************************************************************************
             case ERASE_DEVICE:
 //******************************************************************************
-
-                for (i = APP_PROGRAM_ADDR_START;
+                
+                // erase memory from ebase address to be able to write the
+                // user application Interrupt Vector Table
+                for (i = APP_EBASE_ADDR;            //APP_PROGRAM_ADDR_START;
                      i < APP_PROGRAM_ADDR_END;
                      i = i + FLASH_PAGE_SIZE)
                 {

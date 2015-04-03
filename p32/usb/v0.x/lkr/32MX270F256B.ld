@@ -2,7 +2,7 @@
  * PIC32MX270F256B object file
  * Contains Memory Regions definitions
  * Project : www.pinguino.cc
- * Last update : 2015-03-18
+ * Last update : 2015-03-27
  * Contact : Régis Blanchot <rblanchot@gmail.com>
  **********************************************************************/
 
@@ -22,10 +22,8 @@ ENTRY(_reset)
  * and executes crt0.S
  **********************************************************************/
 
-_ebase_address           = 0x9D000000;
+_ebase_address           = 0x9D003000;
 _RESET_ADDR              = 0xBFC00000;
-_GEN_EXCPT_ADDR          = _ebase_address + 0x180;
-/*_BEV_EXCPT_ADDR          = _RESET_ADDR + 0x380;*/
 
 /**********************************************************************
  * Memory Regions
@@ -48,18 +46,18 @@ _GEN_EXCPT_ADDR          = _ebase_address + 0x180;
 
 MEMORY
 {
+    /**********************************************************************
+     * Bootloader code
+     **********************************************************************/
+
+    kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000
+
 
     /**********************************************************************
      * Interrupt vector table (exception_mem = _ebase_address)
      **********************************************************************/
 
-    exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
-
-    /**********************************************************************
-     * Bootloader code
-     **********************************************************************/
-
-    kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x3000
+    exception_mem              : ORIGIN = 0x9D003000, LENGTH = 0xA00
 
     /**********************************************************************
      * Reset Vector (_RESET_ADDR = kseg1_boot_mem)

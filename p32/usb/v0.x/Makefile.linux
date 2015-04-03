@@ -4,7 +4,7 @@
 #	32-bit USB HID Bootloader                                          #
 #	Author : Régis Blanchot <rblanchot@gmail.com>                      #
 #                                                                      #
-#	Usage ex. : make --makefile=Makefile PROC=32MX250F128B [DEBUG=yes] #
+#	Usage ex. : make --makefile=Makefile.linux PROC=32MX250F128B [DEBUG=yes] #
 #                                                                      #
 #	Supported CPU : 32MX250F128B                                       #
 #	                32MX270F256B                                       #
@@ -14,8 +14,9 @@
 #                                                                      #
 ########################################################################
 
-_TEST_ENABLE_   = false
-_MIPS16_ENABLE_ = true
+_MIPS16_ENABLE_	= true
+_OVCLCK_ENABLE_	= false
+_TEST_ENABLE_	= false
 
 # Where to find the gcc-mips-elf toolchain
 BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
@@ -25,9 +26,8 @@ BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
 # Version (will override boot.h #define)
 # ----------------------------------------------------------------------
 
-MAJ_VER		= 0
-MIN_VER		= 5
-#DOT_VER		= 2
+MAJ_VER		= 1
+MIN_VER		= 3
 
 # ----------------------------------------------------------------------
 # Processor family
@@ -44,6 +44,17 @@ FAMILYMX2	= $(findstring 32MX2, $(PROC))
 FAMILY		= $(FAMILYMX1)$(FAMILYMX2)$(FAMILYMZ)
 
 CRYSTAL		= 8
+TOOL		= PK3
+
+# ----------------------------------------------------------------------
+# Overclock (possible value : 42, 48, 60, 64)
+# ----------------------------------------------------------------------
+
+ifeq "$(_OVCLCK_ENABLE_)" "true"
+	FCPU=64
+else
+	FCPU=40
+endif
 
 # ----------------------------------------------------------------------
 # Project's name
@@ -52,18 +63,19 @@ CRYSTAL		= 8
 ifeq "$(_TEST_ENABLE_)" "true"
 	PRJ		= Test
 else
+#	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(PROC)_$(FCPU)MHz
 	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(PROC)_X$(CRYSTAL)MHz
 endif
 
 # ----------------------------------------------------------------------
 # Unsupported record in hex file / Jean-pierre Mandon 2012
 # ----------------------------------------------------------------------
-#		04		 : 4 bytes
-#		0000	 : address
-#		05		 : record type = Start_Linear_Address_Record
-#		9D004000 : address where the user program should start
-#				 : _RESET_ADDR (see lkr/procdefs.ld)
-#		1A		 : checksum
+#	04		 : 4 bytes
+#	0000	 : address
+#	05		 : record type = Start_Linear_Address_Record
+#	9D004000 : address where the user program should start
+#			 : _RESET_ADDR (see lkr/procdefs.ld)
+#	1A		 : checksum
 # ----------------------------------------------------------------------
 
 ifneq (,$(filter $(FAMILY),32MX1 32MX2))
@@ -94,15 +106,13 @@ RED=\033[31;1m
 GREEN=\033[32;1m
 YELLOW=\033[33;1m
 BLUE=\033[34;1m
-TERM=\033[m
-
-BOLD=\033\[0;1;31m
-NORM=\033\[0m
+BOLD=\033[0;1;31m
+NORM=\033[0m
 
 WARNING=$(YELLOW)
 ERROR=$(RED)
 NORMAL=$(GREEN)
-END=$(TERM)
+END=$(NORM)
 
 # ----------------------------------------------------------------------
 # Directories
@@ -120,8 +130,8 @@ INCLUDEDIRS	= -I$(LKRDIR) \
 			  -I$(INCDIR) \
 			  -I$(INCDIR)/non-free
 
-#-lm -lgcc -lc
-LIBS		=
+# -lm -lgcc 
+LIBS		= -lc
 LIBDIRS		=
 
 # ----------------------------------------------------------------------
@@ -129,7 +139,7 @@ LIBDIRS		=
 # ----------------------------------------------------------------------
 
 ifeq "$(_TEST_ENABLE_)" "true"
-	SRCS	= test.c
+	SRCS	= test.c delay.c core.c serial.c
 else
 	ALLSRCS	= $(wildcard *.c)
 	SRCS	= $(filter-out test.c, $(ALLSRCS))
@@ -182,14 +192,18 @@ ELF_FLAGS	= -march=$(CORE) \
 			  -Wl,--gc-sections \
 			  -Wl,-L$(OBJDIR) \
 			  -Wl,-Map=output.map \
-			  -Wl,--script=$(LKRDIR)/$(PROC)/$(PROC).ld \
 			  -D __P32GCC__ \
 			  -D __PIC32MX__ \
 			  -D __$(PROC)__ \
+			  -D TEST=$(_TEST_ENABLE_) \
+			  -D FCPUMHZ=$(FCPU) \
 			  -D USB_MAJOR_VER=$(MAJ_VER) \
 			  -D USB_MINOR_VER=$(MIN_VER) \
-			  -D USB_DOT_VER=$(DOT_VER)
+			  -T$(LKRDIR)/$(PROC).ld \
+			  -T$(LKRDIR)/elf32pic32mx.x
 
+#			  -D USB_DOT_VER=$(DOT_VER) \
+#			  -Wl,--script=$(LKRDIR)/$(PROC).ld
 #			  -T$(LKRDIR)/elf32pic32mx.x
 
 #-----------------------------------------------------------------------
@@ -204,11 +218,14 @@ ELF_FLAGS	= -march=$(CORE) \
 #
 #-----------------------------------------------------------------------
 
-all: start clean copy $(PRJ).elf convert fix size
+all: start clean copy $(PRJ).elf convert fix size burn
+#all: start clean copy $(PRJ).elf convert size burn
+#all: start clean copy $(PRJ).elf convert fix size
 #all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf
 #all: start
+#all: burn
 
 start:
 ifeq ($(DEFAULT), YES)
@@ -243,9 +260,10 @@ $(PRJ).elf: $(OBJS)
 	@echo "Linking all the modules together"
 	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex/$@ $^ \
 		$(LKRDIR)/crt0.S \
+		$(LKRDIR)/ISRwrapper.S\
 		$(OBJDIR)/processor.o \
+		$(INCDIR)/p32xxxx.h \
 		$(LIBS)
-#		$(INCDIR)/p32xxxx.h \
 
 convert:
 	@echo "Converting elf to hex"
@@ -256,7 +274,7 @@ fix:
 	@sed -i -e 's/:020000049D005D/:020000041D00DD/g' $(HEXDIR)/$(PRJ).hex
 	@sed -i -e 's/:020000049FC09B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
 	@sed -i -e 's/:02000004BFC07B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
-	@sed -i -e '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
+#	@sed -i -e '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
 
 size:
 ifdef DEBUG
@@ -266,5 +284,23 @@ else
 	@tools/codesize.py $(HEXDIR)/$(PRJ).hex
 endif
 
+# cf. IPECMD.txt
+# COMMAND		MEANING					DEFAULT
+# -TP<tool>		Tool Selection			None
+# -P<proc>		Processor Selection		None 
+# -F<file>		Hex File Selection		None 
+# -M			Program Device			Do Not Program 
+# -W			Externally power target	Power from PM3 
+
 burn:
-	@tools/pic32prog -S -p $(HEXDIR)/$(PRJ).hex
+#	@tools/pic32prog -S -p $(HEXDIR)/$(PRJ).hex
+#	C:\Program Files\Microchip\MPLABX\mplab_ide\bin
+	@echo "Burning $(PRJ).hex file"
+	@java -jar /opt/microchip/mplabx/mplab_ipe/ipecmd.jar \
+			-W \
+			-M \
+			-TP$(TOOL) \
+			-P$(PROC) \
+			-F$(HEXDIR)/$(PRJ).hex
+	@$(RM) MPLABXLog.* > /dev/null
+	@$(RM) log.* > /dev/null

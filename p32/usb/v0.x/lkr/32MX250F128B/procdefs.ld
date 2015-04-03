@@ -1,7 +1,7 @@
 /**********************************************************************
  * PIC32MX250F128B object file
  * Contains Memory Regions definitions
- * 2014-11-27 Regis Blanchot
+ * 2015-03-24 Regis Blanchot
  **********************************************************************/
 
 /*
@@ -48,10 +48,8 @@ PROVIDE(_vector_spacing = 0x00000001);
  * which resides in the KSEG0 program flash (kseg0_boot_mem) memory block.
  **********************************************************************/
 
-_ebase_address           = 0x9D000000;
+_ebase_address           = 0x9D003000;
 _RESET_ADDR              = 0xBFC00000;
-_GEN_EXCPT_ADDR          = _ebase_address + 0x180;
-/*_BEV_EXCPT_ADDR          = _RESET_ADDR + 0x380;*/
 
 /**********************************************************************
  * Memory Regions
@@ -68,20 +66,20 @@ MEMORY
 {
 
 /**********************************************************************
+ * BOOTLOADER CODE is less than 0x3000 bytes long
+ **********************************************************************/
+
+kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000
+
+/**********************************************************************
  * exception_mem  contains INTERRUPT VECTOR TABLE starting at ebase (cacheable)
  * exception_mem value MUST BE same as value of _ebase_address
  * exception_mem must align with 4K address boundary
  * SPACE SHARED BETWEEN THE BOOTLOADER AND THE PINGUINO APPLICATION
- * 0x200 + 64 vectors * 32 bytes = 0xA00 < 0xBF0
+ * 0x200 + 64 vectors * 32 bytes = 0xA00
  **********************************************************************/
 
-exception_mem              : ORIGIN = 0x9D000000, LENGTH = 0x1000
-
-/**********************************************************************
- * BOOTLOADER CODE is less than 0x3000 bytes long
- **********************************************************************/
-
-kseg0_program_mem    (rx)  : ORIGIN = 0x9D001000, LENGTH = 0x3000
+exception_mem              : ORIGIN = 0x9D003000, LENGTH = 0xA00
 
 /**********************************************************************
  * kseg1_boot_mem (non-cacheable) contains
@@ -172,11 +170,11 @@ SECTIONS
     {
         KEEP(*(.bev_handler))
     } > kseg1_boot_mem
-*/
     .app_excpt _GEN_EXCPT_ADDR :
     {
         KEEP(*(.gen_handler))
     } > exception_mem
+*/
 
     /*********************************************************************
     *** Key Section

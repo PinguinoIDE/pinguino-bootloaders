@@ -13,7 +13,7 @@
 
 #include <p32xxxx.h>
 #include "typedefs.h"
-#include "flash.h"
+#include "flash.h"              // ConvertToPhysicalAddress
 #include "hardware.h"
 #include "delay.h"              // Delayus
 #include "core.h"

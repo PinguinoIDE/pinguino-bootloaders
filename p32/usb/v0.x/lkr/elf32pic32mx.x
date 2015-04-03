@@ -56,7 +56,7 @@ SECTIONS
     *** Config. Sections
     ********************************************************************/
 
-    .devcfg  : { KEEP(*(.devcfg)) } > devcfg
+    .devcfg  : { KEEP(*(.devcfg))  } > devcfg
     .devcfg3 : { KEEP(*(.devcfg3)) } > devcfg3
     .devcfg2 : { KEEP(*(.devcfg2)) } > devcfg2
     .devcfg1 : { KEEP(*(.devcfg1)) } > devcfg1
