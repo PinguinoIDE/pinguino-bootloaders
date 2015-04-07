@@ -63,7 +63,7 @@
 #endif
 
 #define FLASH_MEM_END                   (KSEG0_FLASH_MEM_START + FLASH_TOTAL_LENGTH)
-#define BOOT_PROGRAM_LENGTH             0x3000  // 10K
+#define BOOT_PROGRAM_LENGTH             0x2000  // 8K
 
 #if 0
 /**********************************************************************
@@ -108,12 +108,17 @@
 #endif
 
 #if defined(__32MX220F032B__) || \
-    defined(__32MX250F128B__) || \
-    defined(__32MX270F256B__)
+    defined(__32MX250F128B__)
 
-    #define APP_EBASE_ADDR                  0x9D003000
-    #define APP_RESET_ADDR                  0x9D004000
-    #define APP_PROGRAM_ADDR_START          0x9D004010
+    #define APP_EBASE_ADDR              0x9D003000
+    #define APP_RESET_ADDR              0x9D004000
+    #define APP_PROGRAM_ADDR_START      0x9D004010
+
+#elif defined(__32MX270F256B__)
+
+    #define APP_EBASE_ADDR              0x9D002000
+    #define APP_RESET_ADDR              0x9D003000
+    #define APP_PROGRAM_ADDR_START      0x9D003010
 
 #endif
 

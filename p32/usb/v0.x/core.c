@@ -22,7 +22,7 @@
 void SoftReset(void)
 {
     // Suspend or Disable all Interrupts
-    DisableInterrupt();
+    //DisableInterrupt();
 
     //if (!(DMACON & _DMACON_SUSPEND_MASK) )
     if (!DMACONbits.SUSPEND)
@@ -31,17 +31,16 @@ void SoftReset(void)
         while (DMACON & _DMACON_DMABUSY_MASK);
     }
 
-    // Step 1 - Execute "unlock" sequence to access the RSWRST register.
+    // Step 1 - Execute "unlock" sequence to access the RSWRST register
     SYSKEY = 0;
     SYSKEY = 0xAA996655;
     SYSKEY = 0x556699AA;
 
-    // Step 2 - Write a '1' to RSWRST.SWRST bit to arm the software reset.
+    // Step 2 - Write a '1' to RSWRST.SWRST bit to arm the software reset
     RSWRSTSET = _RSWRST_SWRST_MASK;
 
-    // Step 3 - A Read of the RSWRST register must follow the write.
-    // This action triggers the software reset, which should occur on the next clock cycle.
-    (void) RSWRST;
+    // Step 3 - Read of the RSWRST register triggers the software reset
+    RSWRST;
 
     // Note: The read instruction must be following with either 4 nop
     // instructions (fills the instruction pipe) or a while(1)loop to
@@ -85,23 +84,27 @@ void MemCopy (void *from, void *to, UINT32 nbytes)
  * Save the interrupt state into the supplied variable.
  *******************************************************************/
 
+#if 0
 UINT32 MIPS32 DisableInterrupt(void)
 {
     int status;
     asm volatile ("di	%0" : "=r" (status));
     return status;
 }
+#endif
 
 /*******************************************************************
  * Enable hardware interrupts.
  *******************************************************************/
 
+#if 0
 UINT32 MIPS32 EnableInterrupt(void)
 {
     int status;
     asm volatile ("ei	%0" : "=r" (status));
     return status;
 }
+#endif
 
 /*******************************************************************
  * Enable hardware interrupts.
@@ -125,7 +128,7 @@ void MIPS32 EnableMultiVectoredInt(void)
  * Reset the Core Timer
  *******************************************************************/
 
-#if (TEST)
+#if (TEST==true)
 void MIPS32 ResetCoreTimer(void)
 {
     asm volatile("mtc0	%0, $9" : : "r" (0));

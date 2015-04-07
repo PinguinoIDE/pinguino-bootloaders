@@ -29,6 +29,7 @@
  ******************************************************************************/
 
 #include "p32xxxx.h"                            // Registers definitions
+#include "debug.h"                              // Debug functions
 #include "typedefs.h"                           // UINT8, UINT32, ...
 #include "config.h"                             // Config. bits
 #include "mem.h"                                // Pinguino memory regions description
@@ -37,9 +38,8 @@
 #include "core.h"                               // MemCopy, MemClear, core timer functions
 #include "delay.h"                              // Delayus
 #include "usb.h"                                // USB device framework definitions
-#include "debug.h"                              // Debug functions
 
-#if defined(DEBUG)                              // defined in hardware.h
+#ifdef DEBUG                                    // defined in hardware.h
 #include "serial.h"                             // UART functions
 #endif
 

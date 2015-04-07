@@ -46,7 +46,7 @@ void Delayus(UINT32 us)
     Wait for ms milliseconds
     ------------------------------------------------------------------*/
 
-#if (TEST)
+#if (TEST==true)
 void Delayms(UINT32 ms)
 {
     do

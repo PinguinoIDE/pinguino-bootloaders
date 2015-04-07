@@ -37,6 +37,10 @@ address_Hi = 0
 max_address = 0
 old_address = 0
 
+BOOTSTART = 0x1D000000
+BOOTEND   = 0x1D003000
+BOOTLENGTH   = 0
+
 if (len(sys.argv) > 1):
 
     filename = sys.argv[1]
@@ -60,8 +64,8 @@ if (len(sys.argv) > 1):
             address = (address_Hi << 16) + address_Lo
             #print "address : 0x%X" % address
 
-            # code starts at 0x1D001000 and can't be upon 0x1D080000
-            if (address > 0x9D001000) and (address < 0x9D080000):
+            # code starts at 0x1D000000 and can't be upon 0x1D003000
+            if (address > BOOTSTART) and (address < BOOTEND):
                 
                 # code size
                 codesize = codesize + byte_count
@@ -96,11 +100,32 @@ if (len(sys.argv) > 1):
 
     fichier.close()
 
-    page1024 = int(max_address/1024) + 1
+    # 4K align
+    BOOTEND = 4096 * (int(max_address/4096) + 1)
+    BOOTSTART = BOOTSTART | 0x80000000
+    BOOTEND   = BOOTEND   | 0x80000000
+    BOOTLENGTH = BOOTEND - BOOTSTART
+    IVTLENGTH = 0xA00
+    IVTSTART = BOOTEND
+    STARTUPSTART = BOOTEND + IVTLENGTH
+    STARTUPLENGTH = 0x200
+    RESETLENGTH = 0x10
+    RESETSTART = BOOTEND + 0x1000
+    APPSTART = RESETSTART + RESETLENGTH
+    
+    print "Code size is : %d bytes (0x%X)" % (codesize, codesize)
+    print "In the bootloader linker script :"
+    print "    _ebase_address = 0x%X" % BOOTEND
+    print "    kseg0_program_mem    (rx)  : ORIGIN = 0x%X, LENGTH = 0x%X" % (BOOTSTART, BOOTLENGTH)
+    print "    exception_mem              : ORIGIN = 0x%X, LENGTH = 0x%X" % (IVTSTART, IVTLENGTH)
+    print "In the application linker script :"
+    print "    _ebase_address = 0x%X" % IVTSTART
+    print "    _RESET_ADDR = 0x%X" % RESETSTART
+    print "    exception_mem              : ORIGIN = 0x%X, LENGTH = 0x%X" % (BOOTEND, IVTLENGTH)
+    print "    kseg0_boot_mem             : ORIGIN = 0x%X  LENGTH = 0x%X" % (STARTUPSTART, STARTUPLENGTH)
+    print "    kseg1_boot_mem             : ORIGIN = 0x%X  LENGTH = 0x%X" % (RESETSTART, RESETLENGTH)
+    print "    kseg0_program_mem    (rx)  : ORIGIN = 0x%X, LENGTH = ???" % (APPSTART)
 
-    print "code size is : %d bytes (0x%X)" % (codesize, codesize)
-    print "max. address : 0x%X" % max_address
-    print "aligned on 1024 : 0x%X" % (page1024 * 1024)
 else:
     print "No file to proceed"
     print "usage: ./codesize.py filename (without .hex extension)"

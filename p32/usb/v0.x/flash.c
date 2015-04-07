@@ -27,15 +27,14 @@
  * but it seems not to work
 ********************************************************************/
 
-void FlashOperation(UINT32 op, void* addr, UINT32 data)
+void FlashOperation(UINT32 op, void* addr, UINT32 data32)
 {
     //UINT32 status;
 
     // NVMADDR only accept Physical Address
     NVMADDR = ConvertToPhysicalAddress(addr);
 
-    #if 0
-    #if defined(DEBUG)
+    #if 0 && defined(DEBUG)
         SerialPrint("FlashOperation / ");
         if (op == FLASH_WORD_WRITE)
         {
@@ -52,10 +51,9 @@ void FlashOperation(UINT32 op, void* addr, UINT32 data)
             mLED_2_Toggle();
         }
     #endif
-    #endif
 
     // Load data into NVMDATA register
-    NVMDATA = data;
+    NVMDATA = data32;
 
     // Suspend or Disable all Interrupts
     //status = DisableInterrupt();

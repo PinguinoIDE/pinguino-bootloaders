@@ -11,6 +11,17 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
-//#define DEBUG
+// Bootloader compiled from the Makefile with PINGUINO/P32-GCC
+#if defined(__P32GCC__)
+    // DEBUG is activated from the Makefile 
+    #if (_DEBUG_ENABLE_)
+        #define DEBUG
+    #endif
+
+// Bootloader compiled with MPLABX
+#else
+    // DEBUG must be activated here 
+    //#define DEBUG
+#endif
 
 #endif // _DEBUG_H_

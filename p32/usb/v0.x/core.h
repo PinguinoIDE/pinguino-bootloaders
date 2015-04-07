@@ -24,8 +24,8 @@
 #define FPB                     (FCPU / PBDIV)
 #define FCP0                    (FCPU / 2)    // Core Timer runs at half the CPU rate
 
-UINT32 MIPS32 DisableInterrupt(void);
-UINT32 MIPS32 EnableInterrupt(void);
+//UINT32 MIPS32 DisableInterrupt(void);
+//UINT32 MIPS32 EnableInterrupt(void);
 //void MIPS32 EnableMultiVectoredInt(void);
 
 UINT32 MIPS32 ReadCoreTimer(void);

@@ -22,7 +22,7 @@ ENTRY(_reset)
  * and executes crt0.S
  **********************************************************************/
 
-_ebase_address           = 0x9D003000;
+_ebase_address           = 0x9D002000;
 _RESET_ADDR              = 0xBFC00000;
 
 /**********************************************************************
@@ -50,14 +50,14 @@ MEMORY
      * Bootloader code
      **********************************************************************/
 
-    kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000
+    kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x2000
 
 
     /**********************************************************************
      * Interrupt vector table (exception_mem = _ebase_address)
      **********************************************************************/
 
-    exception_mem              : ORIGIN = 0x9D003000, LENGTH = 0xA00
+    exception_mem              : ORIGIN = 0x9D002000, LENGTH = 0xA00
 
     /**********************************************************************
      * Reset Vector (_RESET_ADDR = kseg1_boot_mem)

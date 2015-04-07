@@ -49,7 +49,7 @@ PROVIDE(_vector_spacing = 0x00000001);
  * which resides in the KSEG0 program flash (kseg0_boot_mem) memory block.
  **********************************************************************/
 
-_ebase_address           = 0x9D003000;
+_ebase_address           = 0x9D002000;
 _RESET_ADDR              = 0xBFC00000;
 
 /**********************************************************************
@@ -86,7 +86,7 @@ kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200
  * BOOTLOADER CODE is less than 0x3000 bytes long
  **********************************************************************/
 
-kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000
+kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x2000
 
 /**********************************************************************
  * exception_mem  contains INTERRUPT VECTOR TABLE starting at ebase (cacheable)
@@ -96,7 +96,7 @@ kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x3000
  * 0x200 + 64 vectors * 32 bytes = 0xA00 < 0xBF0
  **********************************************************************/
 
-exception_mem              : ORIGIN = 0x9D003000, LENGTH = 0xA00
+exception_mem              : ORIGIN = 0x9D002000, LENGTH = 0xA00
 
 /**********************************************************************
  * Device Configuration Registers (configuration bits)

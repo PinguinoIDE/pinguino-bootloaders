@@ -14,7 +14,7 @@
 #include "typedefs.h"
 
 void Delayus(UINT32);
-#if (TEST)
+#if (TEST==true)
 void Delayms(UINT32);
 #endif
 

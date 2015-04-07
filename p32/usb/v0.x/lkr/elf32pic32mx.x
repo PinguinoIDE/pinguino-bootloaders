@@ -45,12 +45,12 @@ SECTIONS
     {
     KEEP(*(.bev_handler))
     } > kseg1_boot_mem
-    */
 
     .app_excpt _GEN_EXCPT_ADDR :
     {
     KEEP(*(.gen_handler))
     } > exception_mem
+    */
 
     /********************************************************************
     *** Config. Sections

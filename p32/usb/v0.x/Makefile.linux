@@ -1,22 +1,37 @@
-########################################################################
-#                                                                      #
-#	Pinguino Bootloader v0.x                                           #
-#	32-bit USB HID Bootloader                                          #
-#	Author : Régis Blanchot <rblanchot@gmail.com>                      #
-#                                                                      #
-#	Usage ex. : make --makefile=Makefile.linux PROC=32MX250F128B [DEBUG=yes] #
-#                                                                      #
-#	Supported CPU : 32MX250F128B                                       #
-#	                32MX270F256B                                       #
-#                                                                      #
-#	This file is part of Pinguino Project (http://www.pinguino.cc)     #
-#	Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
-#                                                                      #
-########################################################################
+################################################################################
+#                                                                              #
+#   Pinguino Bootloader v0.x                                                   #
+#   32-bit USB HID Bootloader                                                  #
+#   Author : Régis Blanchot <rblanchot@gmail.com>                              #
+#                                                                              #
+#   Usage :                                                                    #
+#     make --makefile=Makefile.linux [PROC=32MX250F128B] [MIPS16=true] [DEBUG=true] #
+#                                                                              #
+#   Supported CPU :                                                            #
+#     32MX220F032B                                                             #
+#     32MX250F128B                                                             #
+#     32MX270F256B                                                             #
+#                                                                              #
+#   This file is part of Pinguino Project (http://www.pinguino.cc)             #
+#   Released under the LGPL license (www.gnu.org/licenses/lgpl.html)           #
+#                                                                              #
+################################################################################
 
-_MIPS16_ENABLE_	= true
-_OVCLCK_ENABLE_	= false
 _TEST_ENABLE_	= false
+
+ifeq "$(MIPS16)" "true"
+	_MIPS16_ENABLE_	= true
+else
+	_MIPS16_ENABLE_	= false
+endif
+
+_OVCLCK_ENABLE_	= false
+
+ifeq "$(DEBUG)" "true"
+	_DEBUG_ENABLE_ = 1
+else
+	_DEBUG_ENABLE_ = 0
+endif
 
 # Where to find the gcc-mips-elf toolchain
 BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
@@ -68,23 +83,6 @@ else
 endif
 
 # ----------------------------------------------------------------------
-# Unsupported record in hex file / Jean-pierre Mandon 2012
-# ----------------------------------------------------------------------
-#	04		 : 4 bytes
-#	0000	 : address
-#	05		 : record type = Start_Linear_Address_Record
-#	9D004000 : address where the user program should start
-#			 : _RESET_ADDR (see lkr/procdefs.ld)
-#	1A		 : checksum
-# ----------------------------------------------------------------------
-
-ifneq (,$(filter $(FAMILY),32MX1 32MX2))
-	BADRECORD   = '^:04000005BFC0000078'
-else
-	BADRECORD   = '^:040000059D006000FA'
-endif
-
-# ----------------------------------------------------------------------
 # MIPS Core
 # ----------------------------------------------------------------------
 # PIC32MX has a MIPS M4K core
@@ -130,7 +128,7 @@ INCLUDEDIRS	= -I$(LKRDIR) \
 			  -I$(INCDIR) \
 			  -I$(INCDIR)/non-free
 
-# -lm -lgcc 
+# -lc -lgcc -lm
 LIBS		= -lc
 LIBDIRS		=
 
@@ -142,7 +140,11 @@ ifeq "$(_TEST_ENABLE_)" "true"
 	SRCS	= test.c delay.c core.c serial.c
 else
 	ALLSRCS	= $(wildcard *.c)
-	SRCS	= $(filter-out test.c, $(ALLSRCS))
+	ifeq "$(_DEBUG_ENABLE_)" "true"
+		SRCS	= $(filter-out test.c, $(ALLSRCS))
+	else
+		SRCS	= $(filter-out test.c serial.c, $(ALLSRCS))
+	endif
 endif
 
 OBJS		= $(SRCS:%.c=obj/%.o)
@@ -196,6 +198,7 @@ ELF_FLAGS	= -march=$(CORE) \
 			  -D __PIC32MX__ \
 			  -D __$(PROC)__ \
 			  -D TEST=$(_TEST_ENABLE_) \
+			  -D _DEBUG_ENABLE_=$(_DEBUG_ENABLE_) \
 			  -D FCPUMHZ=$(FCPU) \
 			  -D USB_MAJOR_VER=$(MAJ_VER) \
 			  -D USB_MINOR_VER=$(MIN_VER) \
@@ -230,54 +233,51 @@ all: start clean copy $(PRJ).elf convert fix size burn
 start:
 ifeq ($(DEFAULT), YES)
 	@echo "$(WARNING)No Processor has been defined.$(END)"
-	@echo "$(WARNING)Usage ex. : make --makefile=Makefile PROC=32MX270F256B [DEBUG=yes]$(END)"
+	@echo "$(WARNING)Usage ex. : make --makefile=Makefile PROC=32MX270F256B [DEBUG=true]$(END)"
 	@echo "$(WARNING)Using 32MX270F256B as default processor$(END)"
 endif
-	@echo "$(NORMAL)Compiling $(PRJ)$(END)"
+	@echo "$(NORMAL)Building $(PRJ)$(END)"
 
 clean:
-	@echo "Cleaning all build files"
+	@echo "$(NORMAL)Cleaning all build files$(END)"
 	@$(RM) $(OBJDIR)/processor.o	> /dev/null
 	@$(RM) $(ORIGIN)/obj/*.o		> /dev/null
 	@$(RM) $(ORIGIN)/obj/*.S		> /dev/null
 	@$(RM) $(HEXDIR)/*.elf			> /dev/null
-#	@$(RM) $(HEXDIR)/*.hex			> /dev/null
 
 copy:
-	@echo "Adding $(PROC) SFR definition"
+	@echo "$(NORMAL)Adding $(PROC) SFR definition$(END)"
 	@$(CP) $(OBJDIR)/$(PROC).o $(OBJDIR)/processor.o
 
 obj/%.o: %.c
-	@echo "Compiling $<"
+	@echo "$(NORMAL)Compiling $<$(END)"
 	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) $(MIPS16_OPT) -c $< -o $@
-ifdef DEBUG
-	@echo "Disassembling all files"
+ifeq "$(_DEBUG_ENABLE_)" "true"
+	@echo "$(WARNING)Disassembling all files$(END)"
 	@$(OBJDUMP) -D -M intel -S $@ > obj/$*.S
 	cat obj/$*.S
 endif
 
 $(PRJ).elf: $(OBJS)
-	@echo "Linking all the modules together"
+	@echo "$(NORMAL)Linking all the modules together$(END)"
 	@$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex/$@ $^ \
 		$(LKRDIR)/crt0.S \
-		$(LKRDIR)/ISRwrapper.S\
 		$(OBJDIR)/processor.o \
 		$(INCDIR)/p32xxxx.h \
 		$(LIBS)
 
 convert:
-	@echo "Converting elf to hex"
+	@echo "$(NORMAL)Converting elf to hex$(END)"
 	@$(OBJCOPY) -O ihex $(HEXDIR)/$(PRJ).elf $(HEXDIR)/$(PRJ).hex
 
 fix:
-	@echo "Fixing bad records"
+	@echo "$(WARNING)Fixing bad records$(END)"
 	@sed -i -e 's/:020000049D005D/:020000041D00DD/g' $(HEXDIR)/$(PRJ).hex
 	@sed -i -e 's/:020000049FC09B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
 	@sed -i -e 's/:02000004BFC07B/:020000041FC01B/g' $(HEXDIR)/$(PRJ).hex
-#	@sed -i -e '/$(BADRECORD)/d' $(HEXDIR)/$(PRJ).hex
 
 size:
-ifdef DEBUG
+ifeq "$(_DEBUG_ENABLE_)" "true"
 	@tools/codesize.py $(HEXDIR)/$(PRJ).hex DEBUG=yes
 	@$(SIZE) $(HEXDIR)/$(PRJ).hex
 else
@@ -295,7 +295,7 @@ endif
 burn:
 #	@tools/pic32prog -S -p $(HEXDIR)/$(PRJ).hex
 #	C:\Program Files\Microchip\MPLABX\mplab_ide\bin
-	@echo "Burning $(PRJ).hex file"
+	@echo "$(WARNING)Burning $(PRJ).hex file$(END)"
 	@java -jar /opt/microchip/mplabx/mplab_ipe/ipecmd.jar \
 			-W \
 			-M \

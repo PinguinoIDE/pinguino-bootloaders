@@ -137,40 +137,6 @@ const USB_STRING_INIT(10) sd003 = {
 
 //Class specific descriptor - HID
 const struct{UINT8 report[HID_RPT01_SIZE];}hid_rpt01={{
-#if 0
-    0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-    0x09, 0x06,                    // USAGE (Keyboard)
-    0xa1, 0x01,                    // COLLECTION (Application)
-    0x05, 0x07,                    // USAGE_PAGE (Keyboard)
-    0x19, 0xe0,                    // USAGE_MINIMUM (Keyboard LeftControl)
-    0x29, 0xe7,                    // USAGE_MAXIMUM (Keyboard Right GUI)
-    0x15, 0x00,                    // LOGICAL_MINIMUM (0)
-    0x25, 0x01,                    // LOGICAL_MAXIMUM (1)
-    0x75, 0x01,                    // REPORT_SIZE (1)
-    0x95, 0x08,                    // REPORT_COUNT (8)
-    0x81, 0x02,                    // INPUT (Data,Var,Abs)
-    0x95, 0x01,                    // REPORT_COUNT (1)
-    0x75, 0x08,                    // REPORT_SIZE (8)
-    0x81, 0x03,                    // INPUT (Cnst,Var,Abs)
-    0x95, 0x05,                    // REPORT_COUNT (5)
-    0x75, 0x01,                    // REPORT_SIZE (1)
-    0x05, 0x08,                    // USAGE_PAGE (LEDs)
-    0x19, 0x01,                    // USAGE_MINIMUM (Num Lock)
-    0x29, 0x05,                    // USAGE_MAXIMUM (Kana)
-    0x91, 0x02,                    // OUTPUT (Data,Var,Abs)
-    0x95, 0x01,                    // REPORT_COUNT (1)
-    0x75, 0x03,                    // REPORT_SIZE (3)
-    0x91, 0x03,                    // OUTPUT (Cnst,Var,Abs)
-    0x95, 0x06,                    // REPORT_COUNT (6)
-    0x75, 0x08,                    // REPORT_SIZE (8)
-    0x15, 0x00,                    // LOGICAL_MINIMUM (0)
-    0x25, 0x65,                    // LOGICAL_MAXIMUM (101)
-    0x05, 0x07,                    // USAGE_PAGE (Keyboard)
-    0x19, 0x00,                    // USAGE_MINIMUM (Reserved (no event indicated))
-    0x29, 0x65,                    // USAGE_MAXIMUM (Keyboard Application)
-    0x81, 0x00,                    // INPUT (Data,Ary,Abs)
-    0xc0
-#else
     0x06, 0x00, 0xFF,           // Usage Page = 0xFF00 (Vendor Defined Page 1)
     0x09, 0x01,                 // Usage (Vendor Usage 1)
     0xA1, 0x01,                 // Collection (Application)
@@ -185,7 +151,6 @@ const struct{UINT8 report[HID_RPT01_SIZE];}hid_rpt01={{
     0x29, 0x40,                 //      Usage Maximum 	//64 output usages total (0x01 to 0x40)
     0x91, 0x00,                 //      Output (Data, Array, Abs): Instantiates output packet fields.  Uses same report size and count as "Input" fields, since nothing new/different was specified to the parser since the "Input" item.
     0xC0                        // End Collection
-#endif
 }};
 
 //Array of configuration descriptors
@@ -1073,10 +1038,6 @@ static void USBCheckStdRequest(void)
     if(SetupPkt.RequestType != USB_SETUP_TYPE_STANDARD_BITFIELD)
         return;
 
-    #if defined(DEBUG)
-    //SerialPrint("Host request ");
-    #endif
-
     switch(SetupPkt.bRequest)
     {
         #if 0
@@ -1098,7 +1059,7 @@ static void USBCheckStdRequest(void)
 
         case USB_REQUEST_SET_ADDRESS:
             #if defined(DEBUG)
-            //SerialPrint("SET_ADDRESS\r\n");
+            SerialPrint("SET_ADDRESS\r\n");
             #endif
             // Generate a zero length packet
             inPipe.info.bits.busy = 1;
@@ -1108,14 +1069,14 @@ static void USBCheckStdRequest(void)
 
         case USB_REQUEST_GET_DESCRIPTOR:
             #if defined(DEBUG)
-            //SerialPrint("GET_DESCRIPTOR\r\n");
+            SerialPrint("GET_DESCRIPTOR\r\n");
             #endif
             USBStdGetDscHandler();
             break;
 
         case USB_REQUEST_GET_CONFIGURATION:
             #if defined(DEBUG)
-            //SerialPrint("GET_CONFIGURATION\r\n");
+            SerialPrint("GET_CONFIGURATION\r\n");
             #endif
             // Set Source
             inPipe.pSrc.bRam = (UINT8*)&USBActiveConfiguration;
@@ -1128,7 +1089,7 @@ static void USBCheckStdRequest(void)
 
         case USB_REQUEST_SET_CONFIGURATION:
             #if defined(DEBUG)
-            //SerialPrint("SET_CONFIGURATION\r\n");
+            SerialPrint("SET_CONFIGURATION\r\n");
             #endif
             USBStdSetCfgHandler();
             break;
@@ -1208,9 +1169,6 @@ void USBCheckHIDRequest(void)
 
     if (SetupPkt.bRequest == USB_REQUEST_GET_DESCRIPTOR)
     {
-        #if defined(DEBUG)
-        //SerialPrint("Host request ");
-        #endif
         switch (SetupPkt.bDescriptorType)
         {
             case DSC_HID: //HID Descriptor
@@ -1231,7 +1189,7 @@ void USBCheckHIDRequest(void)
 
             case DSC_RPT:  //Report Descriptor
                 #if defined(DEBUG)
-                //SerialPrint("report descriptor.\r\n");
+                SerialPrint("Report descriptor.\r\n");
                 #endif
                 if (USBActiveConfiguration == 1)
                 {
@@ -1251,7 +1209,7 @@ void USBCheckHIDRequest(void)
     {
         case GET_REPORT:
             #if defined(DEBUG)
-            //SerialPrint("GET_REPORT\r\n");
+            SerialPrint("GET_REPORT\r\n");
             #endif
             USBHIDCBGetReportHandler();
             break;
@@ -1279,7 +1237,7 @@ void USBCheckHIDRequest(void)
 
         case SET_IDLE:
             #if defined(DEBUG)
-            //SerialPrint("SET_IDLE\r\n");
+            SerialPrint("SET_IDLE\r\n");
             #endif
             //USBEP0Transmit(USB_EP0_NO_DATA);
             inPipe.info.Val = USB_EP0_NO_DATA | USB_EP0_BUSY;

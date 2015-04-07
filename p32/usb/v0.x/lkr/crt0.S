@@ -26,6 +26,7 @@ _reset:
         ##################################################################
         .section .startup,"ax",@progbits
         .set noreorder
+        .set nomips16
         .ent _startup
 _startup:
         ##################################################################
@@ -137,6 +138,7 @@ _init_ramfunc:
         sw      t3,(t1)
         addu    t0,4
         addu    t1,4
+
 _ramfunc_check:
         bltu    t1,t2,_init_ramfunc
         nop
@@ -154,6 +156,7 @@ _ramfunc_check:
         la      t1,_bmxdupba_address
         la      t2,BMXDUPBA
         sw      t1,0(t2)
+
 _ramfunc_done:
 
         ##################################################################
@@ -248,29 +251,29 @@ _ramfunc_done:
         # Boot Exception Vector Handler
         # Jumps to _bootstrap_exception_handler
         ##################################################################
-        .section .bev_handler,"ax",@progbits
-        .set noreorder
-        .ent _bev_exception
-_bev_exception:
+        #.section .bev_handler,"ax",@progbits
+        #.set noreorder
+        #.ent _bev_exception
+#_bev_exception:
         #la      k0,_bootstrap_exception_handler
         #jr      k0
-        nop
+        #nop
 
-        .end _bev_exception
+        #.end _bev_exception
                         
         ##################################################################
         # General Exception Vector Handler
         # Jumps to _general_exception_handler
         ##################################################################
-        .section .gen_handler,"ax",@progbits
-        .set noreorder
-        .ent _gen_exception
-_gen_exception:
+        #.section .gen_handler,"ax",@progbits
+        #.set noreorder
+        #.ent _gen_exception
+#_gen_exception:
         #la      k0,_general_exception_context
         #jr      k0
-        nop
+        #nop
 
-        .end _gen_exception
+        #.end _gen_exception
 
         .text
         .ent _main_entry
