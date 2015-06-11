@@ -7,6 +7,8 @@
     Version 4.?? (??-??-??)
         * code size < 2048 bytes
         * ENTRY = 0x0800
+    Version 4.15 (17-04-2015)
+        * fixed x5k50 HSOSCIO issue
     Version 4.14 (12-11-2013)
         * fixed INTOSC support for x5k50
         * fixed INTOSC support for x6j50

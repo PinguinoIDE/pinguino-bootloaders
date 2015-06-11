@@ -194,20 +194,20 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config CPUDIV = NOCLKDIV    // 1:1 mode (for 48MHz CPU)
 
     #if (CRYSTAL == INTOSC)             // Internal 16 MHz Osc.
-        #pragma config PLLSEL = PLL3X       // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
-        #pragma config FOSC = INTOSCIO      // Oscillator Selection (Internal oscillator)
+        #pragma config PLLSEL = PLL3X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config FOSC = INTOSCIO  // Oscillator Selection (Internal oscillator)
 
     #elif (CRYSTAL == 12)
-        #pragma config PLLSEL = PLL4X       // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
-        #pragma config FOSC = HSOSCIO      // Oscillator Selection (Internal oscillator)
+        #pragma config PLLSEL = PLL4X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
 
     #elif (CRYSTAL == 16)
-        #pragma config PLLSEL = PLL3X       // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
-        #pragma config FOSC = HSOSCIO      // Oscillator Selection (Internal oscillator)
+        #pragma config PLLSEL = PLL3X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
 
     #elif (CRYSTAL == 48)
-        #pragma config PLLSEL = PLL3X      // Oscillator used directly
-        #pragma config FOSC = HSOSCIO      // Oscillator Selection (Internal oscillator)
+        #pragma config PLLSEL = PLL3X   // Oscillator used directly
+        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
 
     #else    
         #error "    ---------------------------------    "
@@ -216,7 +216,7 @@ pull-up on RB5 and ensure the proper operation of the device.
 
     #endif
     
-    #pragma config LS48MHZ = SYS24X4// USB Low-speed clock at 24 MHz, USB clock divider is set to 4
+    #pragma config LS48MHZ = SYS24X4    // USB Low-speed clock at 24 MHz, USB clock divider is set to 4
 
     // CONFIG1H
     #pragma config PCLKEN = ON          // Primary Oscillator Shutdown (Primary oscillator enabled)

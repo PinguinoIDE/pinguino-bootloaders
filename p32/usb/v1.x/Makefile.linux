@@ -297,7 +297,6 @@ burn:
 #	C:\Program Files\Microchip\MPLABX\mplab_ide\bin
 	@echo "$(WARNING)Burning $(PRJ).hex file$(END)"
 	@java -jar /opt/microchip/mplabx/mplab_ipe/ipecmd.jar \
-			-W \
 			-M \
 			-TP$(TOOL) \
 			-P$(PROC) \

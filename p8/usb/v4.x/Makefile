@@ -15,7 +15,7 @@
 #	Supported CPU's                                                    #
 ########################################################################
 #                                                                      #
-#   18f2455		18f4455                                                #
+#	18f2455		18f4455                                                #
 #	18f2550		18f4550                                                #
 #	18f25k50	18f45k50                                               #
 #	18f26j50	18f46j50                                               #
@@ -32,22 +32,25 @@
 ########################################################################
 
 ########################################################################
-#	CONFIGURATION OPTIONS                                              #
+#	SDCC'S TOOLCHAIN LOCATION                                          #
 ########################################################################
 
-# SDCC's toolchain directory
-SDCCDIR		= /dvpt/sdcc/linux64
-
-CPU			= $(PROC)
-CRYSTAL		= $(OSC)
+SDCCDIR		= /usr/bin
 
 ########################################################################
-#	OPTIONAL CONFIGURATION OPTIONS                                     #
+#	INTERNAL OPTIONAL CONFIGURATION OPTIONS                            #
 ########################################################################
 
 LOW_SPEED	= 1
 HIGH_SPEED	= 0
 ONE			= 1
+
+########################################################################
+#	OPTIONAL CONFIGURATION OPTIONS                                     #
+########################################################################
+
+CPU			= $(PROC)
+CRYSTAL		= $(OSC)
 
 # usb speed (HIGH_SPEED = 0 / LOW_SPEED = 1)
 ifeq ("x${SPEED}", "x")
@@ -76,7 +79,7 @@ endif
 
 # bootloader version (cf. changelog.txt)
 MAJ_VER		= 4
-MIN_VER		= 14
+MIN_VER		= 15
 
 # Microchip Vendor ID / Pinguino Product ID (Microchip sublicense)
 VID			= 0x04D8
@@ -109,7 +112,7 @@ SRCS		= $(wildcard src/*.c)
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
 # compiler
-CC			= $(SDCCDIR)/bin/sdcc
+CC			= $(SDCCDIR)/sdcc
 
 # Compiler flags
 CFLAGS		= -V \
@@ -192,4 +195,4 @@ burn:
 
 # Desassemble
 desa:
-	$(SDCCDIR)/bin/gpdasm -p$(CPU) hex/$(PRJ).hex > ~/Bureau/$(PRJ).txt
+	$(SDCCDIR)/gpdasm -p$(CPU) hex/$(PRJ).hex > ~/Bureau/$(PRJ).txt

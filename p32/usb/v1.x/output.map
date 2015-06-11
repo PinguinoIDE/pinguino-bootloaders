@@ -50,9 +50,9 @@ Discarded input sections
  .text          0x0000000000000000        0x0 obj/core.o
  .data          0x0000000000000000        0x0 obj/core.o
  .bss           0x0000000000000000        0x0 obj/core.o
- .pdr           0x0000000000000000       0xc0 obj/core.o
- .text.EnableInterrupt
-                0x0000000000000000        0x8 obj/core.o
+ .pdr           0x0000000000000000       0xa0 obj/core.o
+ .text.ResetCoreTimer
+                0x0000000000000000        0xc obj/core.o
  .text          0x0000000000000000        0x0 obj/usb.o
  .data          0x0000000000000000        0x0 obj/usb.o
  .bss           0x0000000000000000        0x0 obj/usb.o
@@ -72,47 +72,30 @@ Discarded input sections
  .data          0x0000000000000000        0x0 obj/delay.o
  .bss           0x0000000000000000        0x0 obj/delay.o
  .reginfo       0x0000000000000000       0x18 obj/delay.o
- .pdr           0x0000000000000000       0x20 obj/delay.o
- .text          0x0000000000000000        0x0 obj/serial.o
- .data          0x0000000000000000        0x0 obj/serial.o
- .bss           0x0000000000000000        0x0 obj/serial.o
- .reginfo       0x0000000000000000       0x18 obj/serial.o
- .pdr           0x0000000000000000       0x80 obj/serial.o
- .mdebug.abi32  0x0000000000000000        0x0 obj/serial.o
- .text.SerialInit
-                0x0000000000000000      0x120 obj/serial.o
- .text.SerialPrintChar
-                0x0000000000000000       0x24 obj/serial.o
- .text.SerialPrint
-                0x0000000000000000       0x14 obj/serial.o
- .text.SerialPrintNumber
-                0x0000000000000000       0x70 obj/serial.o
- .comment       0x0000000000000000       0x12 obj/serial.o
- .gnu.attributes
-                0x0000000000000000       0x10 obj/serial.o
- .data          0x0000000000000000        0x0 /tmp/ccOKey1E.o
- .bss           0x0000000000000000        0x0 /tmp/ccOKey1E.o
- .reginfo       0x0000000000000000       0x18 /tmp/ccOKey1E.o
- .pdr           0x0000000000000000       0xa0 /tmp/ccOKey1E.o
- .bev_handler   0x0000000000000000        0x4 /tmp/ccOKey1E.o
- .text          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .data          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .text          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .data          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
- .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+ .pdr           0x0000000000000000       0x40 obj/delay.o
+ .text.Delayms  0x0000000000000000       0x34 obj/delay.o
+ .data          0x0000000000000000        0x0 /tmp/ccNHuFAN.o
+ .bss           0x0000000000000000        0x0 /tmp/ccNHuFAN.o
+ .reginfo       0x0000000000000000       0x18 /tmp/ccNHuFAN.o
+ .pdr           0x0000000000000000       0x60 /tmp/ccNHuFAN.o
+ .text          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .data          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .text          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .data          0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .bss           0x0000000000000000        0x0 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+ .reginfo       0x0000000000000000       0x18 /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
 
 Memory Configuration
 
 Name             Origin             Length             Attributes
-exception_mem    0x000000009d000000 0x0000000000001000
-kseg0_program_mem 0x000000009d001000 0x0000000000003000 xr
+kseg0_program_mem 0x000000009d000000 0x0000000000003000 xr
+exception_mem    0x000000009d003000 0x0000000000000a00
 kseg1_boot_mem   0x00000000bfc00000 0x0000000000000010
 kseg0_boot_mem   0x000000009fc00010 0x0000000000000200
 boot_software_key 0x00000000a0000000 0x0000000000000004
-kseg1_data_mem   0x00000000a0000004 0x000000000000fffc w !x
+kseg1_data_mem   0x00000000a0000004 0x0000000000007ffc w !x
 devcfg3          0x00000000bfc00bf0 0x0000000000000004
 devcfg2          0x00000000bfc00bf4 0x0000000000000004
 devcfg1          0x00000000bfc00bf8 0x0000000000000004
@@ -129,30 +112,27 @@ LOAD obj/usb.o
 LOAD obj/flash.o
 LOAD obj/main.o
 LOAD obj/delay.o
-LOAD obj/serial.o
-LOAD /tmp/ccOKey1E.o
-LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
+LOAD /tmp/ccNHuFAN.o
+LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
 LOAD /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/lib/gcc/mips-elf/4.9.2/../../../../mips-elf/lib/soft-float/el/libc.a
-LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/processor.o
-                0x000000009d000000                _ebase_address = 0x9d000000
+LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v1.x/obj/non-free/processor.o
+                0x0000000000000400                PROVIDE (_min_stack_size, 0x400)
+                0x0000000000000000                PROVIDE (_min_heap_size, 0x0)
+                0x0000000000000001                PROVIDE (_vector_spacing, 0x1)
+                0x000000009d003000                _ebase_address = 0x9d003000
                 0x00000000bfc00000                _RESET_ADDR = 0xbfc00000
-                0x000000009d000180                _GEN_EXCPT_ADDR = (_ebase_address + 0x180)
                 0x0000000000000400                PROVIDE (_min_stack_size, 0x400)
                 0x0000000000000000                PROVIDE (_min_heap_size, 0x0)
                 0x0000000000000001                PROVIDE (_vector_spacing, 0x1)
 
 .reset          0x00000000bfc00000       0x10
  *(.reset)
- .reset         0x00000000bfc00000       0x10 /tmp/ccOKey1E.o
+ .reset         0x00000000bfc00000       0x10 /tmp/ccNHuFAN.o
                 0x00000000bfc00000                _reset
 
 .startup        0x000000009fc00010      0x1b0
  *(.startup)
- .startup       0x000000009fc00010      0x1b0 /tmp/ccOKey1E.o
-
-.app_excpt      0x000000009d000180        0x4
- *(.gen_handler)
- .gen_handler   0x000000009d000180        0x4 /tmp/ccOKey1E.o
+ .startup       0x000000009fc00010      0x1b0 /tmp/ccNHuFAN.o
 
 .devcfg
  *(.devcfg)
@@ -177,359 +157,357 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
  .devcfg0       0x00000000bfc00bfc        0x4 obj/main.o
                 0x00000000bfc00bfc                devcfg0
 
-.vector_0       0x000000009d000200        0x0
+.vector_0       0x000000009d003200        0x0
  *(.vector_0)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_0) <= (_vector_spacing << 0x5))), function at exception vector 0 too large)
 
-.vector_1       0x000000009d000220        0x0
+.vector_1       0x000000009d003220        0x0
  *(.vector_1)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_1) <= (_vector_spacing << 0x5))), function at exception vector 1 too large)
 
-.vector_2       0x000000009d000240        0x0
+.vector_2       0x000000009d003240        0x0
  *(.vector_2)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_2) <= (_vector_spacing << 0x5))), function at exception vector 2 too large)
 
-.vector_3       0x000000009d000260        0x0
+.vector_3       0x000000009d003260        0x0
  *(.vector_3)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_3) <= (_vector_spacing << 0x5))), function at exception vector 3 too large)
 
-.vector_4       0x000000009d000280        0x0
+.vector_4       0x000000009d003280        0x0
  *(.vector_4)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_4) <= (_vector_spacing << 0x5))), function at exception vector 4 too large)
 
-.vector_5       0x000000009d0002a0        0x0
+.vector_5       0x000000009d0032a0        0x0
  *(.vector_5)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_5) <= (_vector_spacing << 0x5))), function at exception vector 5 too large)
 
-.vector_6       0x000000009d0002c0        0x0
+.vector_6       0x000000009d0032c0        0x0
  *(.vector_6)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_6) <= (_vector_spacing << 0x5))), function at exception vector 6 too large)
 
-.vector_7       0x000000009d0002e0        0x0
+.vector_7       0x000000009d0032e0        0x0
  *(.vector_7)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_7) <= (_vector_spacing << 0x5))), function at exception vector 7 too large)
 
-.vector_8       0x000000009d000300        0x0
+.vector_8       0x000000009d003300        0x0
  *(.vector_8)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_8) <= (_vector_spacing << 0x5))), function at exception vector 8 too large)
 
-.vector_9       0x000000009d000320        0x0
+.vector_9       0x000000009d003320        0x0
  *(.vector_9)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_9) <= (_vector_spacing << 0x5))), function at exception vector 9 too large)
 
-.vector_10      0x000000009d000340        0x0
+.vector_10      0x000000009d003340        0x0
  *(.vector_10)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_10) <= (_vector_spacing << 0x5))), function at exception vector 10 too large)
 
-.vector_11      0x000000009d000360        0x0
+.vector_11      0x000000009d003360        0x0
  *(.vector_11)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_11) <= (_vector_spacing << 0x5))), function at exception vector 11 too large)
 
-.vector_12      0x000000009d000380        0x0
+.vector_12      0x000000009d003380        0x0
  *(.vector_12)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_12) <= (_vector_spacing << 0x5))), function at exception vector 12 too large)
 
-.vector_13      0x000000009d0003a0        0x0
+.vector_13      0x000000009d0033a0        0x0
  *(.vector_13)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_13) <= (_vector_spacing << 0x5))), function at exception vector 13 too large)
 
-.vector_14      0x000000009d0003c0        0x0
+.vector_14      0x000000009d0033c0        0x0
  *(.vector_14)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_14) <= (_vector_spacing << 0x5))), function at exception vector 14 too large)
 
-.vector_15      0x000000009d0003e0        0x0
+.vector_15      0x000000009d0033e0        0x0
  *(.vector_15)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_15) <= (_vector_spacing << 0x5))), function at exception vector 15 too large)
 
-.vector_16      0x000000009d000400        0x0
+.vector_16      0x000000009d003400        0x0
  *(.vector_16)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_16) <= (_vector_spacing << 0x5))), function at exception vector 16 too large)
 
-.vector_17      0x000000009d000420        0x0
+.vector_17      0x000000009d003420        0x0
  *(.vector_17)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_17) <= (_vector_spacing << 0x5))), function at exception vector 17 too large)
 
-.vector_18      0x000000009d000440        0x0
+.vector_18      0x000000009d003440        0x0
  *(.vector_18)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_18) <= (_vector_spacing << 0x5))), function at exception vector 18 too large)
 
-.vector_19      0x000000009d000460        0x0
+.vector_19      0x000000009d003460        0x0
  *(.vector_19)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_19) <= (_vector_spacing << 0x5))), function at exception vector 19 too large)
 
-.vector_20      0x000000009d000480        0x0
+.vector_20      0x000000009d003480        0x0
  *(.vector_20)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_20) <= (_vector_spacing << 0x5))), function at exception vector 20 too large)
 
-.vector_21      0x000000009d0004a0        0x0
+.vector_21      0x000000009d0034a0        0x0
  *(.vector_21)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_21) <= (_vector_spacing << 0x5))), function at exception vector 21 too large)
 
-.vector_22      0x000000009d0004c0        0x0
+.vector_22      0x000000009d0034c0        0x0
  *(.vector_22)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_22) <= (_vector_spacing << 0x5))), function at exception vector 22 too large)
 
-.vector_23      0x000000009d0004e0        0x0
+.vector_23      0x000000009d0034e0        0x0
  *(.vector_23)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_23) <= (_vector_spacing << 0x5))), function at exception vector 23 too large)
 
-.vector_24      0x000000009d000500        0x0
+.vector_24      0x000000009d003500        0x0
  *(.vector_24)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_24) <= (_vector_spacing << 0x5))), function at exception vector 24 too large)
 
-.vector_25      0x000000009d000520        0x0
+.vector_25      0x000000009d003520        0x0
  *(.vector_25)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_25) <= (_vector_spacing << 0x5))), function at exception vector 25 too large)
 
-.vector_26      0x000000009d000540        0x0
+.vector_26      0x000000009d003540        0x0
  *(.vector_26)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_26) <= (_vector_spacing << 0x5))), function at exception vector 26 too large)
 
-.vector_27      0x000000009d000560        0x0
+.vector_27      0x000000009d003560        0x0
  *(.vector_27)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_27) <= (_vector_spacing << 0x5))), function at exception vector 27 too large)
 
-.vector_28      0x000000009d000580        0x0
+.vector_28      0x000000009d003580        0x0
  *(.vector_28)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_28) <= (_vector_spacing << 0x5))), function at exception vector 28 too large)
 
-.vector_29      0x000000009d0005a0        0x0
+.vector_29      0x000000009d0035a0        0x0
  *(.vector_29)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_29) <= (_vector_spacing << 0x5))), function at exception vector 29 too large)
 
-.vector_30      0x000000009d0005c0        0x0
+.vector_30      0x000000009d0035c0        0x0
  *(.vector_30)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_30) <= (_vector_spacing << 0x5))), function at exception vector 30 too large)
 
-.vector_31      0x000000009d0005e0        0x0
+.vector_31      0x000000009d0035e0        0x0
  *(.vector_31)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_31) <= (_vector_spacing << 0x5))), function at exception vector 31 too large)
 
-.vector_32      0x000000009d000600        0x0
+.vector_32      0x000000009d003600        0x0
  *(.vector_32)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_32) <= (_vector_spacing << 0x5))), function at exception vector 32 too large)
 
-.vector_33      0x000000009d000620        0x0
+.vector_33      0x000000009d003620        0x0
  *(.vector_33)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_33) <= (_vector_spacing << 0x5))), function at exception vector 33 too large)
 
-.vector_34      0x000000009d000640        0x0
+.vector_34      0x000000009d003640        0x0
  *(.vector_34)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_34) <= (_vector_spacing << 0x5))), function at exception vector 34 too large)
 
-.vector_35      0x000000009d000660        0x0
+.vector_35      0x000000009d003660        0x0
  *(.vector_35)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_35) <= (_vector_spacing << 0x5))), function at exception vector 35 too large)
 
-.vector_36      0x000000009d000680        0x0
+.vector_36      0x000000009d003680        0x0
  *(.vector_36)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_36) <= (_vector_spacing << 0x5))), function at exception vector 36 too large)
 
-.vector_37      0x000000009d0006a0        0x0
+.vector_37      0x000000009d0036a0        0x0
  *(.vector_37)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_37) <= (_vector_spacing << 0x5))), function at exception vector 37 too large)
 
-.vector_38      0x000000009d0006c0        0x0
+.vector_38      0x000000009d0036c0        0x0
  *(.vector_38)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_38) <= (_vector_spacing << 0x5))), function at exception vector 38 too large)
 
-.vector_39      0x000000009d0006e0        0x0
+.vector_39      0x000000009d0036e0        0x0
  *(.vector_39)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_39) <= (_vector_spacing << 0x5))), function at exception vector 39 too large)
 
-.vector_40      0x000000009d000700        0x0
+.vector_40      0x000000009d003700        0x0
  *(.vector_40)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_40) <= (_vector_spacing << 0x5))), function at exception vector 40 too large)
 
-.vector_41      0x000000009d000720        0x0
+.vector_41      0x000000009d003720        0x0
  *(.vector_41)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_41) <= (_vector_spacing << 0x5))), function at exception vector 41 too large)
 
-.vector_42      0x000000009d000740        0x0
+.vector_42      0x000000009d003740        0x0
  *(.vector_42)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_42) <= (_vector_spacing << 0x5))), function at exception vector 42 too large)
 
-.vector_43      0x000000009d000760        0x0
+.vector_43      0x000000009d003760        0x0
  *(.vector_43)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_43) <= (_vector_spacing << 0x5))), function at exception vector 43 too large)
 
-.vector_44      0x000000009d000780        0x0
+.vector_44      0x000000009d003780        0x0
  *(.vector_44)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_44) <= (_vector_spacing << 0x5))), function at exception vector 44 too large)
 
-.vector_45      0x000000009d0007a0        0x0
+.vector_45      0x000000009d0037a0        0x0
  *(.vector_45)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_45) <= (_vector_spacing << 0x5))), function at exception vector 45 too large)
 
-.vector_46      0x000000009d0007c0        0x0
+.vector_46      0x000000009d0037c0        0x0
  *(.vector_46)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_46) <= (_vector_spacing << 0x5))), function at exception vector 46 too large)
 
-.vector_47      0x000000009d0007e0        0x0
+.vector_47      0x000000009d0037e0        0x0
  *(.vector_47)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_47) <= (_vector_spacing << 0x5))), function at exception vector 47 too large)
 
-.vector_48      0x000000009d000800        0x0
+.vector_48      0x000000009d003800        0x0
  *(.vector_48)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_48) <= (_vector_spacing << 0x5))), function at exception vector 48 too large)
 
-.vector_49      0x000000009d000820        0x0
+.vector_49      0x000000009d003820        0x0
  *(.vector_49)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_49) <= (_vector_spacing << 0x5))), function at exception vector 49 too large)
 
-.vector_50      0x000000009d000840        0x0
+.vector_50      0x000000009d003840        0x0
  *(.vector_50)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_50) <= (_vector_spacing << 0x5))), function at exception vector 50 too large)
 
-.vector_51      0x000000009d000860        0x0
+.vector_51      0x000000009d003860        0x0
  *(.vector_51)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_51) <= (_vector_spacing << 0x5))), function at exception vector 51 too large)
 
-.vector_52      0x000000009d000880        0x0
+.vector_52      0x000000009d003880        0x0
  *(.vector_52)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_52) <= (_vector_spacing << 0x5))), function at exception vector 52 too large)
 
-.vector_53      0x000000009d0008a0        0x0
+.vector_53      0x000000009d0038a0        0x0
  *(.vector_53)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_53) <= (_vector_spacing << 0x5))), function at exception vector 53 too large)
 
-.vector_54      0x000000009d0008c0        0x0
+.vector_54      0x000000009d0038c0        0x0
  *(.vector_54)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_54) <= (_vector_spacing << 0x5))), function at exception vector 54 too large)
 
-.vector_55      0x000000009d0008e0        0x0
+.vector_55      0x000000009d0038e0        0x0
  *(.vector_55)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_55) <= (_vector_spacing << 0x5))), function at exception vector 55 too large)
 
-.vector_56      0x000000009d000900        0x0
+.vector_56      0x000000009d003900        0x0
  *(.vector_56)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_56) <= (_vector_spacing << 0x5))), function at exception vector 56 too large)
 
-.vector_57      0x000000009d000920        0x0
+.vector_57      0x000000009d003920        0x0
  *(.vector_57)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_57) <= (_vector_spacing << 0x5))), function at exception vector 57 too large)
 
-.vector_58      0x000000009d000940        0x0
+.vector_58      0x000000009d003940        0x0
  *(.vector_58)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_58) <= (_vector_spacing << 0x5))), function at exception vector 58 too large)
 
-.vector_59      0x000000009d000960        0x0
+.vector_59      0x000000009d003960        0x0
  *(.vector_59)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_59) <= (_vector_spacing << 0x5))), function at exception vector 59 too large)
 
-.vector_60      0x000000009d000980        0x0
+.vector_60      0x000000009d003980        0x0
  *(.vector_60)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_60) <= (_vector_spacing << 0x5))), function at exception vector 60 too large)
 
-.vector_61      0x000000009d0009a0        0x0
+.vector_61      0x000000009d0039a0        0x0
  *(.vector_61)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_61) <= (_vector_spacing << 0x5))), function at exception vector 61 too large)
 
-.vector_62      0x000000009d0009c0        0x0
+.vector_62      0x000000009d0039c0        0x0
  *(.vector_62)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_62) <= (_vector_spacing << 0x5))), function at exception vector 62 too large)
 
-.vector_63      0x000000009d0009e0        0x0
+.vector_63      0x000000009d0039e0        0x0
  *(.vector_63)
                 0x0000000000000001                ASSERT (((_vector_spacing == 0x0) || (SIZEOF (.vector_63) <= (_vector_spacing << 0x5))), function at exception vector 63 too large)
 
-.text           0x000000009d001000     0x15a4
-                0x000000009d001000                _text_begin = .
+.text           0x000000009d000000     0x1ac4
+                0x000000009d000000                _text_begin = .
  *(.text .stub .text.* .gnu.linkonce.t.*)
- .text.MemClear
-                0x000000009d001000       0x14 obj/core.o
-                0x000000009d001001                MemClear
- .text.MemCopy  0x000000009d001014       0x18 obj/core.o
-                0x000000009d001015                MemCopy
- .text.DisableInterrupt
-                0x000000009d00102c        0x8 obj/core.o
-                0x000000009d00102c                DisableInterrupt
  .text.SoftReset
-                0x000000009d001034       0x68 obj/core.o
-                0x000000009d001035                SoftReset
+                0x000000009d000000       0x7c obj/core.o
+                0x000000009d000000                SoftReset
+ .text.MemClear
+                0x000000009d00007c       0x24 obj/core.o
+                0x000000009d00007c                MemClear
+ .text.MemCopy  0x000000009d0000a0       0x30 obj/core.o
+                0x000000009d0000a0                MemCopy
  .text.ReadCoreTimer
-                0x000000009d00109c        0x8 obj/core.o
-                0x000000009d00109c                ReadCoreTimer
+                0x000000009d0000d0        0x8 obj/core.o
+                0x000000009d0000d0                ReadCoreTimer
  .text.USBCtrlTrfTxService
-                0x000000009d0010a4       0x98 obj/usb.o
+                0x000000009d0000d8      0x108 obj/usb.o
  .text.USBCtrlEPAllowStatusStage
-                0x000000009d00113c       0xe8 obj/usb.o
+                0x000000009d0001e0       0xec obj/usb.o
  .text.USBCtrlEPAllowDataStage
-                0x000000009d001224       0xe0 obj/usb.o
+                0x000000009d0002cc       0xe0 obj/usb.o
  .text.USBDeviceInit
-                0x000000009d001304      0x12c obj/usb.o
-                0x000000009d001305                USBDeviceInit
+                0x000000009d0003ac      0x138 obj/usb.o
+                0x000000009d0003ac                USBDeviceInit
  .text.USBCheckCable
-                0x000000009d001430       0x8c obj/usb.o
-                0x000000009d001431                USBCheckCable
+                0x000000009d0004e4       0xb8 obj/usb.o
+                0x000000009d0004e4                USBCheckCable
  .text.USBHIDCBGetReportHandler
-                0x000000009d0014bc       0x30 obj/usb.o
-                0x000000009d0014bd                USBHIDCBGetReportHandler
+                0x000000009d00059c       0x4c obj/usb.o
+                0x000000009d00059c                USBHIDCBGetReportHandler
  .text.USBCheckHIDRequest
-                0x000000009d0014ec       0xa8 obj/usb.o
-                0x000000009d0014ed                USBCheckHIDRequest
+                0x000000009d0005e8      0x10c obj/usb.o
+                0x000000009d0005e8                USBCheckHIDRequest
  .text.USBDeviceTasks
-                0x000000009d001594      0x9f4 obj/usb.o
-                0x000000009d001595                USBDeviceTasks
+                0x000000009d0006f4      0xb84 obj/usb.o
+                0x000000009d0006f4                USBDeviceTasks
  .text.USBEnableEndpoint
-                0x000000009d001f88       0x80 obj/usb.o
-                0x000000009d001f89                USBEnableEndpoint
+                0x000000009d001278       0xc8 obj/usb.o
+                0x000000009d001278                USBEnableEndpoint
  .text.USBTransferOnePacket
-                0x000000009d002008      0x120 obj/usb.o
-                0x000000009d002009                USBTransferOnePacket
+                0x000000009d001340      0x154 obj/usb.o
+                0x000000009d001340                USBTransferOnePacket
  .text.FlashOperation
-                0x000000009d002128       0x64 obj/flash.o
-                0x000000009d002129                FlashOperation
+                0x000000009d001494       0x84 obj/flash.o
+                0x000000009d001494                FlashOperation
  .text.WriteFlashBlock
-                0x000000009d00218c       0x34 obj/main.o
+                0x000000009d001518       0x5c obj/main.o
  .text.startup.main
-                0x000000009d0021c0      0x348 obj/main.o
-                0x000000009d0021c1                main
+                0x000000009d001574      0x470 obj/main.o
+                0x000000009d001574                main
  .text.USBEventHandler
-                0x000000009d002508       0x20 obj/main.o
-                0x000000009d002509                USBEventHandler
- .text.Delayus  0x000000009d002528       0x6c obj/delay.o
-                0x000000009d002529                Delayus
- .text          0x000000009d002594       0x10 /tmp/ccOKey1E.o
+                0x000000009d0019e4       0x34 obj/main.o
+                0x000000009d0019e4                USBEventHandler
+ .text.Delayus  0x000000009d001a18       0x9c obj/delay.o
+                0x000000009d001a18                Delayus
+ .text          0x000000009d001ab4       0x10 /tmp/ccNHuFAN.o
  *(.text.*personality*)
  *(.gnu.warning)
  *(.mips16.fn.*)
  *(.mips16.call.*)
-                0x000000009d0025a4                _text_end = .
+                0x000000009d001ac4                _text_end = .
 
-.rodata         0x000000009d0025a4       0xd4
+.rodata         0x000000009d001ac4       0xf0
  *(.rodata .rodata.* .gnu.linkonce.r.*)
  .rodata.USB_SD_Ptr
-                0x000000009d0025a4       0x10 obj/usb.o
-                0x000000009d0025a4                USB_SD_Ptr
+                0x000000009d001ac4       0x10 obj/usb.o
+                0x000000009d001ac4                USB_SD_Ptr
  .rodata.hid_rpt01
-                0x000000009d0025b4       0x20 obj/usb.o
-                0x000000009d0025b4                hid_rpt01
- .rodata.sd003  0x000000009d0025d4       0x18 obj/usb.o
-                0x000000009d0025d4                sd003
- .rodata.sd002  0x000000009d0025ec       0x38 obj/usb.o
-                0x000000009d0025ec                sd002
- .rodata.sd001  0x000000009d002624       0x14 obj/usb.o
-                0x000000009d002624                sd001
+                0x000000009d001ad4       0x20 obj/usb.o
+                0x000000009d001ad4                hid_rpt01
+ .rodata.sd003  0x000000009d001af4       0x18 obj/usb.o
+                0x000000009d001af4                sd003
+ .rodata.sd002  0x000000009d001b0c       0x38 obj/usb.o
+                0x000000009d001b0c                sd002
+ .rodata.sd001  0x000000009d001b44       0x14 obj/usb.o
+                0x000000009d001b44                sd001
  .rodata.configDescriptor1
-                0x000000009d002638       0x2c obj/usb.o
-                0x000000009d002638                configDescriptor1
+                0x000000009d001b58       0x2c obj/usb.o
+                0x000000009d001b58                configDescriptor1
  .rodata.device_dsc
-                0x000000009d002664       0x14 obj/usb.o
-                0x000000009d002664                device_dsc
+                0x000000009d001b84       0x14 obj/usb.o
+                0x000000009d001b84                device_dsc
+ .rodata.main   0x000000009d001b98       0x1c obj/main.o
  *(.rodata1)
-                0x000000009d002678                . = ALIGN (0x4)
+                0x000000009d001bb4                . = ALIGN (0x4)
 
-.rel.dyn        0x000000009d002678        0x0
+.rel.dyn        0x000000009d001bb4        0x0
  .rel.dyn       0x0000000000000000        0x0 obj/usb.o
 
-.sdata2         0x000000009d002678        0x0
+.sdata2         0x000000009d001bb4        0x0
  *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-                0x000000009d002678                . = ALIGN (0x4)
+                0x000000009d001bb4                . = ALIGN (0x4)
 
-.sbss2          0x000000009d002678        0x0
+.sbss2          0x000000009d001bb4        0x0
  *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
-                0x000000009d002678                . = ALIGN (0x4)
+                0x000000009d001bb4                . = ALIGN (0x4)
 
 .eh_frame_hdr
  *(.eh_frame_hdr)
@@ -540,12 +518,12 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
 .dbg_data       0x00000000a0000004        0x0
                 0x00000000a0000004                . = (. + DEFINED (_DEBUGGER)?0x200:0x0)
 
-.data           0x00000000a0000004        0x0 load address 0x000000009d002678
+.data           0x00000000a0000004        0x0 load address 0x000000009d001bb4
                 0x00000000a0000004                _data_begin = .
  *(.data .data.* .gnu.linkonce.d.*)
  *(.gnu.linkonce.d.*personality*)
  *(.data1)
-                0x000000009d002678                _data_image_begin = LOADADDR (.data)
+                0x000000009d001bb4                _data_image_begin = LOADADDR (.data)
 
 .eh_frame
  *(.eh_frame)
@@ -555,7 +533,7 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
  *(.got.plt)
  *(.got)
 
-.sdata          0x00000000a0000004        0x8 load address 0x000000009d002678
+.sdata          0x00000000a0000004        0x8 load address 0x000000009d001bb4
                 0x00000000a0000004                _sdata_begin = .
  *(.sdata .sdata.* .gnu.linkonce.s.*)
  .sdata.USB_CD_Ptr
@@ -574,14 +552,14 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
                 0x00000000a000000c                _data_end = .
                 0x00000000a000000c                _bss_begin = .
 
-.sbss           0x00000000a000000c       0x88 load address 0x000000009d002680
+.sbss           0x00000000a000000c       0x88 load address 0x000000009d001bbc
                 0x00000000a000000c                _sbss_begin = .
  *(.dynsbss)
  *(.sbss .sbss.* .gnu.linkonce.sb.*)
  .sbss.USBCableConnected
                 0x00000000a000000c        0x4 obj/usb.o
                 0x00000000a000000c                USBCableConnected
- .sbss.led_count.7113
+ .sbss.led_count.7227
                 0x00000000a0000010        0x4 obj/main.o
  .sbss.ProgrammedPointer32
                 0x00000000a0000014        0x4 obj/main.o
@@ -625,7 +603,7 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
                 0x00000000a0000090                USBDeviceState
                 0x00000000a0000094                _sbss_end = .
 
-.bss            0x00000000a0000200      0x320 load address 0x000000009d002680
+.bss            0x00000000a0000200      0x320 load address 0x000000009d001bbc
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
  .bss.ProgrammingBuffer32
@@ -660,17 +638,17 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
                 0x00000000a0000920                . = (. + _min_stack_size)
  *fill*         0x00000000a0000520      0x400 
 
-.ramfunc        0x00000000a0001000        0x0 load address 0x000000009d002680
+.ramfunc        0x00000000a0001000        0x0 load address 0x000000009d001bbc
                 0x00000000a0001000                _ramfunc_begin = .
  *(.ramfunc .ramfunc.*)
                 0x00000000a0001000                . = ALIGN (0x4)
                 0x00000000a0001000                _ramfunc_end = .
-                0x000000009d002680                _ramfunc_image_begin = LOADADDR (.ramfunc)
+                0x000000009d001bbc                _ramfunc_image_begin = LOADADDR (.ramfunc)
                 0x0000000000000000                _ramfunc_length = SIZEOF (.ramfunc)
                 0x0000000000000ffc                _bmxdkpba_address = (_ramfunc_begin - ORIGIN (kseg1_data_mem))
-                0x000000000000fffc                _bmxdudba_address = 0xfffc
-                0x000000000000fffc                _bmxdupba_address = 0xfffc
-                0x00000000a0010000                _stack = (_ramfunc_length > 0x0)?(_ramfunc_begin - 0x4):(ORIGIN (kseg1_data_mem) + 0xfffc)
+                0x0000000000007ffc                _bmxdudba_address = 0x7ffc
+                0x0000000000007ffc                _bmxdupba_address = 0x7ffc
+                0x00000000a0008000                _stack = (_ramfunc_length > 0x0)?(_ramfunc_begin - 0x4):(ORIGIN (kseg1_data_mem) + 0x7ffc)
                 0x0000000000000001                ASSERT (((_min_stack_size + _min_heap_size) <= (_stack - _heap)), Not enough space to allocate both stack and heap.  Reduce heap and/or stack size.)
 
 .pdr
@@ -679,7 +657,7 @@ LOAD /dvpt/pinguino/git-local/pinguino-bootloaders/p32/usb/v0.x/obj/non-free/pro
 .reginfo        0x0000000000000000       0x18
  *(.reginfo)
  .reginfo       0x0000000000000000       0x18 obj/core.o
-OUTPUT(hex/Bootloader_v1.1_32MX270F256B_X8MHz.elf elf32-littlemips)
+OUTPUT(hex/Bootloader_v1.3_32MX250F128B_X8MHz.elf elf32-littlemips)
 
 .mdebug.abi32   0x0000000000000000        0x0
  .mdebug.abi32  0x0000000000000000        0x0 obj/core.o
