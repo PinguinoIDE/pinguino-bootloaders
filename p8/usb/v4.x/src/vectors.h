@@ -12,13 +12,30 @@
 #ifndef _VECTORS_H
 #define _VECTORS_H
 
-extern stack_end;
-
 extern void main(void);
 
-void           startup(void) __naked;
-void         reset_isr(void) __naked __interrupt 0;
-void high_priority_isr(void) __naked __interrupt 1;
-void  low_priority_isr(void) __naked __interrupt 2;
+#ifdef __XC8__
+
+    #ifdef _PIC14E
+
+        void interrupt PIC16F_isr(void);
+
+    #else
+
+        void interrupt high_priority high_priority_isr(void);
+        void interrupt low_priority  low_priority_isr(void);
+
+    #endif
+
+#else // SDCC
+
+    extern int stack_end;
+
+    void           startup(void) __naked;
+    void         reset_isr(void) __naked __interrupt 0;
+    void high_priority_isr(void) __naked __interrupt 1;
+    void  low_priority_isr(void) __naked __interrupt 2;
 
 #endif
+
+#endif /* _VECTORS_H */

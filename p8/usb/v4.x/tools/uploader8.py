@@ -9,7 +9,10 @@
     Pinguino Stand-alone Uploader for 8-bit Pinguino
 
     Author:          Regis Blanchot <rblanchot@gmail.com> 
-    Last release:    2013-11-13
+    First release:   2013-11-13
+    Last  release:   2016-01-27
+    
+    TODO : add PIC16F support
     
     This library is free software you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -160,6 +163,15 @@ ERR_USB_ERASE                   =    17
 
 devices_table = \
     {  
+        # 16F
+        0x3020: ['16f1454'],
+        0x3021: ['16f1455'],
+        0x3023: ['16f1459'],
+        0x3024: ['16lf1454'],
+        0x3025: ['16lf1455'],
+        0x3027: ['16lf1459'],
+
+        # 18F
         0x4740: ['18f13k50'     , 0x02000, 0x80 ],
         0x4700: ['18lf13k50'    , 0x02000, 0x80 ],
 
@@ -169,7 +181,6 @@ devices_table = \
         0x2420: ['18f2450'      , 0x04000, 0x00 ],
         0x1260: ['18f2455'      , 0x06000, 0xff ],
         0x2a60: ['18f2458'      , 0x06000, 0xff ],
-
         0x4c00: ['18f24j50'     , 0x04000, 0x00 ],
         0x4cc0: ['18lf24j50'    , 0x04000, 0x00 ],
         
@@ -193,9 +204,10 @@ devices_table = \
         
         0x1200: ['18f4550'      , 0x08000, 0xff ],
         0x2a00: ['18f4553'      , 0x08000, 0xff ],
-        
         0x4c80: ['18f45j50'     , 0x08000, 0x00 ],
         0x4d40: ['18lf45j50'    , 0x08000, 0x00 ],
+        0x5C00: ['18f45k50'     , 0x08000, 0xff ],
+        0x5C80: ['18lf45k50'    , 0x08000, 0xff ],
         
         0x4ca0: ['18f46j50'     , 0x10000, 0x00 ],
         0x4d60: ['18f46j50'     , 0x10000, 0x00 ],
@@ -220,7 +232,7 @@ def getDevice(vendor, product):
     busses = usb.busses()
     for bus in busses:
         for device in bus.devices:
-            if device.idVendor == vendor and device.idProduct == product:
+            if (device.idVendor, device.idProduct) == (vendor, product):
                 return device
     return ERR_DEVICE_NOT_FOUND
 
@@ -583,6 +595,7 @@ def main(filename):
     # search for a Pinguino board
     # ------------------------------------------------------------------
 
+    print "Looking for a Pinguino board ..."
     device = getDevice(VENDOR_ID, PRODUCT_ID)
     if device == ERR_DEVICE_NOT_FOUND:
         print "Pinguino not found"

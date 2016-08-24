@@ -1,14 +1,14 @@
 /***********************************************************************
 	Title:	USB Pinguino Bootloader
 	File:	config.h
-	Descr.: configuration bits for supported PIC18F
+	Descr.: configuration bits for supported PIC16F and PIC18F
 	Author:	Régis Blanchot <rblanchot@gmail.com>
 
 	This file is part of Pinguino (http://www.pinguino.cc)
 	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
 ***********************************************************************/
 
-#include <pic18fregs.h>
+#include "compiler.h"   // for SDCC and XC8 compatibility
 
 /***********************************************************************
 While in Low-Voltage ICSP Programming (LVP) mode, the RB5 pin can no
@@ -21,16 +21,140 @@ pull-up on RB5 and ensure the proper operation of the device.
 ***********************************************************************/
 
 /**********************************************************************/
-#if   defined(__18f13k50) || defined(__18f14k50)
+#if   defined(__16F1459)
 /**********************************************************************/
 
-    #error "    ---------------------------------    "
-    #error "    Config. Words still to do for this chip"
-    #error "    ---------------------------------    "
+    /*
+     * Note: When using the PLLEN bit of the Configuration Words, the PLL cannot
+     * be disabled by software. The 8 MHz and 16 MHz HFINTOSC options will no
+     * longer be available. Therefore PLLEN is disabled here and enabled in
+     * main.c
+     */
+
+    #if (CRYSTAL == INTOSC)             // Internal 16 MHz Osc.
+        #pragma config FOSC = INTOSC    // Oscillator Selection (Internal oscillator)
+        #pragma config PLLEN = DISABLED // PLL is disabled
+        #pragma config PLLMULT = 3x     // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config CPUDIV = NOCLKDIV// 1:1 mode (for 48MHz CPU)
+
+    #elif (CRYSTAL == 12)
+        #pragma config FOSC = HSH       // Oscillator Selection (External oscillator)
+        #pragma config PLLEN = DISABLED // PLL is disabled
+        #pragma config PLLMULT = 4x     // PLL Selection (4x clock multiplier) => 4 x 12 = 48 MHz
+        #pragma config CPUDIV = NOCLKDIV// 1:1 mode (for 48MHz CPU)
+
+    #elif (CRYSTAL == 16)
+        #pragma config FOSC = HSH       // Oscillator Selection (External oscillator)
+        #pragma config PLLEN = DISABLED // PLL is disabled
+        #pragma config PLLMULT = 3x     // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config CPUDIV = NOCLKDIV// 1:1 mode (for 48MHz CPU)
+
+    #else
+
+        #error "    ---------------------------------    "
+        #error "    Crystal Frequency Not supported.     "
+        #error "    ---------------------------------    "
+
+    #endif
+
+    // CONFIG1
+    #pragma config FCMEN = OFF          // Fail Safe Clock Monitor
+    #pragma config IESO = ON            // Int/Ext switchover mode
+    #pragma config CLKOUTEN = OFF       // CLKOUT pin function as I/O
+    #pragma config BOREN = OFF          // Brown Out
+    #pragma config CP = OFF             // Code Protect
+    #if defined(DEBUG)
+    #pragma config MCLRE = OFF          // MCLR
+    #else
+    #pragma config MCLRE = ON           // MCLR
+    #endif
+    #pragma config PWRTE = ON           // PowerUp Timer
+    #pragma config WDTE = SWDTEN        // Watchdog controlled by SWDTEN bit
+
+    // CONFIG2
+    #if (VOLTAGE == 0)
+        #pragma config LVP = OFF        // High Voltage Programming
+    #else
+        #pragma config LVP = ON         // Low Voltage Programming
+    #endif
+    //#pragma config DEBUG = OFF        // Background Debugging
+    #pragma config LPBOR = OFF          // Low-Power Brown-out Reset
+    #pragma config BORV = LO            // Brown-out Reset Voltage
+    #pragma config STVREN = ON          // Stack Overflow Reset
+    #pragma config WRT = OFF            // Flash memory write protection
+
+    #if (SPEED == LOW_SPEED)
+        #pragma config USBLSCLK = 24MHz
+    #else
+        #pragma config USBLSCLK = 48MHz
+    #endif
+    
+/**********************************************************************/
+#elif   defined(__18f13k50) || defined(__18f14k50)
+/**********************************************************************/
+
+    #if (CRYSTAL == 12 || CRYSTAL == 48)
+
+        #pragma config FOSC = HS        // External oscillator (6, 12 or 48)
+
+    #elif   (CRYSTAL == INTOSC)
+
+        #error "    ---------------------------------    "
+        #error "    The internal Oscillator can not      "
+        #error "    drive the USB Clock on this chip.    "
+        #error "    ---------------------------------    "
+
+    #else
+
+        #error "    ---------------------------------    "
+        #error "    Crystal Frequency Not supported.     "
+        #error "    ---------------------------------    "
+
+    #endif
+
+    #if (SPEED == LOW_SPEED)
+        #pragma config USBDIV = ON      // USB clock comes from the OSC1/OSC2 divided by 2
+    #else
+        #pragma config USBDIV = OFF     // USB clock comes from the OSC1/OSC2; no divide
+    #endif
+
+    #pragma config CPUDIV = NOCLKDIV    // 1:1 mode (for 48MHz CPU)
+    #pragma config PLLEN = OFF          // PLL is under software control
+    #pragma config PCLKEN = OFF         // Primary clock is under software control
+    #pragma config FCMEN = OFF          // Fail-Safe Clock Monitor disabled
+    #pragma config IESO = OFF
+    #pragma config PWRTEN = OFF
+    #pragma config BOREN = OFF
+    #pragma config BORV = 19
+    #pragma config WDTEN = OFF          // Watchdog contolled by software
+    #pragma config WDTPS = 32768        // 1:32768
+    #pragma config MCLRE = ON
+    #pragma config HFOFST = OFF
+    #pragma config STVREN = OFF    
+    #if (VOLTAGE == 0)
+        #pragma config LVP = OFF        // High Voltage Programming
+    #else
+        // make certain that RB5/PGM is held low during entry into ICSP.
+        #pragma config LVP = ON         // Low Voltage Programming
+    #endif
+    #pragma config BBSIZ = OFF
+    #pragma config XINST = OFF
+    #pragma config CP0 = OFF
+    #pragma config CP1 = OFF
+    #pragma config CPB = OFF
+    #pragma config CPD = OFF
+    #pragma config WRT0 = OFF
+    #pragma config WRTB = OFF
+    #pragma config WRTC = OFF
+    #pragma config WRTD = OFF
+    #pragma config EBTR0 = OFF
+    #pragma config EBTR1 = OFF
+    #pragma config EBTRB = OFF
 
 /**********************************************************************/
-#elif defined(__18f2550) || defined(__18f4550) || \
-      defined(__18f2455) || defined(__18f4455)
+#elif defined(__18lf2550) || defined(__18lf4550) || \
+      defined(__18f2550)  || defined(__18f4550)  || \
+      defined(__18f2455)  || defined(__18f4455)
 /**********************************************************************/
 
     #if (SPEED == LOW_SPEED)
@@ -42,7 +166,7 @@ pull-up on RB5 and ensure the proper operation of the device.
     #elif (CRYSTAL == INTOSC)
 
         #error "    ---------------------------------    "
-        #error "    Internal Crystal CAN NOT DRIVE USB Clock.     "
+        #error "    Internal Crystal can not drive the USB Clock on this device.     "
         #error "    ---------------------------------    "
 
     #else
@@ -64,52 +188,53 @@ pull-up on RB5 and ensure the proper operation of the device.
         #elif (CRYSTAL == 48)
             #pragma config PLLDIV = 12
         #else    
-                #error "    ---------------------------------    "
-                #error "    Crystal Frequency Not supported.     "
-                #error "    ---------------------------------    "
+            #error "    ---------------------------------    "
+            #error "    Crystal Frequency Not supported.     "
+            #error "    ---------------------------------    "
         #endif
 
-        #pragma config CPUDIV = OSC1_PLL2	// CPU_clk = PLL/2
-        #pragma config USBDIV = 2			// USB_clk = PLL/2
-        #pragma config FOSC = HSPLL_HS		// HS osc PLL
+        #pragma config CPUDIV = OSC1_PLL2   // CPU_clk = PLL/2
+        #pragma config USBDIV = 2           // USB_clk = PLL/2
+        #pragma config FOSC = HSPLL_HS      // HS osc PLL
 
-        #pragma config FCMEN = ON			// Fail Safe Clock Monitor
-        #pragma config IESO = OFF			// Int/Ext switchover mode
-        #pragma config PWRT = ON			// PowerUp Timer
-        #pragma config BOR = ON 			// Brown Out
-        #pragma config VREGEN = ON			// Int Voltage Regulator
-        #pragma config WDT = OFF			// WatchDog Timer
-        #pragma config MCLRE = ON			// MCLR
-        #pragma config LPT1OSC = OFF		// Low Power OSC
-        #pragma config PBADEN = OFF			// PORTB<4:0> A/D
-        #pragma config CCP2MX = ON			// CCP2 Mux RC1
-        #pragma config STVREN = ON			// Stack Overflow Reset
-        #if (LVP == 0)
-            #pragma config LVP = OFF		// High Voltage Programming
+        #pragma config FCMEN = ON           // Fail Safe Clock Monitor
+        #pragma config IESO = ON            // Int/Ext switchover mode
+        #pragma config PWRT = ON            // PowerUp Timer
+        #pragma config BOR = ON             // Brown Out
+        #pragma config VREGEN = ON          // Int Voltage Regulator
+        #pragma config WDT = OFF            // WatchDog Timer contolled by software
+        #pragma config WDTPS = 32768        // 1:32768 = 1sec
+        #pragma config MCLRE = ON           // MCLR
+        #pragma config LPT1OSC = OFF        // Low Power OSC
+        #pragma config PBADEN = OFF         // PORTB<4:0> A/D
+        #pragma config CCP2MX = ON          // CCP2 Mux RC1
+        #pragma config STVREN = ON          // Stack Overflow Reset
+        #if (VOLTAGE == 0)
+            #pragma config LVP = OFF        // High Voltage Programming
         #else
             // make certain that RB5/PGM is held low during entry into ICSP.
-            #pragma config LVP = ON 		// Low Voltage Programming
+            #pragma config LVP = ON         // Low Voltage Programming
         #endif
         #if defined(__18f4550)
-            #pragma config ICPRT = OFF			// ICP
+            #pragma config ICPRT = OFF      // ICP
         #endif
-        #pragma config XINST = OFF			// Ext CPU Instruction Set
-        #pragma config DEBUG = OFF			// Background Debugging
-        #pragma config CP0 = OFF			// Code Protect
+        #pragma config XINST = OFF          // Ext CPU Instruction Set
+        #pragma config DEBUG = OFF          // Background Debugging
+        #pragma config CP0 = OFF            // Code Protect
         #pragma config CP1 = OFF
         #pragma config CP2 = OFF
-        #pragma config CPB = OFF  			// Boot Sect Code Protect
-        #pragma config CPD = OFF  			// EEPROM Data Protect
-        #pragma config WRT0 = OFF 			// Table Write Protect
+        #pragma config CPB = OFF            // Boot Sect Code Protect
+        #pragma config CPD = OFF            // EEPROM Data Protect
+        #pragma config WRT0 = OFF           // Table Write Protect
         #pragma config WRT1 = OFF
         #pragma config WRT2 = OFF 
-        #pragma config WRTB = OFF  			// Boot Table Write Protect
-        #pragma config WRTC = OFF  			// CONFIG Write Protect
-        #pragma config WRTD = OFF 			// EEPROM Write Protect
-        #pragma config EBTR0 = OFF			// Ext Table Read Protect
+        #pragma config WRTB = OFF           // Boot Table Write Protect
+        #pragma config WRTC = OFF           // CONFIG Write Protect
+        #pragma config WRTD = OFF           // EEPROM Write Protect
+        #pragma config EBTR0 = OFF          // Ext Table Read Protect
         #pragma config EBTR1 = OFF
         #pragma config EBTR2 = OFF
-        #pragma config EBTRB = OFF 			// Boot Table Read Protect
+        #pragma config EBTRB = OFF          // Boot Table Read Protect
 
     #endif
 
@@ -166,11 +291,11 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config STVREN = ON          // stack overflow/underflow reset enabled
     #pragma config XINST = OFF          // Extended instruction set disabled
     #pragma config CP0 = OFF            // Program memory is not code-protected
-    #pragma config IESO = OFF           // Two-Speed Start-up disabled
+    #pragma config IESO = ON            // Two-Speed Start-up
     #pragma config FCMEN = OFF          // Fail-Safe Clock Monitor disabled
     #pragma config LPT1OSC = OFF        // high power Timer1 mode
     #pragma config T1DIG = ON           // Sec Osc clock source may be selected
-    #pragma config WDTPS = 256          // 1:256 (1 second)
+    #pragma config WDTPS = 32768        // 1:32768 (1 second)
     #pragma config DSWDTPS = 8192       // 1:8192 (8.5 seconds)
     #pragma config DSWDTEN = OFF        // Disabled
     #pragma config DSBOREN = OFF        // Zero-Power BOR disabled in Deep Sleep
@@ -221,7 +346,7 @@ pull-up on RB5 and ensure the proper operation of the device.
     // CONFIG1H
     #pragma config PCLKEN = ON          // Primary Oscillator Shutdown (Primary oscillator enabled)
     #pragma config FCMEN = OFF          // Fail-Safe Clock Monitor (Fail-Safe Clock Monitor disabled)
-    #pragma config IESO = OFF           // Internal/External Oscillator Switchover (Oscillator Switchover mode disabled)
+    #pragma config IESO = ON            // Internal/External Oscillator Switchover (Oscillator Switchover mode disabled)
 
     // CONFIG2L
     #pragma config nPWRTEN = OFF        // Power-up Timer Enable (Power up timer disabled)
@@ -231,7 +356,7 @@ pull-up on RB5 and ensure the proper operation of the device.
 
     // CONFIG2H
     #pragma config WDTEN = SWON         // Watchdog Timer Enable bits (WDT controlled by firmware (SWDTEN enabled))
-    #pragma config WDTPS = 32768        // Watchdog Timer Postscaler (1:32768)
+    #pragma config WDTPS = 32768        // Watchdog Timer Postscaler (1:32768 = 1sec)
 
     // CONFIG3H
     #pragma config CCP2MX = RC1         // CCP2 MUX bit (CCP2 input/output is multiplexed with RC1)
@@ -242,7 +367,7 @@ pull-up on RB5 and ensure the proper operation of the device.
 
     // CONFIG4L
     #pragma config STVREN = ON          // Stack Full/Underflow Reset (Stack full/underflow will cause Reset)
-    #if (LVP == 0)
+    #if (VOLTAGE == 0)
         #pragma config LVP = OFF		// High Voltage Programming
     #else
         // make certain that RB5/PGM is held low during entry into ICSP.
@@ -285,7 +410,7 @@ pull-up on RB5 and ensure the proper operation of the device.
 
 /**********************************************************************/
 #elif defined(__18f26j53) || defined(__18f46j53)|| \
-      defined(__18f27j53) || defined(__18f47j53)
+      defined(__18f27j53) || defined(__18f47j53)|| defined(_18F47J53)
 /**********************************************************************/
 
     #if (CRYSTAL == INTOSC)             // Internal 8 MHz Osc.
@@ -330,13 +455,13 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config CPUDIV = OSC1        // 48 MHz (No CPU system clock divide)
 
     // CONFIG2L
-    #pragma config IESO = OFF           // Internal/External Oscillator Switchover (Oscillator Switchover mode disabled)
+    #pragma config IESO = ON            // Internal/External Oscillator Switchover (Oscillator Switchover mode disabled)
     #pragma config FCMEN = OFF          // Fail-Safe Clock Monitor disabled
     #pragma config CLKOEC = OFF         // CLKO output disabled on the RA6 pin
     //#pragma config SOSCSEL = HIGH       // Digital (SCLKI) mode selected
 
     // CONFIG2H
-    #pragma config WDTPS = 32768        // Watchdog Timer Postscaler (1:32768)
+    #pragma config WDTPS = 32768        // Watchdog Timer Postscaler (1:32768 = 1sec)
 
     // CONFIG3L
     #pragma config DSWDTPS = 8192       // 1:8,192 (8.5 seconds)

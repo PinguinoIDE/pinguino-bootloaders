@@ -11,7 +11,7 @@
 ########################################################################
 
 This code provides a USB Bootloader for 8-bit (c) Microchip microcontrollers
-with built-in USB module such as PIC18Fx550, PIC18Fx6J50 or PIC18Fx7J53.
+with built-in USB module such as PIC16F145x, PIC18Fx550, PIC18Fx6J50 or PIC18Fx7J53.
 
 A bootloader is a piece of code that is executed once the system is booted.
 

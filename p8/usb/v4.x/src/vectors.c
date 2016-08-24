@@ -4,9 +4,16 @@
     Descr.: move interrupt vectors
             minimal initialisation routine
     Author:	Régis Blanchot <rblanchot@gmail.com>
-
+************************************************************************
+    Changelog
+    * 2015-09-11    RB - added PIC16F interrupt vector
+************************************************************************
     This file is part of Pinguino (http://www.pinguino.cc)
     Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
+************************************************************************
+    NB : XC8
+************************************************************************
+    NB : SDCC
 ************************************************************************
 1. The linker needs to know where the call stack should be placed.
     (a) You can use the likes of #pragma stack 0x200 0xff to tell it.
@@ -61,72 +68,110 @@ right into the SFRs at 0xFFF after the first values are pushed on the
 stack) and your project will run only a short while.
 ***********************************************************************/
 
-/*
- *  Never use --ivt-loc=$(ENTRY) to move the vectors
- *  as it will also move the Reset vector from 0 to ENTRY
- * 
- *  When generating assembly code for ISR the code generator places
- *  a GOTO instruction at the Interrupt Vector Address which points at
- *  the generated ISR. When declaring interrupt functions as _naked :
- *  1/ this GOTO instruction is not generated so we can place our own,
- *  2/ no registers are stored or restored.
- */
-
 #include "vectors.h"
 
-/*
- *  Emit a udata section and reserve bytes there.
- *  Global labels _stack and _stack_end will be generated
- *  to refer to this piece of memory.
- */
+#define PIC16F_ISR_OFFSET       0x0004
+#define PIC18F_HI_ISR_OFFSET    0x0008
+#define PIC18F_LO_ISR_OFFSET    0x0018
 
-// I choose 0x100 = bank1 because bank2, bank4, bank5 or bank13
-// can be used as USB RAM depending on PIC18F family.
-// bank1 is always free.
-#pragma stack 0x100 0xFF
+#ifdef __XC8__
 
-// 0x0000
+    #ifdef _PIC14E
 
-void reset_isr(void) __naked __interrupt 0
-{
-    __asm
-    goto    _startup
-    __endasm;
-}
+        // 0x0004, call user code interrupt vector
+        void interrupt PIC16F_isr(void)
+        {
+            #asm
+            LJMP    APPSTART + PIC16F_ISR_OFFSET
+            #endasm;
+        }
 
-// 0x0004 --> free
+    #else
 
-// 0x0008
-void high_priority_isr(void) __naked __interrupt 1
-{
-    __asm
-    goto    ENTRY + 0x08
-    __endasm;
-}
+        // 0x0008
+        void interrupt high_priority high_priority_isr(void)
+        {
+            #asm
+            LJMP    APPSTART + PIC18F_HI_ISR_OFFSET
+            #endasm;
+        }
 
-// 0x000C (if 0x0000 - 0x0C00 is not protected in the linker file) 
+        // 0x0018
+        void interrupt low_priority low_priority_isr(void)
+        {
+            #asm
+            LJMP    APPSTART + PIC18F_LO_ISR_OFFSET
+            #endasm;
+        }
 
-void startup(void)
-{
-    __asm
-    lfsr    1, _stack_end       ; initialize the stack pointer
-    lfsr    2, _stack_end
-    __endasm;
-    
-    main();                     // start bootloader code
+    #endif
 
-    __asm
-lockup:
-    bra     lockup              ; returning from main will lock up
-    __endasm;
-}
+#else // SDCC
 
-// 0x0018
-void low_priority_isr(void) __naked __interrupt 2
-{
-    __asm
-    goto    ENTRY + 0x18
-    __endasm;
-}
+    /*  never use --ivt-loc=$(ENTRY) to move the vectors
+     *  as it will also move the Reset vector from 0 to ENTRY
+     * 
+     *  When generating assembly code for ISR the code generator places
+     *  a goto instruction at the Interrupt Vector Address which points at
+     *  the generated ISR. When declaring interrupt functions as _naked :
+     *  1/ this goto instruction is not generated so we can place our own,
+     *  2/ no registers are stored or restored.
+     */
 
-// 0x001C --> start of bootloader code (cf. linker file)
+    /*  Emit a udata section and reserve bytes there.
+     *  Global labels _stack and _stack_end will be generated
+     *  to refer to this piece of memory.
+     *  I choose 0x100 = bank1 because bank2, bank4, bank5 or bank13
+     *  can be used as USB RAM depending on PIC18F family.
+     *  bank1 is always free.
+     */
+
+    #pragma stack 0x100 0xFF
+
+    // 0x0000
+
+    void reset_isr(void) __naked __interrupt 0
+    {
+        __asm
+        goto    _startup
+        __endasm;
+    }
+
+    // 0x0004 --> free
+
+    // 0x0008
+    void high_priority_isr(void) __naked __interrupt 1
+    {
+        __asm
+        goto    APPSTART + PIC18F_HI_ISR_OFFSET
+        __endasm;
+    }
+
+    // 0x000C (if 0x0000 - 0x0C00 is not protected in the linker file) 
+
+    void startup(void)
+    {
+        __asm
+        lfsr    1, _stack_end       ; initialize the stack pointer
+        lfsr    2, _stack_end
+        __endasm;
+        
+        main();                     // start bootloader code
+
+        __asm
+    lockup:
+        bra     lockup              ; returning from main will lock up
+        __endasm;
+    }
+
+    // 0x0018
+    void low_priority_isr(void) __naked __interrupt 2
+    {
+        __asm
+        goto    APPSTART + PIC18F_LO_ISR_OFFSET
+        __endasm;
+    }
+
+    // 0x001C --> start of bootloader code (cf. linker file)
+
+#endif

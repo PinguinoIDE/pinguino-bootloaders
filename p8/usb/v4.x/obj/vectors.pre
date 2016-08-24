@@ -1,0 +1,19 @@
+
+# 1 "src/vectors.c"
+
+# 15 "src/vectors.h"
+extern void main(void);
+
+# 21
+void interrupt PIC16F_isr(void);
+
+# 82 "src/vectors.c"
+void interrupt PIC16F_isr(void)
+{
+
+# 84
+#asm
+            LJMP 0x500 + 0x0004
+#endasm ;
+            }
+

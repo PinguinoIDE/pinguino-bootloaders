@@ -1,12 +1,48 @@
+/*
+
+        ╔═╗╦╔╗╔╔═╗╦ ╦╦╔╗╔╔═╗╔═╗  ╔╗ ╔═╗╔═╗╔╦╗╦  ╔═╗╔═╗╔╦╗╔═╗╦═╗
+        ╠═╝║║║║║ ╦║ ║║║║║║ ║╚═╗  ╠╩╗║ ║║ ║ ║ ║  ║ ║╠═╣ ║║║╣ ╠╦╝
+        ╩  ╩╝╚╝╚═╝╚═╝╩╝╚╝╚═╝╚═╝  ╚═╝╚═╝╚═╝ ╩ ╩═╝╚═╝╩ ╩═╩╝╚═╝╩╚═
+
+                    ╔═╗╦ ╦╔═╗╔╗╔╔═╗╔═╗╦  ╔═╗╔═╗   
+                    ║  ╠═╣╠═╣║║║║ ╦║╣ ║  ║ ║║ ╦   
+                    ╚═╝╩ ╩╩ ╩╝╚╝╚═╝╚═╝╩═╝╚═╝╚═╝   
+
+        ╦═╗╔╗ ╦  ╔═╗╔╗╔╔═╗╦ ╦╔═╗╔╦╗┌─┐╔═╗╔╦╗╔═╗╦╦   ╔═╗╔═╗╔╦╗
+        ╠╦╝╠╩╗║  ╠═╣║║║║  ╠═╣║ ║ ║ │└┘║ ╦║║║╠═╣║║   ║  ║ ║║║║
+        ╩╚═╚═╝╩═╝╩ ╩╝╚╝╚═╝╩ ╩╚═╝ ╩ └──╚═╝╩ ╩╩ ╩╩╩═╝o╚═╝╚═╝╩ ╩
+
+*/
+
 /***********************************************************************
-    Pinguino Bootloader Change Log
-    rblanchot@gmail.com
+    Future development
  **********************************************************************/
     Version 5.00 (??-??-??)
         * HID version
-    Version 4.?? (??-??-??)
-        * code size < 2048 bytes
-        * ENTRY = 0x0800
+    Version 4.19 (xx-xx-2016)
+        * new attached detection
+        * added Low Power management
+        * code size < 2048 bytes (thanks to XC8)
+        * ENTRY = 0x0800 for PIC18F
+        * ENTRY = 0x0500 for PIC16F
+/***********************************************************************
+    Under development
+ **********************************************************************/
+    Version 4.18 (24-08-2016)
+        * added 18f1xk50 and 18lfx550 support (4.18.5)
+        * fixed SerialPrint (DEBUG mode only)
+        * fixed WDTE config. (WDTE = SWDTEN) for 16F1459
+        * fixed all WDTPS to 1:32768 = 1sec.
+        * updated code to be compatible with XC8 (>= 4.18.4)
+        * declared all typedef structures as volatile
+/***********************************************************************
+    Current version
+ **********************************************************************/
+    Version 4.17 (06-11-2015)
+        * added 16f1459 support (xc8 compiler only)
+        * turned IESO bit to ON for all chips
+    Version 4.16 (21-06-2015)
+        * updated to support xc8 compiler
     Version 4.15 (17-04-2015)
         * fixed x5k50 HSOSCIO issue
     Version 4.14 (12-11-2013)

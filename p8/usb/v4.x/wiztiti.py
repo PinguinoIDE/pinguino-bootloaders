@@ -7,7 +7,7 @@
 #   8-bit USB Bootloader Factory                                       #
 #   Compile 8-bit Pinguino USB Bootloader                              #
 #   Author:	2012 - Régis Blanchot <rblanchot@gmail.com>                #
-#   Last update : 19 Nov. 2013                                         #
+#   Last update : 26 Aug. 2016                                         #
 #                                                                      #
 #   Usage: ./wiztiti.py                                                #
 #                                                                      #
@@ -44,9 +44,15 @@ class MainPanel(wx.Panel):
         self.panel = wx.Panel.__init__(self, parent=parent)
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
 
+        compilerList = [  
+            'SDCC',   'XC8'
+        ]
+
         devicesList = [  
-            '13k50',   '14k50', '2455', '2550', '25k50', '26j50', '26j53', '27j53',
-                                '4455', '4550', '45k50', '46j50', '46j53', '47j53'
+            '16f1459',
+            '18f13k50', '18f14k50',
+            '18f2455', '18f2550', '18f25k50', '18f26j50', '18f26j53', '18f27j53',
+            '18f4455', '18f4550', '18f45k50', '18f46j50', '18f46j53', '18f47j53'
         ]
 
         oscillatorList = [
@@ -72,10 +78,41 @@ class MainPanel(wx.Panel):
         sizerList = []                  # list of all sizers
         
         # --------------------------------------------------------------
+        # Compiler
+        # --------------------------------------------------------------
+
+        CmpBox = wx.StaticBox( self, -1, label = u'Compiler ')
+        boldfont = CmpBox.GetFont()
+        boldfont.SetWeight(wx.BOLD)
+        CmpBox.SetFont(boldfont)
+        sizerList.append ( wx.StaticBoxSizer ( CmpBox, wx.VERTICAL ) )
+
+        # Create CheckBoxes for each supported processor
+        old_col = 0
+        grid = []
+        grid.append ( wx.BoxSizer ( wx.HORIZONTAL ) )
+
+        self.checkboxCmpList = []
+
+        for i in range(len(compilerList)):
+            # list of all checkboxes
+            self.checkboxCmpList.append( wx.CheckBox ( self, id = i, label = compilerList[i] ))
+
+            new_col = i / 5
+            if ( new_col > old_col ) :
+                old_col = new_col
+                grid.append ( wx.BoxSizer ( wx.HORIZONTAL ) )
+
+            grid[-1].Add ( self.checkboxCmpList[-1], 0, wx.ALL|wx.EXPAND, 5 )
+
+        for i in range(len(grid)):
+            sizerList[-1].Add ( grid[i], 0, wx.ALL|wx.EXPAND, 5 )
+
+        # --------------------------------------------------------------
         # Microcontroller
         # --------------------------------------------------------------
 
-        DevBox = wx.StaticBox( self, -1, label = u'PIC18F Target Microcontroller')
+        DevBox = wx.StaticBox( self, -1, label = u'PIC Microcontroller Target ')
         boldfont = DevBox.GetFont()
         boldfont.SetWeight(wx.BOLD)
         DevBox.SetFont(boldfont)
@@ -247,7 +284,7 @@ class MainPanel(wx.Panel):
         for i in range(len(self.checkboxOptList)):
             opt.append(self.checkboxOptList[i].GetValue() * 1)
 
-        # first pass : was at least 1 proc. selected ?
+        # 1st pass : was at least 1 proc. selected ?
         p = 0
         for i in range(len(self.checkboxDevList)):
             if (self.checkboxDevList[i].GetValue()):
@@ -275,17 +312,35 @@ class MainPanel(wx.Panel):
             dlg.Destroy()
             return
 
-        # 3rd pass : compile bootloader for all MCU and Osc. value
-        for i in range(len(self.checkboxDevList)):
-            if (self.checkboxDevList[i].GetValue()):
-                proc = "18f%s" % self.checkboxDevList[i].GetLabel()
-                print proc, 
-                for i in range(len(self.checkboxOscList)):
-                    if (self.checkboxOscList[i].GetValue()):
-                        osc = self.checkboxOscList[i].GetLabel()
-                        print osc,
-                        self.Compile(proc, osc, opt[0], opt[1], opt[2], opt[3])
-                        print
+        # 3rd pass : was at least 1 compiler selected ?
+        p = 0
+        for i in range(len(self.checkboxCmpList)):
+            if (self.checkboxCmpList[i].GetValue()):
+                break
+            else :
+                p = p + 1
+
+        if (p == len(self.checkboxCmpList)):
+            dlg = wx.MessageDialog(self, 'Please choose at least one Compiler in the list.', 'Error', wx.OK|wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+
+        # 4th pass : compile bootloader for all Compiler, MCU and Osc. value
+        for c in range(len(self.checkboxCmpList)):
+            if (self.checkboxCmpList[c].GetValue()):
+                comp = self.checkboxCmpList[c].GetLabel()
+                print comp, 
+                for d in range(len(self.checkboxDevList)):
+                    if (self.checkboxDevList[d].GetValue()):
+                        proc = self.checkboxDevList[d].GetLabel()
+                        print proc, 
+                        for o in range(len(self.checkboxOscList)):
+                            if (self.checkboxOscList[o].GetValue()):
+                                osc = self.checkboxOscList[o].GetLabel()
+                                print osc,
+                                self.Compile(comp, proc, osc, opt[0], opt[1], opt[2], opt[3])
+                                print
                         
     # If User press Program button
     #----------------------------------------------------------------------
@@ -337,12 +392,12 @@ class MainPanel(wx.Panel):
 
     # Compile Bootloader(s) by calling Makefile
     #----------------------------------------------------------------------
-    def Compile(self, proc, osc, string, speed, lvp, watchdog):
+    def Compile(self, comp, proc, osc, string, speed, lvp, watchdog):
         """Compile the bootloader code source"""
         output = Popen(args=[   "make",
                                 "all",
                                 "--makefile=Makefile",
-                                "-e",
+                                "COMP=" + comp,
                                 "PROC=" + proc,
                                 "OSC=" + osc,
                                 "STRINGDESC=%d" % string,
@@ -381,7 +436,7 @@ class MainFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None,
                             title = 'Wiztiti - Pinguino\'s Best Friend !',
-                            size  = ( 500, 600 )) 
+                            size  = ( 600, 600 )) 
 
         panel = MainPanel(self)        
 
