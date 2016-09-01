@@ -63,11 +63,11 @@ extern volatile allcmd bootCmd;
 
 ***********************************************************************/
 
-#define READ_VERSION                    0x00
-#define READ_FLASH                      0x01
-#define WRITE_FLASH                     0x02
-#define ERASE_FLASH                     0x03
-#define RESET_DEVICE                    0xFF
+#define BOOT_READ_VERSION               0x00
+#define BOOT_READ_FLASH                 0x01
+#define BOOT_WRITE_FLASH                0x02
+#define BOOT_ERASE_FLASH                0x03
+#define BOOT_RESET_DEVICE               0xFF
 
 /***********************************************************************
  * Jump to user application
@@ -122,9 +122,6 @@ void UsbBootExit(void)
     #endif
     
     UserApp();                      // Jump to user app. (reset vector)
-
-    // reset the PIC
-    //__asm__("RESET");
 }
 
 /***********************************************************************
@@ -358,8 +355,11 @@ void main(void)
 
     if (UsbOff() || RCONbits.IPEN)  // If not a MCLR reset
     {                               // NB: On PIC18F, MCLR reset clears the IPEN bit
-        RCON |= 0x93;               // 0b10010011; // clears IPEN and NOT_POR
-
+        //RCON |= 0x93;               // 0b10010011; // clears IPEN and NOT_POR
+        RCONbits.IPEN = 1;
+        RCONbits.NOT_POR = 1;
+        RCONbits.NOT_BOR = 1;
+        
 /**********************************************************************/
     #endif
 /**********************************************************************/
@@ -375,7 +375,7 @@ void main(void)
         SerialPrintLN("No user app.");
         #endif
         
-        #ifdef LOWPOWER
+        #if (BOOT_USE_LOWPOWER)
         userApp = FALSE;            // otherwise, go on with the bootloader
         #endif
     }
@@ -499,7 +499,7 @@ void UsbBootCmd(void)
     #if defined(__16F1459)
 /**********************************************************************/
 
-    PMADRH = bootCmd.addrh;
+    PMADRH = bootCmd.addrh;        // load table pointer
     PMADRL = bootCmd.addrl;
 
 /**********************************************************************/
@@ -546,13 +546,13 @@ void UsbBootCmd(void)
 /**********************************************************************/
 
 ///---------------------------------------------------------------------
-    if (bootCmd.cmd ==  RESET_DEVICE)
+    if (bootCmd.cmd ==  BOOT_RESET_DEVICE)
 ///---------------------------------------------------------------------
     {
         UsbBootExit();
     }
 ///---------------------------------------------------------------------
-    else if (bootCmd.cmd == READ_VERSION)
+    else if (bootCmd.cmd == BOOT_READ_VERSION)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
@@ -564,7 +564,7 @@ void UsbBootCmd(void)
         EP_IN_BD(1).CNT = 4;        // 4 byte(s) to return
     }
 ///---------------------------------------------------------------------
-    else if (bootCmd.cmd == READ_FLASH)
+    else if (bootCmd.cmd == BOOT_READ_FLASH)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
@@ -618,7 +618,7 @@ void UsbBootCmd(void)
         EP_IN_BD(1).CNT = 5 + bootCmd.len;// Number of byte(s) to return
     }
 ///---------------------------------------------------------------------
-    else if (bootCmd.cmd == ERASE_FLASH)
+    else if (bootCmd.cmd == BOOT_ERASE_FLASH)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
@@ -641,7 +641,7 @@ void UsbBootCmd(void)
         EP_IN_BD(1).CNT = 1;        // number of byte(s) to return
     }
 ///---------------------------------------------------------------------
-    else if (bootCmd.cmd == WRITE_FLASH)
+    else if (bootCmd.cmd == BOOT_WRITE_FLASH)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)

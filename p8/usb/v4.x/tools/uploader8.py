@@ -2,18 +2,34 @@
 #-*- coding: iso-8859-15 -*-
 
 """---------------------------------------------------------------------
-     _____  _____ __   _  ______ _     _ _____ __   _  _____ 
-    |_____]   |   | \  | |  ____ |     |   |   | \  | |     |
-    |       __|__ |  \_| |_____| |_____| __|__ |  \_| |_____|
+          _____ _____ _   _  _____ _    _ _____ _   _  ____            
+         |  __ \_   _| \ | |/ ____| |  | |_   _| \ | |/ __ \           
+         | |__) || | |  \| | |  __| |  | | | | |  \| | |  | |          
+         |  ___/ | | | . ` | | |_ | |  | | | | | . ` | |  | |          
+         | |    _| |_| |\  | |__| | |__| |_| |_| |\  | |__| |          
+         |_|  _|_____|_| \_|\_____|\____/|_____|_| \_|\____/           
+             | |                | |     | |                            
+          ___| |_ __ _ _ __   __| | __ _| | ___  _ __   ___            
+         / __| __/ _` | '_ \ / _` |/ _` | |/ _ \| '_ \ / _ \           
+         \__ \ || (_| | | | | (_| | (_| | | (_) | | | |  __/           
+         |___/\__\__,_|_| |_|\__,_|\__,_|_|\___/|_| |_|\___|           
+   ___        _     _ _     _    _       _                 _           
+  / _ \      | |   (_) |   | |  | |     | |               | |          
+ | (_) |_____| |__  _| |_  | |  | |_ __ | | ___   __ _  __| | ___ _ __ 
+  > _ <______| '_ \| | __| | |  | | '_ \| |/ _ \ / _` |/ _` |/ _ \ '__|
+ | (_) |     | |_) | | |_  | |__| | |_) | | (_) | (_| | (_| |  __/ |   
+  \___/      |_.__/|_|\__|  \____/| .__/|_|\___/ \__,_|\__,_|\___|_|   
+                                  | |                                  
+                                  |_|                                   
 
-    Pinguino Stand-alone Uploader for 8-bit Pinguino
-
-    Author:          Regis Blanchot <rblanchot@gmail.com> 
-    First release:   2013-11-13
-    Last  release:   2016-01-27
-    
-    TODO : add PIC16F support
-    
+    Author:         Regis Blanchot <rblanchot@gmail.com>
+    --------------------------------------------------------------------
+    2013-11-13      RB - first release   
+    2015-09-08      RB - fixed numBlocks > numBlocksMax when used with XC8
+    2016-08-27      RB - added PIC16F145x support
+    2016-08-28      RB - added Python3 support
+    2016-08-29      RB - added usb.core functions (PYUSB_USE_CORE)
+    --------------------------------------------------------------------
     This library is free software you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
@@ -32,7 +48,8 @@
 ---------------------------------------------------------------------"""
 
 #-----------------------------------------------------------------------
-#    Usage: uploader8.py path/filename.hex
+# Usage: uploader8.py mcu path/filename.hex
+# Ex :   uploader8.py 16F1459 tools/Blink1459.hex
 #-----------------------------------------------------------------------
 
 # This class is based on :
@@ -41,16 +58,24 @@
 # See also PyUSB Doc. http://wiki.erazor-zone.de/wiki:projects:python:pyusb:pydoc
 # Pinguino Device Descriptors : lsusb -v -d 04d8:feaa
 
+#-----------------------------------------------------------------------
+# Debug: export PYUSB_DEBUG=debug
+#-----------------------------------------------------------------------
+
 import sys
 import os
 import usb
+#import usb.core
+#import usb.util
+
+# PyUSB Core module switch
+#-----------------------------------------------------------------------
+
+PYUSB_USE_CORE                  =   1          # 0=legacy, 1=core
 
 # Globales
 #-----------------------------------------------------------------------
 
-memstart                        =    0x0C00    # bootloader offset
-memend                          =    0x0000    # get its value from
-                                               # getDeviceFlash(device_id)
 # 8-bit Pinguino's ID
 #-----------------------------------------------------------------------
 
@@ -60,22 +85,23 @@ PRODUCT_ID                      =    0xFEAA    # Pinguino Sub-License
 # Hex format record types
 #-----------------------------------------------------------------------
 
-Data_Record                     =     00
-End_Of_File_Record              =     01
-Extended_Segment_Address_Record =     02
-Start_Segment_Address_Record    =     03
-Extended_Linear_Address_Record  =     04
-Start_Linear_Address_Record     =     05
+Data_Record                     =     0
+End_Of_File_Record              =     1
+Extended_Segment_Address_Record =     2
+Start_Segment_Address_Record    =     3
+Extended_Linear_Address_Record  =     4
+Start_Linear_Address_Record     =     5
 
 # usbBuf Data Packet Structure
 #-----------------------------------------------------------------------
 #    __________________
-#    |    COMMAND     |   0       [CMD]
-#    |      LEN       |   1       [LEN]
-#    |     ADDRL      |   2       [ADDRL]
-#    |     ADDRH      |   3       [ADDRH]
-#    |     ADDRU      |   4       [ADDRU]
-#    |                |   5       [DATA]
+#    |    COMMAND     |   0 [BOOT_CMD]
+#    |    LEN/SIZE    |   1 [BOOT_CMD_LEN]    or [BOOT_SIZE]
+#    |     ADDRL      |   2 [BOOT_ADDR_LO]    or [BOOT_VER_MINOR]
+#    |     ADDRH      |   3 [BOOT_ADDR_HI]    or [BOOT_VER_MAJOR ]
+#    |     ADDRU      |   4 [BOOT_ADDR_UP]
+#    |                |   5 [BOOT_DATA_START] or [BOOT_DEV1] or [BOOT_REV1]
+#    |                |   6                      [BOOT_DEV2] or [BOOT_REV2]
 #    .                .
 #    .      DATA      .
 #    .                .
@@ -91,13 +117,15 @@ BOOT_ADDR_HI                    =    3
 BOOT_ADDR_UP                    =    4
 BOOT_DATA_START                 =    5
 
-BOOT_DEV1                       =    5
-BOOT_DEV2                       =    6
+BOOT_SIZE                       =    1
 
 BOOT_VER_MINOR                  =    2
 BOOT_VER_MAJOR                  =    3
 
-BOOT_SIZE                       =    1
+BOOT_REV1                       =    5
+BOOT_REV2                       =    6
+BOOT_DEV1                       =    5
+BOOT_DEV2                       =    6
 
 # Bootloader commands
 #-----------------------------------------------------------------------
@@ -164,12 +192,12 @@ ERR_USB_ERASE                   =    17
 devices_table = \
     {  
         # 16F
-        0x3020: ['16f1454'],
-        0x3021: ['16f1455'],
-        0x3023: ['16f1459'],
-        0x3024: ['16lf1454'],
-        0x3025: ['16lf1455'],
-        0x3027: ['16lf1459'],
+        0x3020: ['16f1454'      , 0x02000, 0x00 ],
+        0x3021: ['16f1455'      , 0x02000, 0x00 ],
+        0x3023: ['16f1459'      , 0x02000, 0x00 ],
+        0x3024: ['16lf1454'     , 0x02000, 0x00 ],
+        0x3025: ['16lf1455'     , 0x02000, 0x00 ],
+        0x3027: ['16lf1459'     , 0x02000, 0x00 ],
 
         # 18F
         0x4740: ['18f13k50'     , 0x02000, 0x80 ],
@@ -229,62 +257,135 @@ devices_table = \
 def getDevice(vendor, product):
 # ----------------------------------------------------------------------
     """ search USB device and returns a DeviceHandle object """
-    busses = usb.busses()
-    for bus in busses:
-        for device in bus.devices:
-            if (device.idVendor, device.idProduct) == (vendor, product):
-                return device
-    return ERR_DEVICE_NOT_FOUND
+
+    if PYUSB_USE_CORE:
+
+        device = usb.core.find(idVendor=vendor, idProduct=product)
+        #print(device)
+        if device is None :
+            return ERR_DEVICE_NOT_FOUND
+        else :
+            return device
+
+    else:
+
+        busses = usb.busses()
+        for bus in busses:
+            #print(bus)
+            for device in bus.devices:
+                #print(device)
+                if (device.idVendor, device.idProduct) == (vendor, product):
+                    return device
+        return ERR_DEVICE_NOT_FOUND
 
 # ----------------------------------------------------------------------
 def initDevice(device):
 # ----------------------------------------------------------------------
     """ init pinguino device """
-    handle = device.open()
-    if handle:
-        handle.setConfiguration(ACTIVE_CONFIG)
-        handle.claimInterface(INTERFACE_ID)
-        return handle
-    return ERR_USB_INIT1
+    
+    if PYUSB_USE_CORE:
+
+        if device.is_kernel_driver_active(INTERFACE_ID):
+            #print("Kernel driver detached")
+            try:
+                device.detach_kernel_driver(INTERFACE_ID)
+            except usb.core.USBError as e:
+                sys.exit("Aborting: could not detach kernel driver: %s" % str(e))
+        else:
+            #print("No kernel driver attached")
+
+        # The call to set_configuration must come before
+        # claim_interface (which, btw, is optional).
+        
+        try:
+            device.set_configuration(ACTIVE_CONFIG)
+        except usb.core.USBError as e:
+            sys.exit("Aborting: could not set configuration: %s" % str(e))
+
+        try:
+            usb.util.claim_interface(device, INTERFACE_ID)
+        except usb.core.USBError as e:
+            sys.exit("Aborting: could not claim interface: %s" % str(e))
+
+        return device
+
+    else:
+
+        handle = device.open()
+        if handle:
+            #print(handle)
+            try:
+                handle.detachKernelDriver(INTERFACE_ID)
+            except:
+                #print("Could not detatch kernel driver from interface")
+                pass
+            try:
+                handle.setConfiguration(ACTIVE_CONFIG)
+            except:
+                sys.exit("Aborting: could not set configuration")
+            try:
+                handle.claimInterface(INTERFACE_ID)
+            except:
+                #print("Could not claim interface")
+                pass
+            return handle
+        return ERR_USB_INIT1
 
 # ----------------------------------------------------------------------
 def closeDevice(handle):
 # ----------------------------------------------------------------------
     """ Close currently-open USB device """
-    handle.releaseInterface()
 
+    if PYUSB_USE_CORE:
+        usb.util.release_interface(handle, INTERFACE_ID)
+    else:
+        handle.releaseInterface()
+    
 # ----------------------------------------------------------------------
-def sendCMD(handle, usbBuf):  
+def sendCommand(handle, usbBuf):  
 # ----------------------------------------------------------------------
     """ send command to the bootloader """
-    sent_bytes = handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
-    if sent_bytes == len(usbBuf):
-        return handle.bulkRead(IN_EP, MAXPACKETSIZE, TIMEOUT)
-        #return ERR_NONE
-    else:        
+
+    if PYUSB_USE_CORE:
+        sent_bytes = handle.write(OUT_EP, usbBuf, TIMEOUT)
+    else:
+        sent_bytes = handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
+
+    if sent_bytes != len(usbBuf):
         return ERR_USB_WRITE
+
+    if PYUSB_USE_CORE:
+        return handle.read(IN_EP, MAXPACKETSIZE, TIMEOUT)
+    else:
+        return handle.bulkRead(IN_EP, MAXPACKETSIZE, TIMEOUT)
 
 # ----------------------------------------------------------------------
 def resetDevice(handle):
 # ----------------------------------------------------------------------
-    """ reset device """
+    """ send reset command to the bootloader """
+
     usbBuf = [0] * MAXPACKETSIZE
     # command code
     usbBuf[BOOT_CMD] = RESET_CMD
     # write data packet
-    handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
-    #usbBuf = sendCMD(handle, usbBuf)
+    if PYUSB_USE_CORE:
+        handle.write(OUT_EP, usbBuf, TIMEOUT)
+    else:
+        handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
+    #usbBuf = sendCommand(handle, usbBuf)
     #print usbBuf
-        
+    #handle.reset()
+
 # ----------------------------------------------------------------------
 def getVersion(handle):
 # ----------------------------------------------------------------------
     """ get bootloader version """
+
     usbBuf = [0] * MAXPACKETSIZE
     # command code
     usbBuf[BOOT_CMD] = READ_VERSION_CMD
     # write data packet and get response
-    usbBuf = sendCMD(handle, usbBuf)
+    usbBuf = sendCommand(handle, usbBuf)
     if usbBuf == ERR_USB_WRITE:
         return ERR_USB_WRITE
     else:        
@@ -293,28 +394,49 @@ def getVersion(handle):
                 str(usbBuf[BOOT_VER_MINOR])
 
 # ----------------------------------------------------------------------
-def getDeviceID(handle):
+def getDeviceID(handle, proc):
 # ----------------------------------------------------------------------
-    """ read 2-byte device ID from location 0x3FFFFE """
-    #usbBuf = [0] * MAXPACKETSIZE
-    usbBuf = readFlash(handle, 0x3FFFFE, 2)
-    if usbBuf == ERR_USB_WRITE:
-        return ERR_USB_WRITE
-    else:
-        #print "BUFFER =", usbBuf
+    """ read 2-byte device ID from
+        PIC18F : 0x3FFFFE
+        PIC16F : 0x8005        """
+
+    #print(proc)
+    
+    if ("16f" in proc):
+        # REVISION & DEVICE ID
+        usbBuf = readFlash(handle, 0x8005, 4)
+        if usbBuf == ERR_USB_WRITE or usbBuf is None:
+            return ERR_USB_WRITE, ERR_USB_WRITE
+        rev1 = usbBuf[BOOT_REV1]
+        rev2 = usbBuf[BOOT_REV2]
+        device_rev = (int(rev2) << 8) + int(rev1)
         dev1 = usbBuf[BOOT_DEV1]
-        #print "DEV1 =", dev1
         dev2 = usbBuf[BOOT_DEV2]
-        #print "DEV2 =", dev2
+        device_id  = (int(dev2) << 8) + int(dev1)
+
+    else:
+        # REVISION & DEVICE ID
+        usbBuf = readFlash(handle, 0x3FFFFE, 2)
+        if usbBuf == ERR_USB_WRITE or usbBuf is None:
+            return ERR_USB_WRITE, ERR_USB_WRITE
+        #print("BUFFER =", usbBuf
+        dev1 = usbBuf[BOOT_DEV1]
+        #print("DEV1 =", dev1
+        dev2 = usbBuf[BOOT_DEV2]
+        #print("DEV2 =", dev2
         device_id = (int(dev2) << 8) + int(dev1)
+        device_id  = device_id & 0xFFE0
         #print device_id
         device_rev = device_id & 0x001F
-        # mask revision number
-        return device_id & 0xFFE0
+        #print device_rev
+
+    return device_id, device_rev
 
 # ----------------------------------------------------------------------
 def getDeviceFlash(device_id):
 # ----------------------------------------------------------------------
+    """ get flash memory info """
+    
     for n in devices_table:
         if n == device_id:
             return devices_table[n][1]            
@@ -323,6 +445,8 @@ def getDeviceFlash(device_id):
 # ----------------------------------------------------------------------
 def getDeviceName(device_id):
 # ----------------------------------------------------------------------
+    """ get device chip name """
+
     for n in devices_table:
         if n == device_id:
             return devices_table[n][0]
@@ -332,6 +456,7 @@ def getDeviceName(device_id):
 def eraseFlash(handle, address, numBlocks):
 # ----------------------------------------------------------------------
     """ erase n * 64- or 1024-byte blocks of flash memory """
+
     usbBuf = [0] * MAXPACKETSIZE
     # command code
     usbBuf[BOOT_CMD] = ERASE_FLASH_CMD
@@ -343,13 +468,17 @@ def eraseFlash(handle, address, numBlocks):
     usbBuf[BOOT_ADDR_HI] = (address >> 8 ) & 0xFF
     usbBuf[BOOT_ADDR_UP] = (address >> 16) & 0xFF
     # write data packet
-    handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
-    #return sendCMD(handle, usbBuf)
+    if PYUSB_USE_CORE:
+        handle.write(OUT_EP, usbBuf, TIMEOUT)
+    else:
+        handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
+    #return sendCommand(handle, usbBuf)
 
 # ----------------------------------------------------------------------
 def readFlash(handle, address, length):
 # ----------------------------------------------------------------------
     """ read a block of flash """
+
     usbBuf = [0] * MAXPACKETSIZE
     # command code
     usbBuf[BOOT_CMD] = READ_FLASH_CMD 
@@ -360,18 +489,17 @@ def readFlash(handle, address, length):
     usbBuf[BOOT_ADDR_HI] = (address >> 8 ) & 0xFF
     usbBuf[BOOT_ADDR_UP] = (address >> 16) & 0xFF
     # send request to the bootloader
-    return sendCMD(handle, usbBuf)
+    return sendCommand(handle, usbBuf)
 
 # ----------------------------------------------------------------------
 def writeFlash(handle, address, datablock):
 # ----------------------------------------------------------------------
-    """
-        write a block of code
+    """ write a block of code
         first 5 bytes are for block description
         (BOOT_CMD, BOOT_CMD_LEN and BOOT_ADDR)
         data block size should be of DATABLOCKSIZE bytes
-        total length is then DATABLOCKSIZE + 5
-    """
+        total length is then DATABLOCKSIZE + 5 < MAXPACKETSIZE """
+
     usbBuf = [0xFF] * MAXPACKETSIZE
     # command code
     usbBuf[BOOT_CMD] = WRITE_FLASH_CMD 
@@ -387,14 +515,16 @@ def writeFlash(handle, address, datablock):
     usbBuf[BOOT_DATA_START:] = datablock
     #print usbBuf
     # write data packet on usb device
-    handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
-    #return sendCMD(handle, usbBuf)
+    if PYUSB_USE_CORE:
+        handle.write(OUT_EP, usbBuf, TIMEOUT)
+    else:
+        handle.bulkWrite(OUT_EP, usbBuf, TIMEOUT)
+    #return sendCommand(handle, usbBuf)
 
 # ----------------------------------------------------------------------
-def hexWrite(handle, filename, proc, memend):
+def hexWrite(handle, filename, proc, memstart, memend):
 # ----------------------------------------------------------------------
-    """
-            Parse the Hex File Format and send data to usb device
+    """     Parse the Hex File Format and send data to usb device
 
     [0]     Start code, one character, an ASCII colon ':'.
     [1:3]   Byte count, two hex digits.
@@ -426,8 +556,19 @@ def hexWrite(handle, filename, proc, memend):
             03 + 00 + 30 + 00 + 02 + 33 + 7A = E2, 2's complement is 1E
     """
 
+    # Addresses are doubled in the PIC16F HEX file
+    if ("16f" in proc):
+        memstart = memstart * 2
+        memend   = memend   * 2
+
+    #print("memstart = 0x%X" % memstart)
+    #print("memend   = 0x%X" % memend)
+
     data        = []
-    old_address = 0
+    old_max_address = memstart
+    old_min_address = memend
+    max_address = 0
+    min_address = 0
     address_Hi  = 0
     codesize    = 0
 
@@ -435,14 +576,14 @@ def hexWrite(handle, filename, proc, memend):
     # ------------------------------------------------------------------
 
     # Pinguino x6j50 or x7j53, erased blocks are 1024-byte long
-    if "j" or "J" in proc :
+    if ("j" in proc):
         erasedBlockSize = 1024
 
     # Pinguino x455, x550 or x5k50, erased blocks are 64-byte long
     else:
         erasedBlockSize = 64
 
-    #print "erasedBlockSize = %d" % erasedBlockSize
+    #print("erasedBlockSize = %d" % erasedBlockSize
 
     # image of the whole PIC memory (above memstart)
     # --------------------------------------------------------------
@@ -453,9 +594,9 @@ def hexWrite(handle, filename, proc, memend):
     # read hex file
     # ------------------------------------------------------------------
 
-    file = open(filename,'r')
-    lines = file.readlines()
-    file.close()
+    hexfile = open(filename,'r')
+    lines = hexfile.readlines()
+    hexfile.close()
 
     # calculate checksum, code size and memmax
     # ------------------------------------------------------------------
@@ -486,53 +627,68 @@ def hexWrite(handle, filename, proc, memend):
             #print address_Hi
             
         # data record
-        if record_type == Data_Record:
+        elif record_type == Data_Record:
 
             # data's 32-bit address calculation
             address = address_Hi + address_Lo
-            #print "address = %X" % address
+            #print("address = %X" % address
 
-            # end program address calculation
-            if (address > old_address) and (address < memend):
+            # min address
+            if (address < old_min_address) and (address >= memstart):
+                min_address = address
+                old_min_address = address
+                #print("min. address : 0x%X" % old_min_address
+
+            # max address
+            if (address > old_max_address) and (address < memend):
                 
-                end_address = address + byte_count
-                old_address = address
-                #print "end_address = %X" % end_address
+                max_address = address + byte_count
+                old_max_address = address
+                #print("end_address = %X" % end_address
 
             if (address >= memstart) and (address < memend):
 
                 # code size calculation
                 codesize = codesize + byte_count
 
-                # append data
-                for i in range(byte_count):
-                    #print line[9 + (2 * i) : 11 + (2 * i)],
+            # append data
+            for i in range(byte_count):
+                if ((address + i) < memend):
                     #Caution : addresses are not always contiguous
                     #data.append(int(line[9 + (2 * i) : 11 + (2 * i)], 16))
-                    data[address - memstart + i] = int(line[9 + (2 * i) : 11 + (2 * i)], 16)
-                #print
+                    #data[address - memstart + i] = int(line[9 + (2 * i) : 11 + (2 * i)], 16)
+                    data[address - min_address + i] = int(line[9 + (2 * i) : 11 + (2 * i)], 16)
+                    #print line[9 + (2 * i) : 11 + (2 * i)],
                 
         # end of file record
-        if record_type == End_Of_File_Record:
+        elif record_type == End_Of_File_Record:
             break
 
-    # memmax must be divisible by erasedBlockSize
+        # unsupported record type
+        else:
+            return ERR_HEX_RECORD
+
+    # max_address must be divisible by erasedBlockSize
     # ------------------------------------------------------------------
 
-    #print "codesize + memstart = %X" % (codesize + memstart)
-    memmax = end_address + erasedBlockSize - (end_address % erasedBlockSize)
-    #print "memmax = %X" % memmax
+    #min_address = min_address - erasedBlockSize - (min_address % erasedBlockSize)
+    max_address = max_address + erasedBlockSize - (max_address % erasedBlockSize)
+    if (max_address > memend):
+        max_address = memend
+    
+    #print("min_address = 0x%X" % min_address
+    #print("max_address = 0x%X" % max_address
 
-    # erase memory from memstart to memmax 
+    # erase memory from memstart to max_address 
     # ------------------------------------------------------------------
 
     numBlocksMax = (memend - memstart) / erasedBlockSize
-    numBlocks    = (memmax - memstart) / erasedBlockSize
-    #print "memend = %d" % memend
-    #print "memmax = %d" % memmax
-    #print "memstart = %d" % memstart
-    #print "numBlocks = %d" % numBlocks
-    #print "numBlocksMax = %d" % numBlocksMax
+    numBlocks    = (max_address - memstart) / erasedBlockSize
+    #print("memend = %d" % memend
+    #print("memmax = %d" % memmax
+    #print("memstart = %d" % memstart
+    #print("numBlocks = %d" % numBlocks
+    #print("numBlocksMax = %d" % numBlocksMax
     
     if numBlocks > numBlocksMax:
         #numBlocks = numBlocksMax
@@ -558,123 +714,156 @@ def hexWrite(handle, filename, proc, memend):
     # write blocks of DATABLOCKSIZE bytes
     # ------------------------------------------------------------------
 
-    for addr in range(memstart, memmax, DATABLOCKSIZE):
-        index = addr - memstart
-        #print index
-        #print data[index:index+DATABLOCKSIZE]
-        status = writeFlash(handle, addr, data[index:index+DATABLOCKSIZE])
-        #print data[index:index+DATABLOCKSIZE]
-        #print "block@%X has been issued" % addr
-        if status == ERR_USB_WRITE:
-            return ERR_USB_WRITE
-            
+    for addr8 in range(min_address, max_address, DATABLOCKSIZE):
+        index = addr8 - min_address
+        # the addresses are doubled in the PIC16F HEX file
+        if ("16f" in proc):
+            addr16 = addr8 / 2
+            status = writeFlash(handle, addr16, data[index:index+DATABLOCKSIZE])
+            if status == ERR_USB_WRITE:
+                return ERR_USB_WRITE
+            #print("addr8=0x%X addr16=0x%X" % (addr8, addr16)
+            #print("0x%X  [%s]" % (addr16, data[index:index+DATABLOCKSIZE])
+        else:
+            status = writeFlash(handle, addr8,  data[index:index+DATABLOCKSIZE])
+            if status == ERR_USB_WRITE:
+                return ERR_USB_WRITE
+            #print("0x%X  [%s]" % (addr8, data[index:index+DATABLOCKSIZE])
+
     data[:] = []    # clear the list
 
-    print "%d bytes written" % codesize
+    print("%d bytes written" % codesize)
 
     return ERR_NONE
 
 # ----------------------------------------------------------------------
-def main(filename):
+# ----------------------------------------------------------------------
+def main(mcu, filename):
+# ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 
     # check file to upload
     # ------------------------------------------------------------------
 
     if filename == '':
-        print "No program to write"
         closeDevice(handle)
-        sys.exit(0)
+        sys.exit("Aborting: no program to write")
 
     hexfile = open(filename, 'r')
     if hexfile == "":
-        print "Unable to open %s" % filename
-        sys.exit(0)
+        sys.exit("Aborting: unable to open %s" % filename)
+
     hexfile.close()
 
     # search for a Pinguino board
     # ------------------------------------------------------------------
 
-    print "Looking for a Pinguino board ..."
+    print("Looking for a Pinguino board ...")
     device = getDevice(VENDOR_ID, PRODUCT_ID)
     if device == ERR_DEVICE_NOT_FOUND:
-        print "Pinguino not found"
-        print "Is your device connected and/or in bootloader mode ?"
-        sys.exit(0)
+        sys.exit("Aborting: Pinguino not found. Is your device connected and/or in bootloader mode ?")
     else:
-        print "Pinguino found ..."
+        print("Pinguino found ...")
 
     handle = initDevice(device)
+    #print(handle)
     if handle == ERR_USB_INIT1:
-        print "... but upload is not possible."
-        print "Press the Reset button and try again."
+        print("... but upload is not possible.")
+        print("Press the Reset button and try again.")
         sys.exit(0)
 
     # find out the processor
     # ------------------------------------------------------------------
 
-    device_id = getDeviceID(handle)
+    mcu = mcu.lower()
+    device_id, device_rev = getDeviceID(handle, mcu)
+    if device_id == ERR_USB_WRITE:
+        closeDevice(handle)
+        sys.exit("Aborting: unknown device ID")
+        
     proc = getDeviceName(device_id)
-    print " - with PIC%s (id=0x%X)" % (proc, device_id)
+    if proc == ERR_DEVICE_NOT_FOUND:
+        closeDevice(handle)
+        sys.exit("Aborting: unknown PIC (id=0x%X)" % device_id)
+
+    elif proc != mcu:
+        closeDevice(handle)
+        sys.exit("Aborting: program compiled for %s but device has %s" % (mcu, proc))
+
+    else:
+        print(" - with PIC%s (id=0x%X, rev=%x)" % (proc, device_id, device_rev))
+
 
     # find out flash memory size
     # ------------------------------------------------------------------
 
+    # lower limit of the flash memory (bootloader offset)
+    # TODO : get it from the bootloader (cf. APPSTART)
+    if ("16f" in proc):
+        memstart = 0x800
+    else:
+        memstart = 0xC00
+
+    # upper limit of the flash memory
     memend  = getDeviceFlash(device_id)
     memfree = memend - memstart;
-    print " - with %d bytes free (%d KB)" % (memfree, memfree/1024)
+    print(" - with %d bytes free (%.2f/%d KB)" % (memfree, memfree/1024, memend/1024))
+    print("   from 0x%05X to 0x%05X" % (memstart, memend))
 
     # find out bootloader version
     # ------------------------------------------------------------------
 
     #product = handle.getString(device.iProduct, 30)
     #manufacturer = handle.getString(device.iManufacturer, 30)
-    print " - with USB bootloader v%s" % getVersion(handle)
+    print(" - with USB bootloader v%s" % getVersion(handle))
 
     # start writing
     # ------------------------------------------------------------------
 
-    print "Uploading user program ..."
-    status = hexWrite(handle, filename, proc, memend)
+    print("Uploading user program ...")
+    status = hexWrite(handle, filename, proc, memstart, memend)
     #print status
     
     if status == ERR_HEX_RECORD:
-        print "Record error"
         closeDevice(handle)
-        sys.exit(0)
+        sys.exit("Aborting: record error")
 
     elif status == ERR_HEX_CHECKSUM:
-        print "Checksum error"
         closeDevice(handle)
-        sys.exit(0)
+        sys.exit("Aborting: checksum error")
 
     elif status == ERR_USB_ERASE:
-        print "Erase error"
+        print("Aborting: erase error")
         closeDevice(handle)
         sys.exit(0)
 
     elif status == ERR_NONE:
-        print "%s successfully uploaded" % os.path.basename(filename)
+        print("%s successfully uploaded" % os.path.basename(filename))
 
     # reset and start start user's app.
     # ------------------------------------------------------------------
 
-        print "Starting user program ..."
         resetDevice(handle)
-        closeDevice(handle)
-        sys.exit(0)
+        # Device can't be closed because it just has been reseted
+        #closeDevice(handle)
+        sys.exit("Starting user program ...")
 
     else:
-        print "Unknown error"
-        sys.exit(0)
+        sys.exit("Aborting: unknown error")
 
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 
 if __name__ == "__main__":
+    print("We use Python v%d.%d + PyUSB.%s" %
+        (sys.version_info[0],
+         sys.version_info[1],
+         "core" if PYUSB_USE_CORE else "legacy"))
     i = -1
     for arg in sys.argv:
         i = i + 1
-    if i == 1:
-        main(sys.argv[1])
+    if i == 2:
+        main(sys.argv[1], sys.argv[2])
     else:
-        print "Usage: uploader8.py path/filename.hex"
+        sys.exit("Usage ex: uploader8.py 16f1459 tools/Blink1459.hex")

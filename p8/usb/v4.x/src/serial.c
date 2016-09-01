@@ -1,4 +1,4 @@
-/*******************************************************************************
+/***********************************************************************
     Title:  USB Pinguino Bootloader
     File:   serial.c
     Descr.: UART functions (useful  for debugging)
@@ -6,7 +6,7 @@
 
     This file is part of Pinguino (http://www.pinguino.cc)
     Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
-*******************************************************************************/
+***********************************************************************/
 
 #ifndef __SERIAL_C
 #define __SERIAL_C

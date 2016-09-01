@@ -10,7 +10,7 @@
 #                                                                      #
 ########################################################################
 
-This code provides a USB Bootloader for 8-bit (c) Microchip microcontrollers
+This code provides a USB Bootloader for 8-bit (c)Microchip microcontrollers
 with built-in USB module such as PIC16F145x, PIC18Fx550, PIC18Fx6J50 or PIC18Fx7J53.
 
 A bootloader is a piece of code that is executed once the system is booted.
@@ -21,7 +21,8 @@ microcontroller memory and handing over the control to this program afterwards.
 
 The code has been written for SDCC (Small Device C Compiler) a freeware
 ANSI-C compiler so make sure SDCC and GPUTILS are installed on your computer.
-You can get the latest sources by running the build-sdcc-v3.sh script.
+It is also possible to compile the code with Microchip XC8.
+You can get the binaries by installing the Pinguino IDE.
 
 To compile the bootloader, first open and edit Makefile to suit your needs
 and then type make in a terminal. This project also implements Wiztiti.py,
@@ -32,7 +33,7 @@ need a programmer and its interface such as PicKit / MPLABX (www.microchip.com/m
 or Wisp648 / Wisp (www.voti.nl/wisp648/).
  
 Once loaded, you should see the led blinking. Your PIC is now in bootloader mode
-and wait for your PC to send him your application.
+and wait for your PC to send it your application.
 
 Compile one of the example and load it into your PIC using Pinguino IDE.
 You can also use the bootloader without the Pinguino IDE, use then uploader.py
@@ -44,3 +45,7 @@ this code.
 Thank you.
 Régis Blanchot
 rblanchot@gmail.com
+
+PS : Windows users
+1/ Install Git for Windows
+2/ Choose "Use Git and optional Unix tools ..."

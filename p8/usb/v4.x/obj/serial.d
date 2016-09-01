@@ -1,1 +1,0 @@
- obj/serial.d  obj/serial.p1:  src/serial.c src/compiler.h src/types.h

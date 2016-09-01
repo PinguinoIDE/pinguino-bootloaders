@@ -1,1 +1,0 @@
-         obj/main.d  obj/main.p1:  src/main.c src/config.h src/compiler.h src/vectors.h src/flash.h src/hardware.h src/types.h src/usb.h

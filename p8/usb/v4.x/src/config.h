@@ -63,7 +63,7 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config CLKOUTEN = OFF       // CLKOUT pin function as I/O
     #pragma config BOREN = OFF          // Brown Out
     #pragma config CP = OFF             // Code Protect
-    #if defined(DEBUG)
+    #if (BOOT_USE_DEBUG)
     #pragma config MCLRE = OFF          // MCLR
     #else
     #pragma config MCLRE = ON           // MCLR

@@ -1,3 +1,5 @@
+SHELL=cmd.exe
+#SHELL=wbin/sh
 ########################################################################
 #                                                                      #
 #	Pinguino Bootloader v4.x                                           #
@@ -5,14 +7,15 @@
 #	Author:	Régis Blanchot <rblanchot@gmail.com>                       #
 #           André Gentric                                              #
 #                                                                      #
-#	Usage : make --makefile=Makefile PROC=18f45k50                     #
-#           make --makefile=Makefile PROC=18f2550 OSC=20               #
-#           make --makefile=Makefile PROC=16F1459 OSC=INTOSC           #
-#           make --makefile=Makefile COMP=XC8  PROC=18F47J53 OSC=8     #
-#           make --makefile=Makefile COMP=SDCC PROC=18F26J50 OSC=8     #
+#	Usage :                                                            #
+#	make.exe --makefile=Makefile.win PROC=18f45k50                     #
+#   make.exe --makefile=Makefile.win PROC=18f2550 OSC=20               #
+#   make.exe --makefile=Makefile.win PROC=16F1459 OSC=INTOSC           #
+#   make.exe --makefile=Makefile.win COMP=XC8  PROC=18F47J53 OSC=8     #
+#   make.exe --makefile=Makefile.win COMP=SDCC PROC=18F26J50 OSC=8     #
 #                                                                      #
-#	This file is part of Pinguino Project (http://www.pinguino.cc)     #
-#	Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
+#	This file is part of Pinguino Project (http:\\www.pinguino.cc)     #
+#	Released under the LGPL license (www.gnu.org\licenses\lgpl.html)   #
 #                                                                      #
 ########################################################################
 #	Supported PICs                                                     #
@@ -28,13 +31,13 @@
 #	18F27J53	18F47J53                                               #
 #                                                                      #
 ########################################################################
-#	TODO                                                   #
+#	TODO                                                               #
 ########################################################################
 #                                                                      #
 ########################################################################
 
 ########################################################################
-#	PROGRAMMER                                       #
+#	PROGRAMMER                                                         #
 ########################################################################
 
 PROGRAMMER	= PK3
@@ -44,72 +47,74 @@ PROGRAMMER	= PK3
 #	COMPILERS TOOLCHAIN LOCATION                                       #
 ########################################################################
 
-SDCCDIR		= /opt/pinguino/p8/bin
-XC8DIR		= /opt/microchip/xc8/v1.38/bin
-MPLABDIR	= /opt/microchip/mplabx/v3.30
-JAVADIR		= $(MPLABDIR)/sys/java/jre1.8.0_65/bin
-JAVA		= $(JAVADIR)/java
-IPE			= $(MPLABDIR)/mplab_ipe/ipecmd.jar
+SDCCDIR		= "C:\Pinguino\compilers\p8\bin"
+XC8DIR		= "C:\Program Files\Microchip\xc8\v1.36\bin"
+MPLABDIR	= "C:\Program Files\Microchip\MPLABX\v3.35"
+JAVADIR		= "C:\Program Files\java\jre1.7.0_79\bin"
+JAVA		= $(JAVADIR)\java.exe
+IPE			= $(MPLABDIR)\mplab_ipe\ipecmd.jar
+#RM			= rm -f
+RM			= del
 
 ########################################################################
 #	INTERNAL OPTIONAL CONFIGURATION OPTIONS                            #
 ########################################################################
 
-BOOT_USE_DEBUG=0
-BOOT_USE_LOWPOWER=0
-BOOT_USE_HID=0
-BOOT_USE_UART=0
-BOOT_USE_CDC=0
-BOOT_USE_BULK=1
+BOOT_USE_DEBUG		= 0
+BOOT_USE_LOWPOWER	= 0
+BOOT_USE_HID		= 0
+BOOT_USE_UART		= 0
+BOOT_USE_CDC		= 0
+BOOT_USE_BULK		= 1
 
 ########################################################################
 #	CONFIGURATION OPTIONS                                              #
 ########################################################################
 
-LOW_SPEED	= 1
-HIGH_SPEED	= 0
-ONE			= 1
+LOW_SPEED=1
+HIGH_SPEED=0
+ONE=1
 
 # Compiler (XC8 by default)
 ifeq ("x${COMP}", "x")
-	COMPILER	= XC8
+	COMPILER=XC8
 else
-	COMPILER	= $(shell echo $(COMP) | tr '[:lower:]' '[:upper:]')
+	COMPILER=$(shell echo $(COMP)|tr '[:lower:]' '[:upper:]')
 endif
 
 # Microchip PIC (PIC18F47J53 by default)
 ifeq ("x${PROC}", "x")
-	CPU			= 18f47j53
+	CPU=18f47j53
 else
-	CPU			= $(shell echo $(PROC) | tr '[:upper:]' '[:lower:]')
+	CPU=$(shell echo $(PROC)|tr '[:upper:]' '[:lower:]')
 endif
 
 # external crystal frequency (internal osc. used by default)
 ifeq ("x${OSC}", "x")
-	CRYSTAL		= INTOSC
+	CRYSTAL=INTOSC
 else
-	CRYSTAL		= $(OSC)
+	CRYSTAL=$(OSC)
 endif
 
-# usb speed (HIGH_SPEED = 0 / LOW_SPEED = 1)
+# usb speed (HIGH_SPEED = 0 \ LOW_SPEED = 1)
 ifeq ("x${SPEED}", "x")
-	USBSPEED	= 0
+	USBSPEED=0
 else
-	USBSPEED	= $(SPEED)
+	USBSPEED=$(SPEED)
 endif
 
-# low voltage programing (YES = 1 / NO = 0)
+# low voltage programing (YES = 1 \ NO = 0)
 ifeq ("x${VOLTAGE}", "x")
-	LVP			= 0
+	LVP=0
 else
-	LVP			= $(VOLTAGE)
+	LVP=$(VOLTAGE)
 endif
 
-# string descriptor flag  (YES = 1 / NO = 0)
+# string descriptor flag  (YES = 1 \ NO = 0)
 ifeq ("x${STRINGDESC}", "x")
-	STRING		= 1
+	STRING=1
 else
-	STRING		= $(STRINGDESC)
+	STRING=$(STRINGDESC)
 endif
 
 ########################################################################
@@ -117,62 +122,65 @@ endif
 ########################################################################
 
 # bootloader version (cf. CHANGELOG file)
-MAJ_VER		= 4
-MIN_VER		= 18
-SUB_VER		= 5
+MAJ_VER=4
+MIN_VER=18
+SUB_VER=6
 
-# Microchip Vendor ID / Pinguino Product ID (Microchip sublicense)
-VID			= 0x04D8
-PID			= 0xFEAA
+# Microchip Vendor ID \ Pinguino Product ID (Microchip sublicense)
+VID=0x04D8
+PID=0xFEAA
 
 # PIC Family (18F or 16F ?)
-# APPSTART address is the end of bootloader / start of user's application
+# APPSTART address is the end of bootloader \ start of user's application
 # APPSTART must be a multiple of 1024 (18F only) because :
-# 1/ flash must be erased before any write,
-# 2/ some PICs can only erase 1024-byte long blocks 
+# 1\ flash must be erased before any write,
+# 2\ some PICs can only erase 1024-byte long blocks 
 
-FAM			= $(findstring 16f, $(CPU))
+FAM=$(findstring 16f, $(CPU))
 
 ifeq ($(FAM), 16f)
-	ARCH	= pic14
-	USBRAM	= 2080h-21FFh
-	APPSTART= 0x500
-	COMPILER= XC8
-	OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
+	ARCH=pic14
+	USBRAM=2080h-21FFh
+	APPSTART=0x500
+	COMPILER=XC8
+	OPTIMIZ=--opt=default,+asm,+asmfile,-speed,+space,-debug
 else
-	ARCH	= pic16
-	USBRAM	= 500h-57Fh
-	APPSTART= 0x0C00
+	ARCH=pic16
+	USBRAM=500h-57Fh
+	APPSTART=0x0C00
 	ifeq ($(COMPILER), SDCC)
-		#APPSTART	= 0x0C00
-		OPTIMIZ		= --optimize-df --optimize-cmp --obanksel=9 --denable-peeps
+		#APPSTART=0x0C00
+		OPTIMIZ=--optimize-df --optimize-cmp --obanksel=9 --denable-peeps
 	else
-		#APPSTART	= 0x0800
-		#OPTIMIZ		= --opt=default,+asm,+asmfile,-speed,+space,-debug
-		OPTIMIZ		= --opt=default
+		#APPSTART=0x0800
+		#OPTIMIZ=--opt=default,+asm,+asmfile,-speed,+space,-debug
+		OPTIMIZ=--opt=default
 	endif
 endif
 
-APPSTARTDEC	= $(shell printf "%d" $(APPSTART))
+APPSTARTDEC	= $(shell printf '%d' $(APPSTART))
 BOOTENDDEC	= $(shell echo $(APPSTARTDEC)-$(ONE)|bc)
-BOOTEND		= $(shell printf "%x" $(BOOTENDDEC))
+BOOTEND		= $(shell printf '%x' $(BOOTENDDEC))
 
 # Project name
 ifeq ($(CRYSTAL), INTOSC)
-	PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_$(CRYSTAL)
+	PRJ=Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_$(CRYSTAL)
 else
-	PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_X$(CRYSTAL)MHz
+	PRJ=Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_X$(CRYSTAL)MHz
 endif
 
 # C files
-SRCS		= $(wildcard src/*.c)
+SRCS=$(wildcard src/*.c)
 
 # SDCC compiler
 ifeq ($(COMPILER), SDCC)
 
-	CC		= $(SDCCDIR)/sdcc
-	OBJS	= $(SRCS:src/%.c=obj/%.o)
-
+	CC		= $(SDCCDIR)\sdcc.exe
+	#OBJS	= $(SRCS:src\%.c=obj\%.o)
+	#OBJS	= $(patsubst src\%.c,obj\%.o,$(wildcard src\*.c))
+	OBJS	= $(patsubst %.c,%.o,$(SRCS))
+	#OBJS	= obj\main.o obj\usb.o obj\vectors.o obj\serial.o
+	
 	PFLAGS	= -V -m$(ARCH) -p$(CPU) \
 			  --use-non-free \
 			  --fomit-frame-pointer \
@@ -181,8 +189,8 @@ ifeq ($(COMPILER), SDCC)
 # XC8 compiler
 else
 
-	CC		= $(XC8DIR)/xc8
-	OBJS	= $(SRCS:src/%.c=obj/%.p1)
+	CC		= $(XC8DIR)\xc8.exe
+	OBJS	= $(SRCS:src\%.c=obj\%.p1)
 
 	PFLAGS	= --CHIP=$(CPU) \
 			  -P -N64 -V -M -Q -G \
@@ -233,7 +241,7 @@ ifeq ($(COMPILER), SDCC)
 # -s : we use our own linker script and startup code (work)
 # -u : add macro value for script.
 # --no-crt : do not link the default run-time modules
-LDFLAGS		= -Wl-uAPPSTART=$(APPSTART),-slkr/boot4.$(CPU).lkr \
+LDFLAGS		= -Wl-uAPPSTART=$(APPSTART),-slkr\boot4.$(CPU).lkr \
 			  --no-crt
 
 else
@@ -242,6 +250,7 @@ else
 #LDFLAGS		= --runtime=+init,+clib,+clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
 
 	ifeq ($(FAM), 16f)
+	
 		LDFLAGS		= --runtime=-init,+clib,-clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
 					  --double=24 --float=24 \
 					  --output=intel \
@@ -249,7 +258,9 @@ else
 					  --rom=0-$(BOOTEND) \
 					  -L-AUSB=$(USBRAM) \
 					  -L-pusbram=USB
+
 	else
+
 		LDFLAGS		= --runtime=-init,+clib,-clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
 					  --double=24 --float=24 \
 					  --output=intel \
@@ -261,11 +272,16 @@ else
 					  -L-pusbram=USB \
 					  -L-psmallconst=SMALLCONST \
 					  -L-pmediumconst=MEDIUMCONST
+
 	endif
+
 endif
 
 ########################################################################
-#	RULES                                                              #
+# RULES                                                                #
+########################################################################
+# cible: dependance                                                    #
+#	commandes                                                          #
 ########################################################################
 #                                                                      #
 #	$@ 	Le nom de la cible                                             #
@@ -275,45 +291,43 @@ endif
 #	$* 	Le nom du fichier sans suffixe                                 #
 #                                                                      #
 ########################################################################
+	#$(RM) -f obj\*.o  obj\*.asm obj\*.lst
+	#$(RM) -f obj\*.d  obj\*.p1 obj\*.pre obj\*.as obj\*.sdb
 
-all: clean $(PRJ).hex
+all: start $(PRJ).hex cleanup 
 
-clean:
-	@echo "***********************************************"
-	@echo "\033[1m$(PRJ)\033[0m"
-	@echo "***********************************************"
-	@rm -f obj/*.o  obj/*.asm obj/*.lst
-	@rm -f obj/*.d  obj/*.p1 obj/*.pre obj/*.as obj/*.sdb
-	@rm -f hex/*.cod hex/*.map hex/*.lst hex/*.rlf hex/*.sdb
+start:
+	@echo ***********************************************
+	@echo $(PRJ)
+	@echo ***********************************************
 
-ifeq ($(COMPILER),XC8)
+cleanup:
+	@$(RM) hex\*.cmf hex\*.elf hex\*.hxl hex\*.obj hex\*.sym hex\*.sdb hex\*.cod hex\*.rlf
+	@$(RM) hex\*.d hex\*.p1 hex\*.pre hex\*.o
+	@$(RM) hex\*.map hex\*.lst hex\*.asm hex\*.cod
+	@$(RM) src\*.asm src\*.lst src\*.o
 
-# Compile and assemble all the src/.c in obj/.p1
-obj/%.p1: src/%.c
-	@$(CC) --pass1 $(CFLAGS) $(LDFLAGS) $(SRCS) -Oobj/
+ifeq ($(COMPILER), XC8)
 
-# Links the modules all together
-$(PRJ).hex: $(OBJS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -Ohex/$(PRJ).hex
+$(PRJ).hex: $(SRCS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) $^ -Ohex\$@
 
 else
 
-# Compile and assemble all the src/.c in obj/.o
-obj/%.o: src/%.c
-	@$(CC) $(CFLAGS) $(AFLAGS) -c $< -o$@
-	#@$(CC) $(CFLAGS) $(AFLAGS) -c $(SRCS) -oobj/ 
+# Compile and assemble all the src\.c in obj\.o
+src\%.o: src\%.c
+	$(CC) $(CFLAGS) $(AFLAGS) -c $< -o $@
 
 # Links the modules all together
 $(PRJ).hex: $(OBJS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) -ohex/$@ $^
-	#@$(CC) $(CFLAGS) $(LDFLAGS) -ohex/$(PRJ).hex $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS)  $^ -ohex/$@
 
 endif
 
 # Code size
 size:
-	@echo -e "\033[1mCode size :\033[0m"
-	@tools/codesize.py hex/$(PRJ)
+	@echo "Code size :"
+	@tools\codesize.py hex\$(PRJ)
 
 # Programs the Chip
 # cf. IPECMD.txt
@@ -323,32 +337,32 @@ size:
 # -F<file>		Hex File Selection		None 
 # -M			Program Device			P,E,I,C - Nothing = all
 # -W			Externally power target	Power from PM3 
-#	tools/picpgm -port USB -pic PIC$(CPU) -p_code ../hex/$(PRJ).hex
+#	tools\picpgm -port USB -pic PIC$(CPU) -p_code ..\hex\$(PRJ).hex
 
 upload:
 	@$(JAVA) -jar $(IPE) \
 			 -M \
 			 -TP$(PROGRAMMER) \
 			 -P$(CPU) \
-			 -Fhex/$(PRJ).hex
-	@rm -f -v MPLABXLog.* > /dev/null
-	@rm -f -v log.* > /dev/null
+			 -Fhex\$(PRJ).hex
+	@$(RM) -v MPLABXLog.* > NUL
+	@$(RM) -v log.* > NUL
 
 #			 -GP$(APPSTART)-1FFF \
 #			 -GP0008-1FFF \
-#			  > hex/memory.hex
+#			  > hex\memory.hex
 
 read:
 	@$(JAVA) -jar $(IPE) \
-			 -GFhex/memory.hex \
+			 -GFhex\memory.hex \
 			 -TP$(PROGRAMMER) \
 			 -P$(CPU)
-	@rm -f -v MPLABXLog.* > /dev/null
-	@rm -f -v log.* > /dev/null
+	@$(RM) -v MPLABXLog.* > NUL
+	@$(RM) -v log.* > NUL
 
 # Desassemble
 desaboot:
-	@$(SDCCDIR)/gpdasm -p$(CPU) hex/$(PRJ).hex
+	@$(SDCCDIR)\gpdasm.exe -p$(CPU) hex\$(PRJ).hex
 
 desamem:
-	@$(SDCCDIR)/gpdasm -p$(CPU) hex/memory.hex
+	@$(SDCCDIR)\gpdasm.exe -p$(CPU) hex\memory.hex

@@ -1,1 +1,0 @@
-                         obj/vectors.d  obj/vectors.p1:  src/vectors.c src/vectors.h
