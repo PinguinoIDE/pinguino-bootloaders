@@ -137,16 +137,6 @@ stack) and your project will run only a short while.
         __endasm;
     }
 
-    // 0x0004 --> free
-
-    // 0x0008
-    void high_priority_isr(void) __naked __interrupt 1
-    {
-        __asm
-        goto    APPSTART + PIC18F_HI_ISR_OFFSET
-        __endasm;
-    }
-
     // 0x000C (if 0x0000 - 0x0C00 is not protected in the linker file) 
 
     void startup(void)
@@ -164,6 +154,28 @@ stack) and your project will run only a short while.
         __endasm;
     }
 
+    #ifdef __SDCC_pic14
+
+    // 0x0004
+    void PIC16F_isr(void) __naked __interrupt 1
+    {
+        __asm
+        goto    APPSTART + PIC16F_ISR_OFFSET
+        __endasm;
+    }
+
+    #else
+    
+    // 0x0004 --> free
+
+    // 0x0008
+    void high_priority_isr(void) __naked __interrupt 1
+    {
+        __asm
+        goto    APPSTART + PIC18F_HI_ISR_OFFSET
+        __endasm;
+    }
+
     // 0x0018
     void low_priority_isr(void) __naked __interrupt 2
     {
@@ -173,5 +185,7 @@ stack) and your project will run only a short while.
     }
 
     // 0x001C --> start of bootloader code (cf. linker file)
+
+    #endif
 
 #endif

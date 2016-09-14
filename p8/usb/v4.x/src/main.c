@@ -37,12 +37,12 @@
 u8 userApp = TRUE;
 #endif
 
-extern volatile u8 deviceState;
-extern volatile u8 currentConfiguration;
-extern volatile u8 controlTransferBuffer[EP0_BUFFER_SIZE];
-extern volatile BufferDescriptorTable ep_bdt[2*NB_ENDPOINTS];
-extern volatile setupPacketStruct SetupPacket;
-extern volatile allcmd bootCmd;
+extern u8 deviceState;
+extern u8 currentConfiguration;
+extern u8 controlTransferBuffer[EP0_BUFFER_SIZE];
+extern BufferDescriptorTable ep_bdt[2*NB_ENDPOINTS];
+extern setupPacketStruct SetupPacket;
+extern allcmd bootCmd;
 
 /***********************************************************************
     BOOTLOADER COMMANDS
@@ -62,12 +62,21 @@ extern volatile allcmd bootCmd;
     |________________|   63
 
 ***********************************************************************/
-
+/*
 #define BOOT_READ_VERSION               0x00
 #define BOOT_READ_FLASH                 0x01
 #define BOOT_WRITE_FLASH                0x02
 #define BOOT_ERASE_FLASH                0x03
 #define BOOT_RESET_DEVICE               0xFF
+*/
+enum
+{
+    BOOT_READ_VERSION = 0x00,
+    BOOT_READ_FLASH,
+    BOOT_WRITE_FLASH,
+    BOOT_ERASE_FLASH,
+    BOOT_RESET_DEVICE = 0xFF
+};
 
 /***********************************************************************
  * Jump to user application
@@ -142,7 +151,7 @@ void main(void)
     // -----------------------------------------------------------------
 
 /**********************************************************************/
-    #if defined(__16F1459)
+    #if defined(__16f1459)
 /**********************************************************************/
 
         //OSCTUNE = 0;
@@ -305,15 +314,16 @@ void main(void)
     // -----------------------------------------------------------------
 
     #if (BOOT_USE_DEBUG)
-    //SerialInit(9600);
-    SerialInit(115200);
+    SerialInit(9600);
+    //SerialInit(115200);
+    SerialPrintLN("***");
     /*
     SerialPrint("*** PINGUINO BOOTLOADER v");
     SerialPrintNumber(MAJOR_VERSION, 10);
     SerialPrintChar('.');
     SerialPrintNumber(MINOR_VERSION, 10);
-    */
     SerialPrintLN(" ***");
+    */
     #endif
     
     // Init. led
@@ -353,10 +363,13 @@ void main(void)
     #else
 /**********************************************************************/
 
-    if (UsbOff() || RCONbits.IPEN)  // If not a MCLR reset
-    {                               // NB: On PIC18F, MCLR reset clears the IPEN bit
-        //RCON |= 0x93;               // 0b10010011; // clears IPEN and NOT_POR
-        RCONbits.IPEN = 1;
+    RCONbits.IPEN = 1;              // Enables priority levels on
+                                    // interrupts (cf. vectors.c/.h)
+                                    // MUST BE SET OR INT. WON'T WORK !
+                                    // NB: MCLR clears this bit
+
+    if (UsbOff() || !RCONbits.NOT_POR)// If Power-On-Reset
+    {
         RCONbits.NOT_POR = 1;
         RCONbits.NOT_BOR = 1;
         
@@ -380,7 +393,7 @@ void main(void)
         #endif
     }
 
-    // Init. USB Device
+    // USB bootloader's code start here
     // -----------------------------------------------------------------
     
     #if 0 //(BOOT_USE_DEBUG)
@@ -396,25 +409,21 @@ void main(void)
 
     #if (SPEED == LOW_SPEED)
 
-    UCFG = 0x10;                // 0b00010000 low speed mode
-    /*
-    #ifdef __XC8__
-    UCFG = _UCFG_UPUEN_MASK;
-    #else
-    UCFG = _UPUEN;
-    #endif
-    */
+        //UCFG = 0x10;                // 0b00010000 low speed mode
+        #ifdef __XC8__
+        UCFG = _UCFG_UPUEN_MASK;
+        #else
+        UCFG = _UPUEN;
+        #endif
 
     #else
 
-    UCFG = 0x14;                // 0b00010100 full speed mode
-    /*
-    #ifdef __XC8__
-    UCFG = _UCFG_UPUEN_MASK | _UCFG_FSEN_MASK;
-    #else
-    UCFG = _UPUEN | _FSEN;
-    #endif
-    */
+        //UCFG = 0x14;                // 0b00010100 full speed mode
+        #ifdef __XC8__
+        UCFG = _UCFG_UPUEN_MASK | _UCFG_FSEN_MASK;
+        #else
+        UCFG = _UPUEN | _FSEN;
+        #endif
 
     #endif
 
@@ -436,7 +445,7 @@ void main(void)
 
     TMR1L = 0;                      // clear Timer 1 counter because
     TMR1H = 0;                      // counter get an unknown value at reset
-    T1CON = 0x31; //0b00110001;             // clock source is Fosc/4 (0b00)
+    T1CON = 0x31; //0b00110001;     // clock source is Fosc/4 (0b00)
                                     // prescaler 8 (0b11), timer 1 On 
 
     // Wait for request from host
@@ -466,7 +475,7 @@ void UsbBootCmd(void)
 /**********************************************************************/
 
     // PIC16F handle data in 14-bit chunks
-    u8  counter = bootCmd.len / WORDSIZE;
+    u8  counter = bootCmd.len >> 1;// / WORDSIZE;
     u16 *pdata  = (u16*)bootCmd.xdat;
 
 /**********************************************************************/
@@ -481,13 +490,11 @@ void UsbBootCmd(void)
     #endif
 /**********************************************************************/
     
-    #if 0 //(BOOT_USE_DEBUG)
-    SerialPrint("CMD=");
-    SerialPrintNumber(bootCmd.cmd, 10);
-    SerialPrint("\r\n");
-    #endif
-
     LedOn();                        // Whatever the command, keep Led On
+
+    //LedOn();
+    //while (1);
+
     //T1CON = 0;                    // and disable timer 1
  
     EP_IN_BD(1).CNT = 0;            // Clears the number of byte(s) to return
@@ -499,7 +506,7 @@ void UsbBootCmd(void)
     #if defined(__16F1459)
 /**********************************************************************/
 
-    PMADRH = bootCmd.addrh;        // load table pointer
+    PMADRH = bootCmd.addrh;         // load table pointer
     PMADRL = bootCmd.addrl;
 
 /**********************************************************************/
@@ -545,6 +552,12 @@ void UsbBootCmd(void)
     #endif
 /**********************************************************************/
 
+    #if 0 //(BOOT_USE_DEBUG)
+    SerialPrint("CMD=");
+    SerialPrintNumber(bootCmd.cmd, 10);
+    SerialPrint("\r\n");
+    #endif
+
 ///---------------------------------------------------------------------
     if (bootCmd.cmd ==  BOOT_RESET_DEVICE)
 ///---------------------------------------------------------------------
@@ -586,11 +599,11 @@ void UsbBootCmd(void)
             *pdata++ = PMDAT;
             PMADR++;
         }
-        
+
 /**********************************************************************/
         #else
 /**********************************************************************/
-        
+
         #if defined(__18f13k50) || defined(__18f14k50) || \
             defined(__18f2455)  || defined(__18f4455)  || \
             defined(__18f2550)  || defined(__18f4550)  || \
@@ -598,7 +611,8 @@ void UsbBootCmd(void)
             defined(__18f25k50) || defined(__18f45k50)
             
         // Access Configuration registers regardless of EEPGD
-        EECON1bits.CFGS = (bootCmd.addru & 0x20) ? 1:0;
+        //EECON1bits.CFGS = (bootCmd.addru & 0x20) ? 1:0;
+        EECON1bits.CFGS = 1;
 
         #endif
         
@@ -708,7 +722,7 @@ void UsbBootCmd(void)
         /// n   : write [address + 32n] + 64 bytes
         /// which is not possible. That's why we use 2-byte write instead.
         
-        counter = bootCmd.len / WORDSIZE; //>> 1; // 1 word = 2 bytes
+        counter = bootCmd.len >> 1; // / WORDSIZE; //>> 1; // 1 word = 2 bytes
         while (counter--)
         {
             //**********************************************************

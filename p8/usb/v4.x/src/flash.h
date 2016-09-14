@@ -8,13 +8,15 @@
     Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
 ***********************************************************************/
 
+#ifndef _FLASH_H
+#define _FLASH_H
+
 /**********************************************************************/
-#if defined(__16F1459)
+#if defined(__16f1459)
 /**********************************************************************/
 
     #define FLASHBLOCKSIZE          32      // 32 words
     
-    /*
     #define Unlock()                {                       \
                                       PMCON2 = 0x55;        \
                                       PMCON2 = 0xAA;        \
@@ -22,8 +24,8 @@
                                       NOP();                \
                                       NOP();                \
                                     }
-    */
 
+    /*
     #define Unlock()    { \
     asm("BANKSEL PMCON2          ;                                  ");\
     asm("MOVLW   0x55            ; PMCON2 = 0x55                    ");\
@@ -34,6 +36,7 @@
     asm("NOP                     ;                                  ");\
     asm("NOP                     ;                                  ");\
     }
+    */
     
     #define NextBlock() { \
     asm("BANKSEL PMADRL          ; Select Bank for registers        ");\
@@ -138,3 +141,5 @@
 /**********************************************************************/
 #endif
 /**********************************************************************/
+
+#endif //_FLASH_H

@@ -124,8 +124,8 @@ BOOT_VER_MAJOR                  =    3
 
 BOOT_REV1                       =    5
 BOOT_REV2                       =    6
-BOOT_DEV1                       =    5
-BOOT_DEV2                       =    6
+BOOT_DEV1                       =    7
+BOOT_DEV2                       =    8
 
 # Bootloader commands
 #-----------------------------------------------------------------------
@@ -291,7 +291,7 @@ def initDevice(device):
                 device.detach_kernel_driver(INTERFACE_ID)
             except usb.core.USBError as e:
                 sys.exit("Aborting: could not detach kernel driver: %s" % str(e))
-        else:
+        #else:
             #print("No kernel driver attached")
 
         # The call to set_configuration must come before
@@ -417,12 +417,13 @@ def getDeviceID(handle, proc):
     else:
         # REVISION & DEVICE ID
         usbBuf = readFlash(handle, 0x3FFFFE, 2)
+        print usbBuf
         if usbBuf == ERR_USB_WRITE or usbBuf is None:
             return ERR_USB_WRITE, ERR_USB_WRITE
         #print("BUFFER =", usbBuf
-        dev1 = usbBuf[BOOT_DEV1]
+        dev1 = usbBuf[BOOT_REV1]
         #print("DEV1 =", dev1
-        dev2 = usbBuf[BOOT_DEV2]
+        dev2 = usbBuf[BOOT_REV2]
         #print("DEV2 =", dev2
         device_id = (int(dev2) << 8) + int(dev1)
         device_id  = device_id & 0xFFE0

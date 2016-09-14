@@ -18,6 +18,10 @@
 
         #include <xc.h>
 
+        #ifdef _16F1459
+            #define __16f1459
+        #endif
+        
         #ifdef _18F13K50
             #define __18f13k50
         #endif
@@ -71,11 +75,19 @@
 
     #else // SDCC
 
-        #include <pic18fregs.h>
+        #ifdef __SDCC_pic14
+            #include <pic16regs.h>
+        #else
+            #include <pic18fregs.h>
+        #endif
+
+        #ifdef __SDCC_PIC16F1459
+            #define __16f1459
+        #endif
 
     #endif
 
-    #ifdef _16F1459
+    #ifdef __16f1459
         #define SERIAL      {'1','6','F','1','4','5','9'}
     #endif
     #ifdef __18f13k50

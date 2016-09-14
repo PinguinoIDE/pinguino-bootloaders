@@ -166,14 +166,14 @@ const u8 * const string_descriptor[] =
 };
 
 // Global variables
-volatile u8 deviceState = DETACHED;
+u8 deviceState = DETACHED;
 //u8 deviceAddress = 0;
-volatile u8 currentConfiguration = 0;
-volatile u8 ctrlTransferStage;               // Holds the current stage in a control transfer
-volatile u8 requestHandled;                  // Set to 1 if request was understood and processed.
-volatile u8 *pBufferToHost;                  // Data to send to the host
-volatile u8 *pBufferFromHost;                // Data from the host
-volatile u16 wCount;                         // Number of bytes of data
+u8 currentConfiguration = 0;
+u8 ctrlTransferStage;               // Holds the current stage in a control transfer
+u8 requestHandled;                  // Set to 1 if request was understood and processed.
+u8 *pBufferToHost;                  // Data to send to the host
+u8 *pBufferFromHost;                // Data from the host
+u16 wCount;                         // Number of bytes of data
 
 /***********************************************************************
  * Buffer Descriptors Table (see datasheet p171) must be placed at
@@ -184,23 +184,28 @@ volatile u16 wCount;                         // Number of bytes of data
 #ifdef __XC8__
     #define BD_ADDR_TAG @##BD_ADDR
     // Each endpoint has IN and OUT direction
-    volatile BufferDescriptorTable ep_bdt[2*NB_ENDPOINTS] BD_ADDR_TAG;
-    #if defined(__16F1459)
+    BufferDescriptorTable ep_bdt[2*NB_ENDPOINTS] BD_ADDR_TAG;
+    #if defined(__16f1459)
         u8 __section("usbram") dummy; // to prevent a compilation error
-        volatile setupPacketStruct SetupPacket @ 0x2010; //0x2080;
-        volatile u8 controlTransferBuffer[EP0_BUFFER_SIZE] @ 0x2050; //0x20C0;
+        setupPacketStruct SetupPacket @ 0x2010; //0x2080;
+        u8 controlTransferBuffer[EP0_BUFFER_SIZE] @ 0x2050; //0x20C0;
     #else
-        volatile setupPacketStruct __section("usbram") SetupPacket;             //0x500
-        volatile u8 __section("usbram") controlTransferBuffer[EP0_BUFFER_SIZE]; //0x540
+        setupPacketStruct __section("usbram") SetupPacket;             //0x500
+        u8 __section("usbram") controlTransferBuffer[EP0_BUFFER_SIZE]; //0x540
     #endif
 #else // SDCC
-    volatile BufferDescriptorTable __at BD_ADDR ep_bdt[2*NB_ENDPOINTS];
-    #pragma udata usbram5 SetupPacket controlTransferBuffer
-    volatile setupPacketStruct SetupPacket;
-    volatile u8 controlTransferBuffer[EP0_BUFFER_SIZE];
+    BufferDescriptorTable __at BD_ADDR ep_bdt[2*NB_ENDPOINTS];
+    #if defined(__16f1459)
+        setupPacketStruct __at 0x2010 SetupPacket;
+        u8 __at 0x2050 controlTransferBuffer[EP0_BUFFER_SIZE];
+    #else
+        #pragma udata usbram5 SetupPacket controlTransferBuffer
+        setupPacketStruct SetupPacket;
+        u8 controlTransferBuffer[EP0_BUFFER_SIZE];
+    #endif
 #endif
 
-volatile allcmd bootCmd;
+allcmd bootCmd;
 
 /***********************************************************************
  * Configures the buffer descriptor for endpoint 0
@@ -232,8 +237,12 @@ void UsbSetupStage(void)
 void UsbDataInStage(void)
 {
     // bufferSize <= EP0_BUFFER_SIZE <= 64
+    #if (BOOT_USE_LARGE_EP)
+    u16 bufferSize;
+    #else
     u8 bufferSize;
-
+    #endif
+    
     #if 0//(BOOT_USE_DEBUG)
     SerialPrintLN("Data IN");
     #endif
@@ -248,11 +257,16 @@ void UsbDataInStage(void)
     wCount = wCount - bufferSize;
 
     // Clear BC8 and BC9
-    //EP_IN_BD(0).STAT.val &= ~(BDS_BC8 | BDS_BC9);
+    EP_IN_BD(0).STAT.val &= ~(BDS_BC8 | BDS_BC9);
+
+    #if (BOOT_USE_LARGE_EP)
     // Load the high two bits of the byte count into BC8:BC9
-    //EP_IN_BD(0).STAT.val |= (u8)((bufferSize & 0x0300) >> 8);
-    //EP_IN_BD(0).CNT = (u8)(bufferSize & 0xFF);
+    EP_IN_BD(0).STAT.val |= (u8)((bufferSize & 0x0300) >> 8);
+    EP_IN_BD(0).CNT = (u8)(bufferSize & 0xFF);
+    #else
     EP_IN_BD(0).CNT = bufferSize;
+    #endif
+    
     EP_IN_BD(0).ADDR = (u16)&controlTransferBuffer;
 
     // Move data to the USB output buffer
@@ -266,7 +280,7 @@ void UsbDataInStage(void)
  * Display the USB error
  **********************************************************************/
 
-#if (BOOT_USE_DEBUG)
+#if 0 //(BOOT_USE_DEBUG)
 void UsbErrorEvent(void)
 {
     SerialPrint("ERROR : UEIR=0b");
@@ -285,7 +299,7 @@ void UsbErrorEvent(void)
  
 void UsbResetEvent(void)
 {
-    #if 0//(BOOT_USE_DEBUG)
+    #if (BOOT_USE_DEBUG)
     SerialPrintLN("Reseted");
     #endif
 
@@ -367,7 +381,8 @@ void UsbSuspendEvent(void)
 
 void UsbTransEvent(void)
 {
-    u8 bufferSize;
+    //u8 bufferSize;
+    u16 bufferSize;
     u8 pid, ep = USTAT >> 3;            // Get encoded number (bit 6-3)
                                         // of the last active Endpoint
 
@@ -376,9 +391,10 @@ void UsbTransEvent(void)
         //if (USTATbits.DIR == OUT)
         if (!USTATbits.DIR)
         {
-            #if (BOOT_USE_DEBUG)
+            #if 0//(BOOT_USE_DEBUG)
             SerialPrintLN("EP1 OUT");
             #endif
+
             UsbBootCmd();
         }
     }
@@ -422,7 +438,7 @@ void UsbTransEvent(void)
                 // Class or Vendor requests have to be handled seperately.
                 if (SetupPacket.bmRequestType & 0x60)
                 {
-                    #if (BOOT_USE_DEBUG)
+                    #if 0//(BOOT_USE_DEBUG)
                     SerialPrint("NOSTDREQ:");
                     //SerialPrintNumber((SetupPacket.bmRequestType & 0x60)>>5, 10);
                     SerialPrint("\r\n");
@@ -436,7 +452,7 @@ void UsbTransEvent(void)
                 // transaction uses address 0.
                 if (SetupPacket.bRequest == SET_ADDRESS)
                 {
-                    #if (BOOT_USE_DEBUG)
+                    #if 0//(BOOT_USE_DEBUG)
                     SerialPrintLN("SET_ADDR");
                     #endif
                     requestHandled = 1;
@@ -453,7 +469,7 @@ void UsbTransEvent(void)
 
                         if (SetupPacket.wValue1 == DEVICE_DESCRIPTOR)
                         {
-                            #if (BOOT_USE_DEBUG)
+                            #if 0//(BOOT_USE_DEBUG)
                             SerialPrintLN("DEV_DESC");
                             #endif
                             requestHandled = 1;
@@ -463,7 +479,7 @@ void UsbTransEvent(void)
 
                         else if (SetupPacket.wValue1 == CONFIGURATION_DESCRIPTOR)
                         {
-                            #if (BOOT_USE_DEBUG)
+                            #if 0//(BOOT_USE_DEBUG)
                             SerialPrintLN("CONF_DESC");
                             #endif
                             requestHandled = 1;
@@ -473,7 +489,7 @@ void UsbTransEvent(void)
 
                         else if (SetupPacket.wValue1 == STRING_DESCRIPTOR)
                         {
-                            #if (BOOT_USE_DEBUG)
+                            #if 0//(BOOT_USE_DEBUG)
                             SerialPrintLN("STR_DESC");
                             #endif
                             requestHandled = 1;
@@ -494,7 +510,7 @@ void UsbTransEvent(void)
 
                 else if (SetupPacket.bRequest == SET_CONFIGURATION)
                 {
-                    #if (BOOT_USE_DEBUG)
+                    #if 0//(BOOT_USE_DEBUG)
                     SerialPrintLN("SET_CONF");
                     #endif
                     requestHandled = 1;
@@ -523,6 +539,7 @@ void UsbTransEvent(void)
                         
                         #if (BOOT_USE_BULK)
                             //UsbBulkInitEndpoint();
+                            //UEP1 = 0b00011110;
                             UEP1 = EP_CTRL | EP_OUT | EP_IN | HSHK_EN; 
                             //UEP1 = EP_OUT | EP_IN | HSHK_EN; 
 
@@ -543,7 +560,7 @@ void UsbTransEvent(void)
 
                 else if (SetupPacket.bRequest == GET_CONFIGURATION)
                 {
-                    #if (BOOT_USE_DEBUG)
+                    #if 0//(BOOT_USE_DEBUG)
                     SerialPrintLN("GET_CONF");
                     #endif
                     requestHandled = 1;
@@ -553,7 +570,7 @@ void UsbTransEvent(void)
 
                 else if (SetupPacket.bRequest == GET_INTERFACE)
                 {
-                    #if (BOOT_USE_DEBUG)
+                    #if 0//(BOOT_USE_DEBUG)
                     SerialPrintLN("GET_INTF");
                     #endif
                     // No support for alternate interfaces.
@@ -652,9 +669,12 @@ void UsbTransEvent(void)
             
             else if (ctrlTransferStage == DATA_OUT_STAGE)
             {
-                //bufferSize = ((0x03 & EP_OUT_BD(0).STAT.val) << 8) | EP_OUT_BD(0).CNT;
+                #if (BOOT_USE_LARGE_EP)
+                bufferSize = ((0x03 & EP_OUT_BD(0).STAT.val) << 8) | EP_OUT_BD(0).CNT;
+                #else
                 bufferSize = EP_OUT_BD(0).CNT;
-
+                #endif
+                
                 // Accumulate total number of bytes read
                 wCount = wCount + bufferSize;
 
@@ -759,27 +779,27 @@ void UsbUpdate(void)
             UCON = 0;
             //UIE = 0;
             deviceState = DETACHED;
-            #if (BOOT_USE_DEBUG)
+            #if 0//(BOOT_USE_DEBUG)
             SerialPrintLN("Detached");
             #endif
 
             // No USB, No User App. so let's go to sleep mode
             if (userApp == FALSE)
             {
-                #if (BOOT_USE_DEBUG)
+                #if 0//(BOOT_USE_DEBUG)
                 SerialPrintLN("Sleep mode");
                 #endif
                 
                 UsbSuspendEvent();
                 
-                #if (BOOT_USE_DEBUG)
+                #if 0//(BOOT_USE_DEBUG)
                 SerialPrintLN("Woken up");
                 #endif
             }
             
             else
             {
-                #if (BOOT_USE_DEBUG)
+                #if 0//(BOOT_USE_DEBUG)
                 SerialPrintLN("User app");
                 #endif
                 UsbBootExit();                  // Jump to user app.
@@ -820,7 +840,7 @@ void UsbProcessEvents(void)
 
     if (UIRbits.ACTVIF)
     {
-        #if 0//(BOOT_USE_DEBUG)
+        #if (BOOT_USE_DEBUG)
         SerialPrintLN("Activated");
         #endif
 
@@ -833,7 +853,7 @@ void UsbProcessEvents(void)
     #if (BOOT_USE_LOWPOWER)
     if (UIRbits.RESUMEIF)
     {
-        #if 0//(BOOT_USE_DEBUG)
+        #if (BOOT_USE_DEBUG)
         SerialPrintLN("Resumed");
         #endif
 
@@ -891,7 +911,7 @@ void UsbProcessEvents(void)
     }
 
     // Display error
-    #if (BOOT_USE_DEBUG)
+    #if 0 //(BOOT_USE_DEBUG)
     if (UIRbits.UERRIF)
     {
         UsbErrorEvent();

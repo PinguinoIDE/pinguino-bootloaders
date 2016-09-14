@@ -44,8 +44,9 @@ PROGRAMMER	= PK3
 #	COMPILERS TOOLCHAIN LOCATION                                       #
 ########################################################################
 
+XC8VER		= 1.35
 SDCCDIR		= /opt/pinguino/p8/bin
-XC8DIR		= /opt/microchip/xc8/v1.38/bin
+XC8DIR		= /opt/microchip/xc8/v$(XC8VER)/bin
 MPLABDIR	= /opt/microchip/mplabx/v3.30
 JAVADIR		= $(MPLABDIR)/sys/java/jre1.8.0_65/bin
 JAVA		= $(JAVADIR)/java
@@ -57,6 +58,7 @@ IPE			= $(MPLABDIR)/mplab_ipe/ipecmd.jar
 
 BOOT_USE_DEBUG=0
 BOOT_USE_LOWPOWER=0
+BOOT_USE_LARGE_EP=0
 BOOT_USE_HID=0
 BOOT_USE_UART=0
 BOOT_USE_CDC=0
@@ -134,22 +136,24 @@ PID			= 0xFEAA
 FAM			= $(findstring 16f, $(CPU))
 
 ifeq ($(FAM), 16f)
-	ARCH	= pic14
-	USBRAM	= 2080h-21FFh
 	APPSTART= 0x500
-	COMPILER= XC8
-	OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
+	#APPSTART= 0x800
+	ifeq ($(COMPILER), SDCC)
+		ARCH	= pic14
+		OPTIMIZ	=
+	else
+		USBRAM	= 2080h-21FFh
+		#COMPILER= XC8
+		OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
+	endif
 else
-	ARCH	= pic16
-	USBRAM	= 500h-57Fh
 	APPSTART= 0x0C00
 	ifeq ($(COMPILER), SDCC)
-		#APPSTART	= 0x0C00
-		OPTIMIZ		= --optimize-df --optimize-cmp --obanksel=9 --denable-peeps
+		ARCH	= pic16
+		OPTIMIZ	= --optimize-df --optimize-cmp --obanksel=9 --denable-peeps
 	else
-		#APPSTART	= 0x0800
-		#OPTIMIZ		= --opt=default,+asm,+asmfile,-speed,+space,-debug
-		OPTIMIZ		= --opt=default
+		USBRAM	= 500h-57Fh
+		OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
 	endif
 endif
 
@@ -159,7 +163,7 @@ BOOTEND		= $(shell printf "%x" $(BOOTENDDEC))
 
 # Project name
 ifeq ($(CRYSTAL), INTOSC)
-	PRJ		= $(BOOTEND)-Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_$(CRYSTAL)
+	PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_$(CRYSTAL)
 else
 	PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_X$(CRYSTAL)MHz
 endif
@@ -178,14 +182,13 @@ ifeq ($(COMPILER), SDCC)
 			  --fomit-frame-pointer \
 			  --std-c99
 
-# XC8 compiler
+# XC8 compiler (add -V for verbose mode)
 else
 
 	CC		= $(XC8DIR)/xc8
-	OBJS	= $(SRCS:src/%.c=obj/%.p1)
 
 	PFLAGS	= --CHIP=$(CPU) \
-			  -P -N64 -V -M -Q -G \
+			  -P -N64 -M -Q -G \
 			  --warn=0 \
 			  --asmlist \
 			  --addrqual=reject \
@@ -212,6 +215,7 @@ CFLAGS		= $(PFLAGS) $(OPTIMIZ) \
 			  -DMINOR_VERSION=$(MIN_VER) \
 			  -DBOOT_USE_DEBUG=$(BOOT_USE_DEBUG) \
 			  -DBOOT_USE_LOWPOWER=$(BOOT_USE_LOWPOWER) \
+			  -DBOOT_USE_LARGE_EP=$(BOOT_USE_LARGE_EP) \
 			  -DBOOT_USE_HID=$(BOOT_USE_HID) \
 			  -DBOOT_USE_UART=$(BOOT_USE_UART) \
 			  -DBOOT_USE_CDC=$(BOOT_USE_CDC) \
@@ -276,25 +280,20 @@ endif
 #                                                                      #
 ########################################################################
 
-all: clean $(PRJ).hex
+all: titre $(PRJ).hex 
 
-clean:
+titre:
 	@echo "***********************************************"
 	@echo "\033[1m$(PRJ)\033[0m"
 	@echo "***********************************************"
-	@rm -f obj/*.o  obj/*.asm obj/*.lst
-	@rm -f obj/*.d  obj/*.p1 obj/*.pre obj/*.as obj/*.sdb
-	@rm -f hex/*.cod hex/*.map hex/*.lst hex/*.rlf hex/*.sdb
+
+clean:
+	@find hex -maxdepth 1 -not -regex ".*hex" -type f -exec rm -f {} \;
 
 ifeq ($(COMPILER),XC8)
 
-# Compile and assemble all the src/.c in obj/.p1
-obj/%.p1: src/%.c
-	@$(CC) --pass1 $(CFLAGS) $(LDFLAGS) $(SRCS) -Oobj/
-
-# Links the modules all together
-$(PRJ).hex: $(OBJS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -Ohex/$(PRJ).hex
+$(PRJ).hex: $(SRCS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) $^ -Ohex/$@
 
 else
 

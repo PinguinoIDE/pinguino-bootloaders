@@ -25,7 +25,7 @@
     #define LED_PORT                LATA
     #define LED_TRIS                TRISA
 
-#elif defined(__16F1459)  || \
+#elif defined(__16f1459)  || \
       defined(__18f26j50) || defined(__18f46j50) || \
       defined(__18f26j53) || defined(__18f46j53) || \
       defined(__18f27j53) || defined(__18f47j53)
@@ -47,7 +47,7 @@
     VBUS pin
 ***********************************************************************/
 
-#if   defined(__16F1459)  || \
+#if   defined(__16f1459)  || \
       defined(__18f13k50) || defined(__18f14k50)
 
     // RA0 and RA1 are input only

@@ -39,7 +39,7 @@ void SerialInit(u32 baudrate)
 {
     u16 spbrg = (u16)BaudRateDivisor(48*1000000UL, baudrate);
 
-    #if defined(__16F1459)
+    #if defined(__16f1459)
 
     // 8-bit asynchronous operation
     RCSTA = 0;                  // 8-bit RX (RX9=0)

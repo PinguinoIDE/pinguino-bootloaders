@@ -31,10 +31,20 @@ extern void main(void);
 
     extern int stack_end;
 
+    #ifdef __SDCC_pic14
+
+    void startup(void) __naked;
+    void reset_isr(void) __naked __interrupt 0;
+    void PIC16F_isr(void) __naked __interrupt 1;
+
+    #else
+
     void           startup(void) __naked;
     void         reset_isr(void) __naked __interrupt 0;
     void high_priority_isr(void) __naked __interrupt 1;
     void  low_priority_isr(void) __naked __interrupt 2;
+
+    #endif
 
 #endif
 

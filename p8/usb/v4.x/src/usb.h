@@ -50,7 +50,7 @@ void UsbInDataStage(void);
 
 // USB RAM / Buffer Descriptor Table
 
-#if   defined(__16F1459)
+#if   defined(__16f1459)
     // Datasheet 26.4 :
     // The address of BDnSTAT is accessible in linear data space at
     // 2000h + (4n – 1) with n being the buffer descriptor number.
@@ -196,6 +196,26 @@ typedef struct
 typedef union
 {
     u8 val;
+    struct {
+        /* When receiving from the SIE. (USB Mode) */
+        u8 BC8 : 1;
+        u8 BC9 : 1;
+        u8 PID : 4; /* See enum PID */
+        u8 reserved: 1;
+        u8 UOWN : 1;
+    };
+    struct {
+        /* When giving to the SIE (CPU Mode) */
+        u8 /*BC8*/ : 1;
+        u8 /*BC9*/ : 1;
+        u8 BSTALL : 1;
+        u8 DTSEN : 1;
+        u8 INCDIS : 1;
+        u8 KEN : 1;
+        u8 DTS : 1;
+        u8 /*UOWN*/ : 1;
+    };
+    /*
     struct{
         unsigned BC8:1;
         unsigned BC9:1;
@@ -219,6 +239,7 @@ typedef union
         unsigned PID:4;                 // Packet Identifier 
         unsigned :2;
     };
+    */
 } BDStat;
 
 // Buffer Descriptor Table
