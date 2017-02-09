@@ -385,7 +385,7 @@ void USBCheckCable(void)
         else
         {
             #ifdef DEBUG
-            SerialPrint("> USB cable plugged\r\n");
+            SerialPrint("> USB cable unplugged\r\n");
             #endif
 
             // Disable USB interrupts
@@ -485,7 +485,6 @@ void USBDeviceTasks(void)
             U1PWRCCLR = _U1PWRC_USUSPEND_MASK;
 
             U1OTGIR |= _U1OTGIR_ACTVIF_MASK;
-
         }
     }
     #endif
@@ -1178,9 +1177,8 @@ void USBCheckHIDRequest(void)
                 if (USBActiveConfiguration == 1)
                 {
                     //USBEP0SendROMPtr((const UINT8*)&configDescriptor1 + 18, sizeof(USB_HID_DSC)+3, USB_EP0_INCLUDE_ZERO);
-                    //18 is a magic number.
-                    //It is the offset from start of the configuration
-                    //descriptor to the start of the HID descriptor.
+                    //18 is the offset from start of the configuration descriptor
+                    //to the start of the HID descriptor.
                     inPipe.pSrc.bRom = (const UINT8*)&configDescriptor1 + 18;
                     inPipe.wCount.Val = sizeof(USB_HID_DESCRIPTOR);
                     inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_ROM;

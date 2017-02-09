@@ -96,6 +96,8 @@ pull-up on RB5 and ensure the proper operation of the device.
     #if (CRYSTAL == 12 || CRYSTAL == 48)
 
         #pragma config FOSC = HS        // External oscillator (6, 12 or 48)
+        //#pragma config FOSC = ECH        // External clock High-power mode
+        //#pragma config FOSC = ECCLKOUTH  // External clock High-power mode
 
     #elif   (CRYSTAL == INTOSC)
 
@@ -409,8 +411,8 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config EBTRB = OFF          // Boot Block Table Read Protect (Boot block is not protected from table reads executed in other blocks)
 
 /**********************************************************************/
-#elif defined(__18f26j53) || defined(__18f46j53)|| \
-      defined(__18f27j53) || defined(__18f47j53)|| defined(_18F47J53)
+#elif defined(__18f26j53) || defined(__18f46j53) || \
+      defined(__18f27j53) || defined(__18f47j53)
 /**********************************************************************/
 
     #if (CRYSTAL == INTOSC)             // Internal 8 MHz Osc.
@@ -436,9 +438,9 @@ pull-up on RB5 and ensure the proper operation of the device.
         #elif (CRYSTAL == 48)
             #pragma config PLLDIV = 12
         #else    
-                #error "    ---------------------------------    "
-                #error "    Crystal Frequency Not supported.     "
-                #error "    ---------------------------------    "
+            #error "    ---------------------------------    "
+            #error "    Crystal Frequency Not supported.     "
+            #error "    ---------------------------------    "
         #endif
 
     #endif

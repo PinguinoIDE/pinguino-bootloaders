@@ -24,11 +24,12 @@
 
     Author:         Regis Blanchot <rblanchot@gmail.com>
     --------------------------------------------------------------------
-    2013-11-13      RB - first release   
-    2015-09-08      RB - fixed numBlocks > numBlocksMax when used with XC8
-    2016-08-27      RB - added PIC16F145x support
-    2016-08-28      RB - added Python3 support
-    2016-08-29      RB - added usb.core functions (PYUSB_USE_CORE)
+    2013-11-13 - RB - first release   
+    2015-09-08 - RB - fixed numBlocks > numBlocksMax when used with XC8
+    2016-08-27 - RB - added PIC16F145x support
+    2016-08-28 - RB - added Python3 support
+    2016-08-29 - RB - added usb.core functions (PYUSB_USE_CORE)
+    2016-11-23 - RB - changed constant writeBlockSize to variable writeBlockSize
     --------------------------------------------------------------------
     This library is free software you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -139,11 +140,6 @@ ERASE_FLASH_CMD                 =    0x03
 #READ_CONFIG_CMD                =    0x06
 #WRITE_CONFIG_CMD               =    0x07
 RESET_CMD                       =    0xFF
-
-# Block's size to write
-#-----------------------------------------------------------------------
-
-DATABLOCKSIZE                   =    32
 
 # USB Max. Packet size
 #-----------------------------------------------------------------------
@@ -284,19 +280,24 @@ def initDevice(device):
     """ init pinguino device """
     
     if PYUSB_USE_CORE:
-
-        if device.is_kernel_driver_active(INTERFACE_ID):
-            #print("Kernel driver detached")
+        if os.getenv("PINGUINO_OS_NAME") == "linux":
             try:
-                device.detach_kernel_driver(INTERFACE_ID)
+                active = device.is_kernel_driver_active(INTERFACE_ID)
             except usb.core.USBError as e:
                 sys.exit("Aborting: could not detach kernel driver: %s" % str(e))
-        #else:
-            #print("No kernel driver attached")
 
-        # The call to set_configuration must come before
-        # claim_interface (which, btw, is optional).
-        
+            if active :
+                #print("Kernel driver detached")
+                try:
+                    device.detach_kernel_driver(INTERFACE_ID)
+                except usb.core.USBError as e:
+                    sys.exit("Aborting: could not detach kernel driver: %s" % str(e))
+            #else:
+                #print("No kernel driver attached")
+
+            # The call to set_configuration must come before
+            # claim_interface (which, btw, is optional).
+
         try:
             device.set_configuration(ACTIVE_CONFIG)
         except usb.core.USBError as e:
@@ -417,7 +418,7 @@ def getDeviceID(handle, proc):
     else:
         # REVISION & DEVICE ID
         usbBuf = readFlash(handle, 0x3FFFFE, 2)
-        print usbBuf
+        #print usbBuf
         if usbBuf == ERR_USB_WRITE or usbBuf is None:
             return ERR_USB_WRITE, ERR_USB_WRITE
         #print("BUFFER =", usbBuf
@@ -498,8 +499,8 @@ def writeFlash(handle, address, datablock):
     """ write a block of code
         first 5 bytes are for block description
         (BOOT_CMD, BOOT_CMD_LEN and BOOT_ADDR)
-        data block size should be of DATABLOCKSIZE bytes
-        total length is then DATABLOCKSIZE + 5 < MAXPACKETSIZE """
+        data block size should be of writeBlockSize bytes
+        total length is then writeBlockSize + 5 < MAXPACKETSIZE """
 
     usbBuf = [0xFF] * MAXPACKETSIZE
     # command code
@@ -573,18 +574,28 @@ def hexWrite(handle, filename, proc, memstart, memend):
     address_Hi  = 0
     codesize    = 0
 
-    # get the erased block size
+    # size of write block
     # ------------------------------------------------------------------
+
+    if   "13k50" in proc :
+        writeBlockSize = 8
+    elif "14k50" in proc :
+        writeBlockSize = 16
+    else :
+        writeBlockSize = 32
+
+    # size of erase block
+    # --------------------------------------------------------------
 
     # Pinguino x6j50 or x7j53, erased blocks are 1024-byte long
     if ("j" in proc):
-        erasedBlockSize = 1024
+        eraseBlockSize = 1024
 
     # Pinguino x455, x550 or x5k50, erased blocks are 64-byte long
     else:
-        erasedBlockSize = 64
+        eraseBlockSize = 64
 
-    #print("erasedBlockSize = %d" % erasedBlockSize
+    #print("eraseBlockSize = %d" % eraseBlockSize
 
     # image of the whole PIC memory (above memstart)
     # --------------------------------------------------------------
@@ -669,11 +680,11 @@ def hexWrite(handle, filename, proc, memstart, memend):
         else:
             return ERR_HEX_RECORD
 
-    # max_address must be divisible by erasedBlockSize
+    # max_address must be divisible by eraseBlockSize
     # ------------------------------------------------------------------
 
-    #min_address = min_address - erasedBlockSize - (min_address % erasedBlockSize)
-    max_address = max_address + erasedBlockSize - (max_address % erasedBlockSize)
+    #min_address = min_address - eraseBlockSize - (min_address % eraseBlockSize)
+    max_address = max_address + eraseBlockSize - (max_address % eraseBlockSize)
     if (max_address > memend):
         max_address = memend
     
@@ -683,8 +694,8 @@ def hexWrite(handle, filename, proc, memstart, memend):
     # erase memory from memstart to max_address 
     # ------------------------------------------------------------------
 
-    numBlocksMax = (memend - memstart) / erasedBlockSize
-    numBlocks    = (max_address - memstart) / erasedBlockSize
+    numBlocksMax = (memend - memstart) / eraseBlockSize
+    numBlocks    = (max_address - memstart) / eraseBlockSize
     #print("memend = %d" % memend
     #print("memmax = %d" % memmax
     #print("memstart = %d" % memstart
@@ -702,7 +713,7 @@ def hexWrite(handle, filename, proc, memstart, memend):
 
     else:
         numBlocks = numBlocks - 255
-        upperAddress = memstart + 255 * erasedBlockSize
+        upperAddress = memstart + 255 * eraseBlockSize
         # from self.board.memstart to upperAddress 
         status = eraseFlash(handle, memstart, 255)
         if status == ERR_USB_WRITE:
@@ -712,24 +723,24 @@ def hexWrite(handle, filename, proc, memstart, memend):
         if status == ERR_USB_WRITE:
             return ERR_USB_WRITE
 
-    # write blocks of DATABLOCKSIZE bytes
+    # write blocks of writeBlockSize bytes
     # ------------------------------------------------------------------
 
-    for addr8 in range(min_address, max_address, DATABLOCKSIZE):
+    for addr8 in range(min_address, max_address, writeBlockSize):
         index = addr8 - min_address
         # the addresses are doubled in the PIC16F HEX file
         if ("16f" in proc):
             addr16 = addr8 / 2
-            status = writeFlash(handle, addr16, data[index:index+DATABLOCKSIZE])
+            status = writeFlash(handle, addr16, data[index:index+writeBlockSize])
             if status == ERR_USB_WRITE:
                 return ERR_USB_WRITE
             #print("addr8=0x%X addr16=0x%X" % (addr8, addr16)
-            #print("0x%X  [%s]" % (addr16, data[index:index+DATABLOCKSIZE])
+            #print("0x%X  [%s]" % (addr16, data[index:index+writeBlockSize])
         else:
-            status = writeFlash(handle, addr8,  data[index:index+DATABLOCKSIZE])
+            status = writeFlash(handle, addr8,  data[index:index+writeBlockSize])
             if status == ERR_USB_WRITE:
                 return ERR_USB_WRITE
-            #print("0x%X  [%s]" % (addr8, data[index:index+DATABLOCKSIZE])
+            #print("0x%X  [%s]" % (addr8, data[index:index+writeBlockSize])
 
     data[:] = []    # clear the list
 

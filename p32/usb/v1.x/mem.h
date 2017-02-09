@@ -105,7 +105,8 @@
 #define APP_PROGRAM_ADDR_START          APP_PROGRAM_MEM
 #define APP_PROGRAM_ADDR_END            FLASH_MEM_END
 #define APP_PROGRAM_LENGTH              (APP_PROGRAM_ADDR_END - APP_PROGRAM_ADDR_START)
-#endif
+
+#endif /* 0 */
 
 #if defined(__32MX220F032B__) || \
     defined(__32MX250F128B__)

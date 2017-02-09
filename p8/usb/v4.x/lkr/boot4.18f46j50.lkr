@@ -30,4 +30,4 @@ DATABANK   NAME=sfr14      START=0xEC0         END=0xEFF       PROTECTED
 DATABANK   NAME=sfr15      START=0xF00         END=0xF5F       PROTECTED
 ACCESSBANK NAME=accesssfr  START=0xF60         END=0xFFF       PROTECTED
 
-SECTION    NAME=usbram5    RAM=gpr5
+SECTION    NAME=usbram     RAM=gpr5

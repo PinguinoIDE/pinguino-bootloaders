@@ -24,6 +24,5 @@ ACCESSBANK NAME=accesssfr  START=0xF60          END=0xFFF      PROTECTED
 
 SECTION    NAME=CONFIG     ROM=config
 SECTION    NAME=bank1      RAM=gpr1
-SECTION    NAME=usbram4    RAM=usb4
-SECTION    NAME=usbram5    RAM=usb5
+SECTION    NAME=usbram     RAM=usb5
 SECTION    NAME=eeprom     ROM=eedata

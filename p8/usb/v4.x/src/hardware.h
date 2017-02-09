@@ -15,8 +15,7 @@
     LED pin
 ***********************************************************************/
 
-#if   defined(__18f13k50) || defined(__18f14k50) || \
-      defined(__18f2455)  || defined(__18f4455)  || \
+#if   defined(__18f2455)  || defined(__18f4455)  || \
       defined(__18f2550)  || defined(__18f4550)  || \
       defined(__18lf2550) || defined(__18lf4550) || \
       defined(__18f25k50) || defined(__18f45k50)
@@ -26,6 +25,7 @@
     #define LED_TRIS                TRISA
 
 #elif defined(__16f1459)  || \
+      defined(__18f13k50) || defined(__18f14k50) || \
       defined(__18f26j50) || defined(__18f46j50) || \
       defined(__18f26j53) || defined(__18f46j53) || \
       defined(__18f27j53) || defined(__18f47j53)

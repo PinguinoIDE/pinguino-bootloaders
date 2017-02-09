@@ -191,14 +191,14 @@ void main(void)
 
         OSCTUNEbits.SPLLEN = 0;     // SPLLEN   : 0 = 4x PLL is disabled (see config.h)
 
-        #else // INTOSC 16MHz or ext. 12 MHZ
-        
+        #else                       // 12 MHZ (4x12=48Mhz)
+
         OSCTUNEbits.SPLLEN = 1;     // SPLLEN   : 1 = 4x PLL is enabled (see config.h)
 
         #endif
 
-        ANSEL  = 0;                 // all I/O to Digital mode
-        ANSELH = 0;
+        ANSEL  = 0;                 // On a POR, pins are configured as analog inputs
+        ANSELH = 0;                 // all I/O to Digital mode
 
 /**********************************************************************/
     #elif defined(__18f2455)  || defined(__18f4455)  || \
@@ -601,20 +601,18 @@ void UsbBootCmd(void)
         }
 
 /**********************************************************************/
-        #else
+        #elif defined(__18f13k50) || defined(__18f14k50) || \
+              defined(__18f2455)  || defined(__18f4455)  || \
+              defined(__18f2550)  || defined(__18f4550)  || \
+              defined(__18lf2550) || defined(__18lf4550) || \
+              defined(__18f25k50) || defined(__18f45k50)
 /**********************************************************************/
-
-        #if defined(__18f13k50) || defined(__18f14k50) || \
-            defined(__18f2455)  || defined(__18f4455)  || \
-            defined(__18f2550)  || defined(__18f4550)  || \
-            defined(__18lf2550) || defined(__18lf4550) || \
-            defined(__18f25k50) || defined(__18f45k50)
             
         // Access Configuration registers regardless of EEPGD
         //EECON1bits.CFGS = (bootCmd.addru & 0x20) ? 1:0;
         EECON1bits.CFGS = 1;
 
-        #endif
+        //#endif
         
         // Table reads from program memory are performed one byte at a time.
         //for (counter=0; counter < bootCmd.len; counter++)

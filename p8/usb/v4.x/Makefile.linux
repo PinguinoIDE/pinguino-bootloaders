@@ -44,11 +44,14 @@ PROGRAMMER	= PK3
 #	COMPILERS TOOLCHAIN LOCATION                                       #
 ########################################################################
 
-XC8VER		= 1.35
+XC8VER		= 1.38
+MPLABVER	= 3.40
+JAVAVER		= 1.8.0_91
+
 SDCCDIR		= /opt/pinguino/p8/bin
 XC8DIR		= /opt/microchip/xc8/v$(XC8VER)/bin
-MPLABDIR	= /opt/microchip/mplabx/v3.30
-JAVADIR		= $(MPLABDIR)/sys/java/jre1.8.0_65/bin
+MPLABDIR	= /opt/microchip/mplabx/v$(MPLABVER)
+JAVADIR		= $(MPLABDIR)/sys/java/jre$(JAVAVER)/bin
 JAVA		= $(JAVADIR)/java
 IPE			= $(MPLABDIR)/mplab_ipe/ipecmd.jar
 
@@ -152,7 +155,11 @@ else
 		ARCH	= pic16
 		OPTIMIZ	= --optimize-df --optimize-cmp --obanksel=9 --denable-peeps
 	else
-		USBRAM	= 500h-57Fh
+		ifeq ($(PROC), 18f14k50)
+			USBRAM	= 280h-2BFh
+		else
+			USBRAM	= 500h-57Fh
+		endif
 		OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
 	endif
 endif
@@ -280,7 +287,7 @@ endif
 #                                                                      #
 ########################################################################
 
-all: titre $(PRJ).hex 
+all: titre $(PRJ).hex clean
 
 titre:
 	@echo "***********************************************"
@@ -298,14 +305,14 @@ $(PRJ).hex: $(SRCS)
 else
 
 # Compile and assemble all the src/.c in obj/.o
+#@$(CC) $(CFLAGS) $(AFLAGS) -c $(SRCS) -oobj/ 
 obj/%.o: src/%.c
 	@$(CC) $(CFLAGS) $(AFLAGS) -c $< -o$@
-	#@$(CC) $(CFLAGS) $(AFLAGS) -c $(SRCS) -oobj/ 
 
 # Links the modules all together
+#@$(CC) $(CFLAGS) $(LDFLAGS) -ohex/$(PRJ).hex $(OBJS)
 $(PRJ).hex: $(OBJS)
 	@$(CC) $(CFLAGS) $(LDFLAGS) -ohex/$@ $^
-	#@$(CC) $(CFLAGS) $(LDFLAGS) -ohex/$(PRJ).hex $(OBJS)
 
 endif
 

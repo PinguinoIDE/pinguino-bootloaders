@@ -199,7 +199,7 @@ u16 wCount;                         // Number of bytes of data
         setupPacketStruct __at 0x2010 SetupPacket;
         u8 __at 0x2050 controlTransferBuffer[EP0_BUFFER_SIZE];
     #else
-        #pragma udata usbram5 SetupPacket controlTransferBuffer
+        #pragma udata usbram SetupPacket controlTransferBuffer
         setupPacketStruct SetupPacket;
         u8 controlTransferBuffer[EP0_BUFFER_SIZE];
     #endif
