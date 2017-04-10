@@ -624,6 +624,21 @@ void UsbBootCmd(void)
         }
 
 /**********************************************************************/
+        #elif defined(__18f26j50) || defined(__18f46j50) || \
+              defined(__18f26j53) || defined(__18f46j53) || \
+              defined(__18f27j53) || defined(__18f47j53)
+/**********************************************************************/
+
+        // Table reads from program memory are performed one byte at a time.
+        //for (counter=0; counter < bootCmd.len; counter++)
+        while (counter--)
+        {
+            // TBLPTR is incremented after the read
+            __asm__("TBLRD*+");
+            *pdata++ = TABLAT;
+        }
+
+/**********************************************************************/
         #endif
 /**********************************************************************/
 
@@ -723,9 +738,6 @@ void UsbBootCmd(void)
         counter = bootCmd.len >> 1; // / WORDSIZE; //>> 1; // 1 word = 2 bytes
         while (counter--)
         {
-            //**********************************************************
-            TBLPTRL++;              // address of the byte to write
-            //**********************************************************
             TABLAT = *pdata++;      // load 1st value in the holding registers
             __asm__("TBLWT*+");     // then write the 1rst byte
                                     // and increment TBLPTR after the write
@@ -736,6 +748,9 @@ void UsbBootCmd(void)
                                     // The table pointer needs to point to the
                                     // MSB before starting the write operation.
             Unlock();               // start to write the word
+            //**********************************************************
+            TBLPTRL++;              // address of the byte to write
+            //**********************************************************
         }
 
 /**********************************************************************/

@@ -91,6 +91,8 @@
 #include <proc/p32mx460f256l.h>
 #elif defined(__32MX460F512L__)
 #include <proc/p32mx460f512l.h>
+#elif defined(__32MX470F512H__)
+#include <proc/p32mx470f512h.h>
 #elif defined(__32MX534F064H__)
 #include <proc/p32mx534f064h.h>
 #elif defined(__32MX534F064L__)

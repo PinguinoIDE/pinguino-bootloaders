@@ -1,8 +1,8 @@
 /*******************************************************************************
-    Title:	USB Pinguino Bootloader
-    File:	serial.c
-    Descr.:     UART functions (useful  for debugging)
-    Author:	Régis Blanchot <rblanchot@gmail.com>
+    Title:  USB Pinguino Bootloader
+    File:   serial.c
+    Descr.: UART functions (useful  for debugging)
+    Author: Régis Blanchot <rblanchot@gmail.com>
 
     This file is part of Pinguino (http://www.pinguino.cc)
     Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
@@ -26,7 +26,8 @@ void SerialInit(UINT32 baudrate)
     // PPS for UART1 pins
     #if defined(__32MX220F032B__) || \
         defined(__32MX250F128B__) || \
-        defined(__32MX270F256B__)
+        defined(__32MX270F256B__) || \
+        defined(__32MX470F512H__)
 
         SYSKEY = 0;                // ensure OSCCON is locked
         SYSKEY = 0xAA996655;       // Write Key1 to SYSKEY

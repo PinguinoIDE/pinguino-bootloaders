@@ -11,13 +11,14 @@
 #     32MX220F032B                                                             #
 #     32MX250F128B                                                             #
 #     32MX270F256B                                                             #
+#     32MX470F512H                                                             #
 #                                                                              #
 #   This file is part of Pinguino Project (http://www.pinguino.cc)             #
 #   Released under the LGPL license (www.gnu.org/licenses/lgpl.html)           #
 #                                                                              #
 ################################################################################
 
-_TEST_ENABLE_	= false
+_TEST_ENABLE_	= true
 
 ifeq "$(MIPS16)" "true"
 	_MIPS16_ENABLE_	= true
@@ -34,15 +35,16 @@ else
 endif
 
 # Where to find the gcc-mips-elf toolchain
-BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
 #BINDIR		= /usr/bin
+#BINDIR		= /dvpt/pinguino/git-copy/pinguino-compilers/linux64/p32/bin
+BINDIR		= /opt/pinguino/p32/bin
 
 # ----------------------------------------------------------------------
 # Version (will override boot.h #define)
 # ----------------------------------------------------------------------
 
 MAJ_VER		= 1
-MIN_VER		= 3
+MIN_VER		= 4
 
 # ----------------------------------------------------------------------
 # Processor family
@@ -221,9 +223,9 @@ ELF_FLAGS	= -march=$(CORE) \
 #
 #-----------------------------------------------------------------------
 
-all: start clean copy $(PRJ).elf convert fix size burn
+#all: start clean copy $(PRJ).elf convert fix size burn
 #all: start clean copy $(PRJ).elf convert size burn
-#all: start clean copy $(PRJ).elf convert fix size
+all: start clean copy $(PRJ).elf convert fix size
 #all: start clean copy $(PRJ).elf convert size
 #all: start clean copy $(PRJ).elf convert
 #all: start clean copy $(PRJ).elf

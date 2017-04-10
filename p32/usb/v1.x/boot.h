@@ -22,6 +22,7 @@ OPERATIONAL
  * 1.1  Fixed linker scripts (IVT must be placed after bootloader)
  * 1.2  Updated Erase operation to start from ebase address (enable IVT writing)
  * 1.3  Updated linker scripts to get more free flash space
+ * 1.4  Added PIC32MX470F512H support
 *******************************************************************************/
 
 #ifndef _BOOT_H_
@@ -34,7 +35,7 @@ OPERATIONAL
 #define USB_MAJOR_VER                       1       // Firmware version, major release number.
 #endif
 #ifndef USB_MINOR_VER
-#define USB_MINOR_VER                       3       // Firmware version, minor release number.
+#define USB_MINOR_VER                       4       // Firmware version, minor release number.
 #endif
 
 // Specific to USB Pinguino Device

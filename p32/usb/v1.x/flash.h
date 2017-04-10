@@ -56,7 +56,7 @@ static inline void * ConvertToPhysicalAddress (volatile void *addr)
     }
     else
     {
-	// kuseg
+    // kuseg
         phys = virt + 0x40000000;
     }
     return (void*) phys;

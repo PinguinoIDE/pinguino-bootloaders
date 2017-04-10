@@ -115,7 +115,8 @@
     #define APP_RESET_ADDR              0x9D004000
     #define APP_PROGRAM_ADDR_START      0x9D004010
 
-#elif defined(__32MX270F256B__)
+#elif defined(__32MX270F256B__) || \
+      defined(__32MX470F512H__)
 
     #define APP_EBASE_ADDR              0x9D002000
     #define APP_RESET_ADDR              0x9D003000

@@ -1,5 +1,19 @@
-USB Bootloaders for 8- and 32-bit Pinguino.
+# pinguino-installers
+Installation scripts for the Pinguino IDE
 
-A bootloader is a piece of code that is executed once the system is booted.
-The code runs inside the microcontroller and is responsible for transferring your application from your PC to the
-microcontroller memory and handing over the control to this application afterwards.
+## GNU/Linux or Mac OS X</b>
+
+Basic shell script to install the Pinguino IDE 
+* Make the script executable with : 
+```
+$ sudo chmod +x installer.sh
+```
+* Launch the script with : 
+```
+$ sudo ./installer.sh
+```
+## Windows
+
+Click on the file name **(Pinguino-installer-vx.x.x.x .exe)**
+
+Click on the **RAW** button to download

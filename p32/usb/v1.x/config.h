@@ -24,7 +24,8 @@
 
     #if defined(__32MX220F032B__) || \
         defined(__32MX250F128B__) || \
-        defined(__32MX270F256B__)
+        defined(__32MX270F256B__) || \
+        defined(__32MX470F512H__)
 
         #if 1
         
@@ -199,4 +200,3 @@
 #endif  /* __P32GCC__ */
 
 #endif	/* _CONFIG_H_ */
-

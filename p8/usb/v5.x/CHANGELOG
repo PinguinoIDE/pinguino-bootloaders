@@ -1,0 +1,113 @@
+/*
+
+        ╔═╗╦╔╗╔╔═╗╦ ╦╦╔╗╔╔═╗  ╔╗ ╔═╗╔═╗╔╦╗╦  ╔═╗╔═╗╔╦╗╔═╗╦═╗
+        ╠═╝║║║║║ ╦║ ║║║║║║ ║  ╠╩╗║ ║║ ║ ║ ║  ║ ║╠═╣ ║║║╣ ╠╦╝
+        ╩  ╩╝╚╝╚═╝╚═╝╩╝╚╝╚═╝  ╚═╝╚═╝╚═╝ ╩ ╩═╝╚═╝╩ ╩═╩╝╚═╝╩╚═
+
+                    ╔═╗╦ ╦╔═╗╔╗╔╔═╗╔═╗╦  ╔═╗╔═╗   
+                    ║  ╠═╣╠═╣║║║║ ╦║╣ ║  ║ ║║ ╦   
+                    ╚═╝╩ ╩╩ ╩╝╚╝╚═╝╚═╝╩═╝╚═╝╚═╝   
+
+        ╦═╗╔╗ ╦  ╔═╗╔╗╔╔═╗╦ ╦╔═╗╔╦╗┌─┐╔═╗╔╦╗╔═╗╦╦   ╔═╗╔═╗╔╦╗
+        ╠╦╝╠╩╗║  ╠═╣║║║║  ╠═╣║ ║ ║ │└┘║ ╦║║║╠═╣║║   ║  ║ ║║║║
+        ╩╚═╚═╝╩═╝╩ ╩╝╚╝╚═╝╩ ╩╚═╝ ╩ └──╚═╝╩ ╩╩ ╩╩╩═╝o╚═╝╚═╝╩ ╩
+
+*/
+
+/***********************************************************************
+    Future development
+ **********************************************************************/
+        * new attached detection
+        * Low Power management
+        * code size < 2048 bytes (thanks to XC8)
+        * ENTRY = 0x0800 for PIC18F
+        * ENTRY = 0x0500 for PIC16F
+/***********************************************************************
+    Future development
+ **********************************************************************/
+    Version 7.00 (??-??-??)
+        * HID version
+/***********************************************************************
+    Under development
+ **********************************************************************/
+    Version 6.00 (25-08-2016)
+        * added ICSP function
+/***********************************************************************
+    Under development
+ **********************************************************************/
+    Version 5.00 (06-04-2017)
+        * added 2-button support
+/***********************************************************************
+    Current version
+ **********************************************************************/
+    Version 4.18 (24-08-2016)
+        * started PIC16F support for SDCC
+        * fixed Reset detection (4.18.6)
+        * added 18f1xk50 and 18lfx550 support (4.18.5)
+        * fixed SerialPrint (DEBUG mode only)
+        * fixed WDTE config. (WDTE = SWDTEN) for 16F1459
+        * fixed all WDTPS to 1:32768 = 1sec.
+        * updated code to be compatible with XC8 (>= 4.18.4)
+        * declared all typedef structures as volatile
+/***********************************************************************
+    Previous versions
+ **********************************************************************/
+    Version 4.17 (06-11-2015)
+        * added 16f1459 support (xc8 compiler only)
+        * turned IESO bit to ON for all chips
+    Version 4.16 (21-06-2015)
+        * updated to support xc8 compiler
+    Version 4.15 (17-04-2015)
+        * fixed x5k50 HSOSCIO issue
+    Version 4.14 (12-11-2013)
+        * fixed INTOSC support for x5k50
+        * fixed INTOSC support for x6j50
+        * fixed x6j53 family support (missing .lkr files)
+    Version 4.13 (07-11-2013)
+        * fixed interrupt bug (in disable_boot())
+        * fixed 64K bug (in Buffer Descriptor Table)
+    Version 4.12 (14-10-2013)
+        * Reset source detection
+        * user application starts without any delay on Power-on Reset
+        * bootloader starts only if Reset button has been pressed
+        * bootloader waits until program has been uploaded
+    Version 4.11 (08-10-2013)
+        * optimized the code
+        * vendor and product ID are now defined in Makefile
+        * led blinks now each 43.5 ms = 65536 * 8 * 4 / 48MHz
+        * timer 1 off when USB transfer
+        * changed RTCC source to external oscillator for x7j53 family
+    Version 4.10 (17-09-2013)
+        * fixed bug (timer1 is now disabled when USB transaction is done)
+        * added better support to Internal Oscillator (x6j50, x6j53, x7j53)
+    Version 4.09 (17-05-2013)
+        * fixed bug for external power supply support
+    Version 4.08 (30-12-2012)
+        * added Internal Oscillator support when possible
+        * added 18f26j53 and 18f46j53 support
+        * added 18f27j53 and 18f47j53 support
+        * completed 18f13k50 and 18f14k50 support (not tested)
+        * added Wiztiti tool to build custom bootloader
+    Version 4.07 (09-12-2012)
+        * added string descriptor
+        * new optimized code to write in flash memory
+    Version 4.06 (23-11-2012)
+        * added 18f25k50 and 18f45k50 support
+    Version 4.05 (09-11-2012)
+        * added external power supply support
+    Version 4.04 (17-08-2012)
+        * added 16f1455 suport (to be completed)
+    Version 4.03 (12-06-2012)
+        * added 18f14k50 suport (to be completed)
+    Version 4.02 (02-05-2012)
+        * added low speed usb support
+    Version 4.01
+        * added 18f26j50 and 18f46j50 support
+    Version 4.00
+        * 18f2550 and 18f4550 support
+        * based on Albert Faber's JAL bootloader
+        * and Alexander Enzmann USB Framework
+    Version 3.00
+        * based on Diolan Bootloader
+    Version 2.12
+        * based on Vasco Bootloader
