@@ -1,13 +1,13 @@
-/*******************************************************************************
-	Title:	USB Pinguino Bootloader
-	File:	usb.h
-	Descr.: USB HID Bootloader specifications
-        Note:   Make sure only one of the below #define is uncommented.
-	Author:	Régis Blanchot <rblanchot@gmail.com>
+/***********************************************************************
+    Title:  USB Pinguino Bootloader
+    File:   usb.h
+    Descr.: USB HID Bootloader specifications
+    Note:   Make sure only one of the below #define is uncommented.
+    Author: Régis Blanchot <rblanchot@gmail.com>
 
-	This file is part of Pinguino (http://www.pinguino.cc)
-	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
-
+    This file is part of Pinguino (http://www.pinguino.cc)
+    Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
+------------------------------------------------------------------------
 NOT WORKING
  * 0.0  Microchip USB HID Bootloader adaptation to Pinguino
 PARTIALLY WORKING
@@ -18,12 +18,15 @@ PARTIALLY WORKING
  * 0.5  Added USBCheckCable()
  * 0.6  Modified supported interrupts
 OPERATIONAL
- * 1.0  Fixed GET_DATA issue (bad call of MemCopy)
- * 1.1  Fixed linker scripts (IVT must be placed after bootloader)
- * 1.2  Updated Erase operation to start from ebase address (enable IVT writing)
- * 1.3  Updated linker scripts to get more free flash space
- * 1.4  Added PIC32MX470F512H support
-*******************************************************************************/
+ * 1.0    Fixed GET_DATA issue (bad call of MemCopy)
+ * 1.1    Fixed linker scripts (IVT must be placed after bootloader)
+ * 1.2    Updated Erase operation to start from ebase address (enable IVT writing)
+ * 1.3    Updated linker scripts to get more free flash space
+TESTING
+ * 1.4.2  Added PIC32MX470F512H support
+ * 1.4.3  Added PIC32MX440F256H support
+ * 1.4.4  Fixed Config. bits definitions
+***********************************************************************/
 
 #ifndef _BOOT_H_
 #define _BOOT_H_
@@ -37,6 +40,9 @@ OPERATIONAL
 #ifndef USB_MINOR_VER
 #define USB_MINOR_VER                       4       // Firmware version, minor release number.
 #endif
+#ifndef USB_DEVPT_VER
+#define USB_DEVPT_VER                       4       // Firmware version, dvpt release number
+#endif
 
 // Specific to USB Pinguino Device
 #define USB_VENDOR_ID                       0x04D8  // MICROCHIP
@@ -47,7 +53,7 @@ OPERATIONAL
 
 //#define USB_SUPPORT_DEVICE
 
-//#define USB_POLLING
+#define USB_POLLING
 //#define USB_INTERRUPT
 
 //#define USB_PING_PONG__NO_PING_PONG         0x00
@@ -55,24 +61,24 @@ OPERATIONAL
 //#define USB_PING_PONG__FULL_PING_PONG       0x02
 //#define USB_PING_PONG__ALL_BUT_EP0          0x03
 //#define USB_PING_PONG_MODE                  USB_PING_PONG__FULL_PING_PONG
-//#define USB_PING_PONG_MODE                USB_PING_PONG__NO_PING_PONG
-//#define USB_PING_PONG_MODE                USB_PING_PONG__EP0_OUT_ONLY
-//#define USB_PING_PONG_MODE                USB_PING_PONG__ALL_BUT_EP0
+//#define USB_PING_PONG_MODE                  USB_PING_PONG__NO_PING_PONG
+//#define USB_PING_PONG_MODE                  USB_PING_PONG__EP0_OUT_ONLY
+//#define USB_PING_PONG_MODE                  USB_PING_PONG__ALL_BUT_EP0
 
-//#define USB_PULLUP_ENABLE                   0x00
-//#define USB_PULLUP_DISABLE                  0x04
-//#define USB_PULLUP_OPTION                   USB_PULLUP_ENABLE
-//#define USB_PULLUP_OPTION                 USB_PULLUP_DISABLED
+#define USB_PULLUP_ENABLE                   0x00
+#define USB_PULLUP_DISABLE                  0x04
+#define USB_PULLUP_OPTION                   USB_PULLUP_ENABLE
+//#define USB_PULLUP_OPTION                   USB_PULLUP_DISABLED
 
 //#define USB_INTERNAL_TRANSCEIVER            0x00
 //#define USB_EXTERNAL_TRANSCEIVER            0x01
 //#define USB_TRANSCEIVER_OPTION              USB_INTERNAL_TRANSCEIVER
-//#define USB_TRANSCEIVER_OPTION            USB_EXTERNAL_TRANSCEIVER
+//#define USB_TRANSCEIVER_OPTION              USB_EXTERNAL_TRANSCEIVER
 
 //#define USB_FULL_SPEED                      0x04
 //#define USB_LOW_SPEED                       111     //???
 //#define USB_SPEED_OPTION                    USB_FULL_SPEED
-//#define USB_SPEED_OPTION                  USB_LOW_SPEED
+//#define USB_SPEED_OPTION                    USB_LOW_SPEED
 
 // Valid Options: 8, 16, 32, or 64 bytes.
 #define USB_EP0_BUFF_SIZE                   64
@@ -103,11 +109,11 @@ OPERATIONAL
 //processing the control transfer.  Therefore, the status stage completes as
 //quickly as is physically possible.  The USB_ENABLE_STATUS_STAGE_TIMEOUTS
 //feature, and the USB_STATUS_STAGE_TIMEOUT value are only relevant, when:
-//1.  The application uses the USBDeferStatusStage() API function, but never calls
-//      USBCtrlEPAllowStatusStage().  Or:
-//2.  The application uses host to device (OUT) control transfers with data stage,
-//      and some abnormal error occurs, where the host might try to abort the control
-//      transfer, before it has sent all of the data it claimed it was going to send.
+//1. The application uses the USBDeferStatusStage() API function, but never calls
+//   USBCtrlEPAllowStatusStage().  Or:
+//2. The application uses host to device (OUT) control transfers with data stage,
+//   and some abnormal error occurs, where the host might try to abort the control
+//   transfer, before it has sent all of the data it claimed it was going to send.
 //
 //If the application firmware never uses the USBDeferStatusStage() API function,
 //and it never uses host to device control transfers with data stage, then
@@ -116,13 +122,13 @@ OPERATIONAL
 //#define USB_ENABLE_STATUS_STAGE_TIMEOUTS    //Comment this out to disable this feature.
 
 //Section 9.2.6 of the USB 2.0 specifications indicate that:
-//1.  Control transfers with no data stage: Status stage must complete within
-//      50ms of the start of the control transfer.
-//2.  Control transfers with (IN) data stage: Status stage must complete within
-//      50ms of sending the last IN data packet in fullfilment of the data stage.
-//3.  Control transfers with (OUT) data stage: No specific status stage timing
-//      requirement.  However, the total time of the entire control transfer (ex:
-//      including the OUT data stage and IN status stage) must not exceed 5 seconds.
+//1. Control transfers with no data stage: Status stage must complete within
+//   50ms of the start of the control transfer.
+//2. Control transfers with (IN) data stage: Status stage must complete within
+//   50ms of sending the last IN data packet in fullfilment of the data stage.
+//3. Control transfers with (OUT) data stage: No specific status stage timing
+//   requirement.  However, the total time of the entire control transfer (ex:
+//   including the OUT data stage and IN status stage) must not exceed 5 seconds.
 //
 //Therefore, if the USB_ENABLE_STATUS_STAGE_TIMEOUTS feature is used, it is suggested
 //to set the USB_STATUS_STAGE_TIMEOUT value to timeout in less than 50ms.  If the
@@ -138,5 +144,21 @@ OPERATIONAL
 //#if (USB_PING_PONG_MODE != USB_PING_PONG__FULL_PING_PONG)
 //    #error "PIC32 only supports full ping pong mode. Please edit the boot.h file."
 //#endif
+
+#if defined(__32MX220F032B__)
+    #define SERIAL      {'3','2','M','X','2','2','0'}
+#endif
+#if defined(__32MX250F128B__)
+    #define SERIAL      {'3','2','M','X','2','5','0'}
+#endif
+#if defined(__32MX270F256B__)
+    #define SERIAL      {'3','2','M','X','2','7','0'}
+#endif
+#if defined(__32MX440F256H__)
+    #define SERIAL      {'3','2','M','X','4','4','0'}
+#endif
+#if defined(__32MX470F512H__)
+    #define SERIAL      {'3','2','M','X','4','7','0'}
+#endif
 
 #endif	// _BOOT_H

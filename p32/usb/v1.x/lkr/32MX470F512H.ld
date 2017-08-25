@@ -2,7 +2,7 @@
  * PIC32MX470F512H object file
  * Contains Memory Regions definitions
  * Project : www.pinguino.cc
- * Last update : 2017-03-31
+ * Last update : 2017-05-29
  * Contact : Régis Blanchot <rblanchot@gmail.com>
  **********************************************************************/
 
@@ -37,21 +37,23 @@ _RESET_ADDR              = 0xBFC00000;
  * - configuration words (non-cacheable)
  **********************************************************************
  * Cacheable (KSEG0) and non-cacheable (KSEG1)
- * KSEG0 PROGRAM FLASH [0x9D000000:0x9D03FFFF]
- * KSEG1 PROGRAM FLASH [0xBD000000:0xBD03FFFF]
- * KSEG0    BOOT FLASH [0x9FC00000:0x9FC00BEF]
- * KSEG1    BOOT FLASH [0xBFC00000:0xBFC00BEF]
+ * KSEG0 PROGRAM FLASH [0x9D000000:0x9D07FFFF]
+ * KSEG1 PROGRAM FLASH [0xBD000000:0xBD07FFFF]
+ * KSEG0    BOOT FLASH [0x9FC00000:0x9FC02FEF]
+ * KSEG1    BOOT FLASH [0xBFC00000:0xBFC02FEF]
  * KSEG1           RAM [0xA0000000:0xA000FFFF]
  **********************************************************************/
 
 MEMORY
 {
     /**********************************************************************
-     * Bootloader code
+     * Bootloader code in Program Flash
+     * TBD : move the code to the Boot Flash (0x2FF0 bytes long) 
+     *       after the reser vector and the startup sequence ?
+     *       kseg0_program_mem    (rx)  : ORIGIN = 0x9FC00210, LENGTH = 0x2DE0
      **********************************************************************/
 
     kseg0_program_mem    (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x2000
-
 
     /**********************************************************************
      * Interrupt vector table (exception_mem = _ebase_address)
@@ -72,7 +74,7 @@ MEMORY
     kseg0_boot_mem             : ORIGIN = 0x9FC00010, LENGTH = 0x200
 
     /**********************************************************************
-     * PIC32MX470F512H has 128 KB RAM, or 0x20000
+     * PIC32MX470F512H has 128KB RAM, or 0x20000
      **********************************************************************/
 
     boot_software_key          : ORIGIN = 0xA0000000, LENGTH = 0x4
@@ -82,11 +84,20 @@ MEMORY
      * Device Configuration Registers (configuration bits)
      **********************************************************************/
 
+    /* 
     devcfg3                    : ORIGIN = 0xBFC00BF0, LENGTH = 0x4
     devcfg2                    : ORIGIN = 0xBFC00BF4, LENGTH = 0x4
     devcfg1                    : ORIGIN = 0xBFC00BF8, LENGTH = 0x4
     devcfg0                    : ORIGIN = 0xBFC00BFC, LENGTH = 0x4
     devcfg                     : ORIGIN = 0xBFC00BF0, LENGTH = 0x10
+    */
+    
+    /* 2017-05-29 - fixed by Steven Carr */
+    devcfg3                    : ORIGIN = 0xBFC02FF0, LENGTH = 0x4
+    devcfg2                    : ORIGIN = 0xBFC02FF4, LENGTH = 0x4
+    devcfg1                    : ORIGIN = 0xBFC02FF8, LENGTH = 0x4
+    devcfg0                    : ORIGIN = 0xBFC02FFC, LENGTH = 0x4
+    devcfg                     : ORIGIN = 0xBFC02FF0, LENGTH = 0x10
 
     /**********************************************************************
      * all SFRS

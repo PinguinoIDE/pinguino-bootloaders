@@ -1,25 +1,54 @@
-/*******************************************************************************
-	Title:	USB Pinguino Bootloader
-	File:	flash.h
-	Descr.: flash operations for supported PIC32MX
-	Author:	Régis Blanchot <rblanchot@gmail.com>
+/***********************************************************************
+    Title:	USB Pinguino Bootloader
+    File:	flash.h
+    Descr.: flash operations for supported PIC32MX
+    Author:	Régis Blanchot <rblanchot@gmail.com>
 
-	This file is part of Pinguino (http://www.pinguino.cc)
-	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
-*******************************************************************************/
+    This file is part of Pinguino (http://www.pinguino.cc)
+    Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
+***********************************************************************/
 
 #ifndef _FLASH_H_
 #define _FLASH_H_
 
 #include "typedefs.h"
+#include "mem.h"
 
-void FlashOperation(UINT32, void *, UINT32);
+// The Flash page size is
+// - 1 KB on PIC32MX-1XX/2XX devices
+// - 4 KB on PIC32MX-3XX/7XX devices
 
-#define FLASH_NOP               0x0000      // NOP operation
-#define FLASH_WORD_WRITE        0x0001      // Word program operation
-#define FLASH_ROW_WRITE         0x0003      // Row program operation
-#define FLASH_PAGE_ERASE        0x0004      // Page erase operation
-#define FLASH_ALL_ERASE         0x0005      // Program Flash Memory erase operation
+#if defined(__PIC32MX2__)
+#define FLASH_PAGE_SIZE                 0x400
+#else
+#define FLASH_PAGE_SIZE                 0x1000
+#endif
+
+// PIC32MX270F256B issues
+// - BMXPFMSZ returns 512K instead of 256K
+// - BMXDRMSZ returns 128K instead of 64K
+
+#if defined(__32MX270F256B__)
+#define FLASH_TOTAL_LENGTH              (BMXPFMSZ/2)
+#else
+#define FLASH_TOTAL_LENGTH              BMXPFMSZ
+#endif
+
+#define FLASH_MEM_END                   (KSEG0_FLASH_MEM_START + FLASH_TOTAL_LENGTH)
+
+#define FLASH_NOP                       0      // NOP operation
+#define FLASH_WORD_WRITE                1      // Word program operation
+#define FLASH_ROW_WRITE                 3      // Row program operation
+#define FLASH_PAGE_ERASE                4      // Page erase operation
+#define FLASH_ALL_ERASE                 5      // Program Flash Memory erase operation
+
+UINT8 FlashOperation(UINT8);
+UINT8 FlashErasePage(void*);
+UINT8 FlashWriteWord(void*, UINT32);
+UINT8 FlashWriteRow(void*, void*);
+//UINT8 FlashClearError();
+#define FlashError()        (NVMCON & (_NVMCON_WRERR_MASK | _NVMCON_LVDERR_MASK))
+#define FlashClearError()   FlashOperation(FLASH_NOP)
 
 /*******************************************************************
  * To translate the kernel address (KSEG0 or KSEG1) to a physical address,
@@ -28,40 +57,35 @@ void FlashOperation(UINT32, void *, UINT32);
  *******************************************************************/
 
 #define KVA_TO_PA(va)       ( (UINT32) (va) & 0x1FFFFFFF )
-//#define KVA_TO_PA(va)       ( va & 0x1FFFFFFF )
-
-#if 1
-
 #define ConvertToPhysicalAddress(a) KVA_TO_PA(a)
 
-#else
-
-static inline void * ConvertToPhysicalAddress (volatile void *addr)
+/*
+//static inline void * ConvertToPhysicalAddress (volatile void *addr);
+static inline UINT32 ConvertToPhysicalAddress (volatile void *addr)
 {
     UINT32 virt = (UINT32) addr;
     UINT32 phys;
 
+    // kseg
     if (virt & 0x80000000)
     {
+        // kseg2 or kseg3 - no mapping
         if (virt & 0x40000000)
-        {
-            // kseg2 or kseg3 - no mapping
             phys = virt;
-        }
+
+        // kseg0¸ kseg1, cut bits A[31:29]
         else
-        {
-            // kseg0¸ kseg1, cut bits A[31:29]
             phys = virt & 0x1fffffff;
-        }
     }
-    else
-    {
+
     // kuseg
+    else
         phys = virt + 0x40000000;
-    }
-    return (void*) phys;
+
+    //return (void*) phys;
+    return phys;
 }
-#endif
+*/
 
 /*******************************************************************
  * For physical address to KSEG0 virtual address translation,

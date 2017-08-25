@@ -1,4 +1,12 @@
-/* Default linker script, for normal executables */
+/***********************************************************************
+    Title:  USB Pinguino Bootloader
+    File:   elf32pic32mx.x
+    Descr.: PIC32 Pinguino Bootloader linker script
+    Author: Régis Blanchot <rblanchot@gmail.com>
+
+    This file is part of Pinguino (http://www.pinguino.cc)
+    Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
+ **********************************************************************/
 
 OUTPUT_FORMAT("elf32-littlemips")
 OUTPUT_ARCH(mips)
@@ -37,22 +45,6 @@ SECTIONS
     } > kseg0_boot_mem
 
     /********************************************************************
-    *** Exception Vectors
-    ********************************************************************/
-
-    /*
-    .bev_excpt _BEV_EXCPT_ADDR :
-    {
-    KEEP(*(.bev_handler))
-    } > kseg1_boot_mem
-
-    .app_excpt _GEN_EXCPT_ADDR :
-    {
-    KEEP(*(.gen_handler))
-    } > exception_mem
-    */
-
-    /********************************************************************
     *** Config. Sections
     ********************************************************************/
 
@@ -61,22 +53,6 @@ SECTIONS
     .devcfg2 : { KEEP(*(.devcfg2)) } > devcfg2
     .devcfg1 : { KEEP(*(.devcfg1)) } > devcfg1
     .devcfg0 : { KEEP(*(.devcfg0)) } > devcfg0
-
-    /********************************************************************
-    *** Debug Sections
-    ********************************************************************/
-
-    /*
-    .dbg_excpt _DBG_EXCPT_ADDR (NOLOAD) :
-    {
-    . += (DEFINED (_DEBUGGER) ? 0x8 : 0x0);
-    } > kseg1_boot_mem
-
-    .dbg_code _DBG_CODE_ADDR (NOLOAD) :
-    {
-    . += (DEFINED (_DEBUGGER) ? 0xFF0 : 0x0);
-    } > debug_exec_mem
-    */
 
     /********************************************************************
     *** Vector Sections
@@ -639,63 +615,10 @@ SECTIONS
          : ORIGIN(kseg1_data_mem) + LENGTH(kseg1_data_mem) ;
     ASSERT((_min_stack_size + _min_heap_size) <= (_stack - _heap),
     "Not enough space to allocate both stack and heap.  Reduce heap and/or stack size.")
+
     /* The .pdf section belongs in the absolute section */
     .pdr 0 : { *(.pdr) }
-    /* We don't load .reginfo onto the target, so don't locate it
-     * in real memory
-     */
+
+    /* We don't load .reginfo onto the target, so don't locate it in real memory */
     .reginfo 0 : { *(.reginfo) }
-
-    /* Stabs debugging sections.  */
-    /*
-    .stab          0 : { *(.stab) }
-    .stabstr       0 : { *(.stabstr) }
-    .stab.excl     0 : { *(.stab.excl) }
-    .stab.exclstr  0 : { *(.stab.exclstr) }
-    .stab.index    0 : { *(.stab.index) }
-    .stab.indexstr 0 : { *(.stab.indexstr) }
-    .comment       0 : { *(.comment) }
-    */
-
-    /* DWARF debug sections.
-     Symbols in the DWARF debugging sections are relative to the beginning
-     of the section so we begin them at 0.  */
-
-    /* DWARF 1 */
-    /*
-    .debug          0 : { *(.debug) }
-    .line           0 : { *(.line) }
-    */
-
-    /* GNU DWARF 1 extensions */
-    /*
-    .debug_srcinfo  0 : { *(.debug_srcinfo) }
-    .debug_sfnames  0 : { *(.debug_sfnames) }
-    */
-
-    /* DWARF 1.1 and DWARF 2 */
-    /*
-    .debug_aranges  0 : { *(.debug_aranges) }
-    .debug_pubnames 0 : { *(.debug_pubnames) }
-    */
-
-    /* DWARF 2 */
-    /*
-    .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
-    .debug_abbrev   0 : { *(.debug_abbrev) }
-    .debug_line     0 : { *(.debug_line) }
-    .debug_frame    0 : { *(.debug_frame) }
-    .debug_str      0 : { *(.debug_str) }
-    .debug_loc      0 : { *(.debug_loc) }
-    .debug_macinfo  0 : { *(.debug_macinfo) }
-    */
-
-    /* SGI/MIPS DWARF 2 extensions */
-    /*
-    .debug_weaknames 0 : { *(.debug_weaknames) }
-    .debug_funcnames 0 : { *(.debug_funcnames) }
-    .debug_typenames 0 : { *(.debug_typenames) }
-    .debug_varnames  0 : { *(.debug_varnames) }
-    /DISCARD/ : { *(.note.GNU-stack) }
-    */
 }

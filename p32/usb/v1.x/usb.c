@@ -1,18 +1,19 @@
-/*******************************************************************************
-    Title:	USB Pinguino Bootloader
-    File:	usb.c
+/***********************************************************************
+    Title:  USB Pinguino Bootloader
+    File:   usb.c
     Descr.: USB routines for PIC32 processors
-    Author:	R?gis Blanchot <rblanchot@gmail.com>
+    Author: Regis Blanchot <rblanchot@gmail.com>
 
     This file is part of Pinguino (http://www.pinguino.cc)
     Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
-********************************************************************************
- IMPORTANT
-    Once an interrupt bit has been set by the USB OTG module (in U1IR, U1EIR or U1OTGIR),
-    it must be cleared by software by writing a ?1? to the appropriate bit position
-    to clear the interrupt.
-    The USB Interrupt bit, USBIF (IFS1<25>), must be cleared before the end of the ISR.
-*******************************************************************************/
+************************************************************************
+    IMPORTANT
+    Once an interrupt bit has been set by the USB OTG module (in U1IR,
+    U1EIR or U1OTGIR), it must be cleared by software by writing a 1 to
+    the appropriate bit position to clear the interrupt.
+    The USB Interrupt bit, USBIF (IFS1<25>), must be cleared before the
+    end of the ISR.
+***********************************************************************/
 
 #ifndef __USB_C
 #define __USB_C
@@ -22,157 +23,30 @@
 #include "boot.h"               // USB Vendor and Product IDs
 #include "flash.h"              // ConvertToPhysicalAddress and KVA_TO_PA
 #include "usb.h"                // USB Device abstraction layer interface
-#include "debug.h"              // Debug functions
+//#include "debug.h"              // Debug functions
 
-#if defined(DEBUG)              // defined in hardware.h
+#if 0//(_DEBUG_ENABLE_)            // defined in makefile
 #include "serial.h"             // UART functions
 #endif
 
-/* Device Descriptor */
+// defined in main.c
+extern USB_VOLATILE USB_DEVICE_STATE USBDeviceState;
 
-const USB_DEVICE_DESCRIPTOR device_dsc=
-{
-    sizeof(USB_DEVICE_DESCRIPTOR),              // 0x12 Size of this descriptor in bytes
-    USB_DESCRIPTOR_DEVICE,                      // DEVICE descriptor type
-    0x0200,                                     // USB Spec Release Number in BCD format
-    0x00,                                       // Class Code
-    0x00,                                       // Subclass code
-    0x00,                                       // Protocol code
-    USB_EP0_BUFF_SIZE,                          // Max packet size for EP0, see boot.h
-    USB_VENDOR_ID,                              // Vendor ID, see boot.h
-    USB_PRODUCT_ID,                             // Product ID, , see boot.h
-    (BCD(USB_MAJOR_VER)<<8)|BCD(USB_MINOR_VER), // Version number, see boot.h
-    0x01,                                       // Manufacturer string index
-    0x02,                                       // Product string index
-    0x03,                                       // Device serial number string index
-    0x01                                        // Number of possible configurations
-};
-
-/* Configuration 1 Descriptor */
-
-// Total length in chars of data returned
-#define CONFIGURATION_TOTAL_LENGTH (sizeof(USB_CONFIGURATION_DESCRIPTOR) + \
-                                    sizeof(USB_INTERFACE_DESCRIPTOR) + \
-                                    sizeof(USB_HID_DESCRIPTOR) + \
-                                    sizeof(USB_ENDPOINT_DESCRIPTOR) + \
-                                    sizeof(USB_ENDPOINT_DESCRIPTOR) )
-
-
-const UINT8 configDescriptor1[]={
-
-    /* Configuration Descriptor */
-    sizeof(USB_CONFIGURATION_DESCRIPTOR),   // 0x09 Size of this descriptor in bytes
-    USB_DESCRIPTOR_CONFIGURATION,           // CONFIGURATION descriptor type
-    CONFIGURATION_TOTAL_LENGTH,0x00,        // Total length of data for this cfg
-    USB_MAX_NUM_INT,                        // Number of interfaces in this cfg
-    1,                                      // Index value of this configuration
-    0,                                      // Configuration string index
-    _DEFAULT|_SELF,                         // Attributes, see usb_ch9.h
-    50,                                     // 100mA max power consumption (2X mA)
-
-        /* Interface Descriptor */
-        sizeof(USB_INTERFACE_DESCRIPTOR),   // 0x09 Size of this descriptor in bytes
-        USB_DESCRIPTOR_INTERFACE,           // INTERFACE descriptor type
-        0,                                  // Interface Number
-        0,                                  // Alternate Setting Number
-        2,                                  // Number of endpoints in this intf
-        HID_INTF,                           // Class code
-        0,                                  // Subclass code
-        0,                                  // Protocol code
-        0,                                  // Interface string index
-
-            /* HID Class-Specific Descriptor */
-            sizeof(USB_HID_DESCRIPTOR),     // 0x09
-            DSC_HID,                        // HID descriptor type
-            0x11,0x01,                      // HID Spec Release Number in BCD format (1.11)
-            0x00,                           // Country Code (0x00 for Not supported)
-            HID_NUM_OF_DSC,                 // Number of class descriptors
-            DSC_RPT,                        // Report descriptor type
-            HID_RPT01_SIZE,0x00,            // sizeof(hid_rpt01)= Size of the report descriptor
-
-            /* Endpoint Descriptor */
-            sizeof(USB_ENDPOINT_DESCRIPTOR),// 0x07
-            USB_DESCRIPTOR_ENDPOINT,        // Endpoint Descriptor
-            HID_EP | _EP_IN,                // EndpointAddress
-            _INTERRUPT,                     // Endpoint Transfer Type
-            HID_INT_IN_EP_SIZE,0x00,        // size
-            0x01,                           // Interval
-
-            /* Endpoint Descriptor */
-            sizeof(USB_ENDPOINT_DESCRIPTOR),// 0x07
-            USB_DESCRIPTOR_ENDPOINT,        // Endpoint Descriptor
-            HID_EP | _EP_OUT,               // EndpointAddress
-            _INTERRUPT,                     // Endpoint Transfer Type
-            HID_INT_OUT_EP_SIZE,0x00,       // size
-            0x01                            // Interval
-};
-
-// Language code string descriptor
-const USB_STRING_INIT(1) sd000 = {
-    sizeof(sd000),USB_DESCRIPTOR_STRING,
-    {0x0409}
-};
-
-// Manufacturer string descriptor
-const USB_STRING_INIT(9) sd001 = {
-    sizeof(sd001),
-    USB_DESCRIPTOR_STRING,
-    {'S','e','a','I','c','e','L','a','b'}
-};
-
-// Product string descriptor
-const USB_STRING_INIT(26) sd002 = {
-    sizeof(sd002),
-    USB_DESCRIPTOR_STRING,
-    { 'P','i','n','g','u','i','n','o',' ',
-      '(','w','w','w','.','p','i','n','g','u','i','n','o','.','c','c',')' }
-};
-
-// Serial Number string descriptor
-const USB_STRING_INIT(10) sd003 = {
-    sizeof(sd003),
-    USB_DESCRIPTOR_STRING,
-    {'R','.','B','l','a','n','c','h','o','t'}
-};
-
-//Class specific descriptor - HID
-const struct{UINT8 report[HID_RPT01_SIZE];}hid_rpt01={{
-    0x06, 0x00, 0xFF,           // Usage Page = 0xFF00 (Vendor Defined Page 1)
-    0x09, 0x01,                 // Usage (Vendor Usage 1)
-    0xA1, 0x01,                 // Collection (Application)
-    0x19, 0x01,                 //      Usage Minimum
-    0x29, 0x40,                 //      Usage Maximum 	//64 input usages total (0x01 to 0x40)
-    0x15, 0x00,                 //      Logical Minimum (data bytes in the report may have minimum value = 0x00)
-    0x26, 0xFF, 0x00,           //      Logical Maximum (data bytes in the report may have maximum value = 0x00FF = unsigned 255)
-    0x75, 0x08,                 //      Report Size: 8-bit field size
-    0x95, 0x40,                 //      Report Count: Make sixty-four 8-bit fields (the next time the parser hits an "Input", "Output", or "Feature" item)
-    0x81, 0x00,                 //      Input (Data, Array, Abs): Instantiates input packet fields based on the above report size, count, logical min/max, and usage.
-    0x19, 0x01,                 //      Usage Minimum
-    0x29, 0x40,                 //      Usage Maximum 	//64 output usages total (0x01 to 0x40)
-    0x91, 0x00,                 //      Output (Data, Array, Abs): Instantiates output packet fields.  Uses same report size and count as "Input" fields, since nothing new/different was specified to the parser since the "Input" item.
-    0xC0                        // End Collection
-}};
-
-//Array of configuration descriptors
-const UINT8 *const USB_CD_Ptr[]=
-{
-    (const UINT8 *const)&configDescriptor1
-};
-
-//Array of string descriptors
-const UINT8 *const USB_SD_Ptr[]=
-{
-    (const UINT8 *const)&sd000,
-    (const UINT8 *const)&sd001,
-    (const UINT8 *const)&sd002,
-    (const UINT8 *const)&sd003
-};
+// defined in descriptors.c
+/*
+extern const USB_DEVICE_DESCRIPTOR device_dsc;
+extern const UINT8 configDescriptor1[];
+extern const UINT8 *const USB_CD_Ptr[];
+extern const UINT8 *const USB_SD_Ptr[];
+extern const struct {UINT8 report[HID_RPT01_SIZE];} hid_rpt01;
+*/
+extern const USB_DEVICE_DESCRIPTOR usb_device_descriptor;
+extern const USB_CONFIG_DESCRIPTOR usb_config_descriptor;
+extern const UINT8 *const usb_string_descriptor[];
+extern const struct {UINT8 report[HID_RPT01_SIZE];} hid_rpt01;
 
 UINT8 idle_rate;
 UINT8 active_protocol;   // [0] Boot Protocol [1] Report Protocol
-
-// defined in main.c
-extern USB_VOLATILE USB_DEVICE_STATE USBDeviceState;
 
 USB_VOLATILE UINT8 USBActiveConfiguration;
 USB_VOLATILE UINT8 USBAlternateInterface[USB_MAX_NUM_INT];
@@ -217,30 +91,66 @@ volatile UINT8 CtrlTrfData[USB_EP0_BUFF_SIZE];
 /********************************************************************
  * Section C: non-EP0 Buffer Space
  *******************************************************************/
+
 // Can provide compile time option to do software pingpong
-#if 1
 volatile unsigned char hid_report_out[HID_INT_OUT_EP_SIZE];
 volatile unsigned char hid_report_in[HID_INT_IN_EP_SIZE];
-#endif
 
-/********************************************************************
+/***********************************************************************
  * Section A: Buffer Descriptor Table
  * - 256 bytes max.  Actual size depends on number of endpoints enabled and
  *   the ping pong buffering mode.
- * - USB_MAX_EP_NUMBER is defined in usb_device.h
- *******************************************************************/
+ * - USB_MAX_EP_NUMBER is defined in boot.h
+ **********************************************************************/
 
 volatile BDT_ENTRY BDT[(USB_MAX_EP_NUMBER + 1) * 4] __attribute__ ((aligned (512)));
 
-/****************************************************************************
- * Initializes the device stack it in the default state
- ***************************************************************************/
+/***********************************************************************
+ * Returns string descriptors and size
+ **********************************************************************/
+/*
+UINT16 USBGetString(UINT8 string_number, const void **ptr)
+{
+    if (string_number == 0)
+    {
+        *ptr = &lang;
+        return sizeof(lang);
+    }
+
+    else if (string_number == 1)
+    {
+        *ptr = &manu;
+        return sizeof(manu);
+    }
+
+    else if (string_number == 2)
+    {
+        *ptr = &prod;
+        return sizeof(prod);
+    }
+
+    else if (string_number == 3)
+    {
+        *ptr = &seri;
+        return sizeof(seri);
+    }
+
+    return -1;
+}
+*/
+/***********************************************************************
+ * Initializes the device stack in its default state
+ **********************************************************************/
 
 void USBDeviceInit(void)
 {
     UINT8 i;
     UINT32 BDTBaseAddress = ConvertToPhysicalAddress(&BDT);
 
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("Init. USB\r\n");
+    #endif
+    
     // Clear all of the BDT entries
     for(i=0; i<(sizeof(BDT)/sizeof(BDT_ENTRY)); i++)
         BDT[i].Val = 0x00;
@@ -252,10 +162,10 @@ void USBDeviceInit(void)
 
     // Set flags to TRUE, so the USBCtrlEPAllowStatusStage() function knows not to
     // try and arm a status stage, even before the first control transfer starts.
-    USBStatusStageEnabledFlag1 = TRUE;
-    USBStatusStageEnabledFlag2 = TRUE;
+    USBStatusStageEnabledFlag1  = TRUE;
+    USBStatusStageEnabledFlag2  = TRUE;
     // Initialize other flags
-    USBDeferINDataStagePackets = FALSE;
+    USBDeferINDataStagePackets  = FALSE;
     USBDeferOUTDataStagePackets = FALSE;
     //USBBusIsSuspended = FALSE;
 
@@ -275,9 +185,9 @@ void USBDeviceInit(void)
     // Clear active configuration
     USBActiveConfiguration = 0;
 
-    // -------------------------------------------------------------------------
-    // ---REGISTERS-------------------------------------------------------------
-    // -------------------------------------------------------------------------
+    // -----------------------------------------------------------------
+    // ---REGISTERS-----------------------------------------------------
+    // -----------------------------------------------------------------
 
     // Init. OTG module Off
     U1PWRC = 0;
@@ -285,7 +195,8 @@ void USBDeviceInit(void)
     U1CON = 0;
 
     // Power up the USB module
-    U1PWRCSET = _U1PWRC_USBPWR_MASK;
+    //U1PWRCSET = _U1PWRC_USBPWR_MASK;
+    U1PWRCbits.USBPWR = 1;
 
     // Set the address of the BDT
     U1BDTP1 = (BDTBaseAddress & 0x0000FF00) >> 8;
@@ -314,7 +225,7 @@ void USBDeviceInit(void)
     //IEC1SET = _IEC1_USBIE_MASK;
     //IFS1CLR = _IFS1_USBIF_MASK;
 
-    // Enable USB interrupts
+    // Disable USB interrupts, except SESVD
     U1IE    = 0x00; // _U1IE_UERRIE_MASK;
     U1EIE   = 0x00; // all error interrupts
     U1OTGIE = _U1OTGIE_SESVDIE_MASK;
@@ -326,6 +237,9 @@ void USBDeviceInit(void)
 
     // Indicate that we are now in the detached state
     USBDeviceState = DETACHED_STATE;
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("USB DEV. DETACHED\r\n");
+    #endif
 }
 
 /***********************************************************************
@@ -334,10 +248,10 @@ void USBDeviceInit(void)
 
 void USBCheckCable(void)
 {
-    BOOL VBUSLocal = (U1OTGSTATbits.SESVD != 0);
+    BOOL VBUSLocal = U1OTGSTATbits.SESVD;
 
-    #ifdef DEBUG
-    //SerialPrint("USB check cable\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("Check USB cable\r\n");
     #endif
 
     if (VBUSLocal != USBCableConnected)
@@ -346,46 +260,47 @@ void USBCheckCable(void)
 
         if (USBCableConnected)
         {
-            #ifdef DEBUG
-            SerialPrint("> USB cable plugged\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("> plugged\r\n");
             #endif
-
-            #if 0
-            // Enable power to module
-            while (U1PWRCbits.USBBUSY);
-            U1PWRCbits.USBPWR = 1;
-
-            // Wait until USB module and supporting circuitry is enabled
-            // All USB-related modules should be initialised before.
-            //while (!(U1CON & _U1CON_USBEN_MASK))
-            while (!U1CONbits.USBEN)
-                U1CONSET = _U1CON_USBEN_MASK;
-            #else
-            // Enable USB module
-            while (!U1CONbits.USBEN)
-                U1CONSET = _U1CON_USBEN_MASK;
 
             // Power up the USB module
-            U1PWRCSET = _U1PWRC_USBPWR_MASK;
-            #endif
+            //#if !defined(__32MX440F256H__)
+            //while (U1PWRCbits.USBBUSY);
+            //#endif
+
+            // Enable USB module
+            while (!U1CONbits.USBEN)
+                //U1CONSET = _U1CON_USBEN_MASK;
+                U1CONbits.USBEN = 1;
+
+            //U1PWRCSET = _U1PWRC_USBPWR_MASK;
+            U1PWRCbits.USBPWR = 1;
 
             // Enable power to the D+/D- pull-up resistors
-            U1OTGCONSET = _U1OTGCON_DMPULUP_MASK | _U1OTGCON_DPPULUP_MASK;
+            //U1OTGCONSET = _U1OTGCON_DMPULUP_MASK | _U1OTGCON_DPPULUP_MASK;
                      //_U1OTGCON_VBUSDIS_MASK | _U1OTGCON_VBUSON_MASK;
+            U1OTGCONbits.DMPULUP = 1;
+            U1OTGCONbits.DPPULUP = 1;
 
             // Enable USB interrupts
+            // For an interrupt to propagate to the USBIF bit (IFS1<25>),
+            // the UERRIE bit (U1IE<1>) must be set.
             //U1OTGIE = _U1OTGIE_ACTVIE_MASK;
             //U1OTGIR = _U1OTGIR_ACTVIF_MASK;
-            U1IE = _U1IE_URSTIE_MASK | _U1IE_IDLEIE_MASK;
-            U1IR = _U1IR_URSTIF_MASK | _U1IR_IDLEIF_MASK;
+            U1IE = _U1IE_URSTIE_MASK | _U1IE_IDLEIE_MASK | _U1IE_UERRIE_MASK;
+            U1IR = _U1IR_URSTIF_MASK | _U1IR_IDLEIF_MASK | _U1IR_UERRIF_MASK;
 
             // moved to the powered state
             USBDeviceState = POWERED_STATE;
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. POWERED\r\n");
+            #endif
         }
         else
         {
-            #ifdef DEBUG
-            SerialPrint("> USB cable unplugged\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("> unplugged\r\n");
             #endif
 
             // Disable USB interrupts
@@ -393,19 +308,28 @@ void USBCheckCable(void)
             //U1EIE = 0;
 
             // Remove power from the D+/D- pull-up resistors
-            U1OTGCONCLR = _U1OTGCON_DMPULUP_MASK | _U1OTGCON_DPPULUP_MASK;
+            //U1OTGCONCLR = _U1OTGCON_DMPULUP_MASK | _U1OTGCON_DPPULUP_MASK;
+            U1OTGCONbits.DMPULUP = 0;
+            U1OTGCONbits.DPPULUP = 0;
 
             // Disable USB module
             U1CON = 0;
 
             // Suspend the USB module
-            //U1PWRCCLR = _U1PWRC_USBPWR_MASK;
-            U1PWRC = _U1PWRC_USUSPEND_MASK;
+            //U1PWRCSET = _U1PWRC_USUSPEND_MASK;
+            U1PWRCbits.USUSPEND = 1;
 
             // Back to the detached state
             USBDeviceState = DETACHED_STATE;
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. DETACHED\r\n");
+            #endif
         }
     }
+    #if 0//(_DEBUG_ENABLE_)
+    else
+        SerialPrint("> No change\r\n");
+    #endif
 }
 
 /****************************************************************************
@@ -423,22 +347,30 @@ void USBDeviceTasks(void)
 {
     UINT8 i;
 
-    #ifdef DEBUG
-    //SerialPrint("U1IE=0b");
-    //SerialPrintNumber(U1IE, 2);
-    //SerialPrint("\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("U1IE=0b");
+    SerialPrintNumber(U1IE, 2);
+    SerialPrint("\r\n");
+    SerialPrint("U1IR=0b");
+    SerialPrintNumber(U1IR, 2);
+    SerialPrint("\r\n");
     #endif
+
+    // Clear (writing a '1') the general USB interrupt flag
+    //IFS1CLR = _IFS1_USBIF_MASK;
+    IFS1bits.USBIF = 1;
 
    /*
     * Check if the USB cable is plugged
     */
 
+    //if (U1OTGIRbits.SESVDIF && U1OTGIEbits.SESVDIE)
     if (U1OTGIE & _U1OTGIE_SESVDIE_MASK)
     {
         if (U1OTGIR & _U1OTGIR_SESVDIF_MASK)
         {
-            #ifdef DEBUG
-            //SerialPrint(UART,"SESSION CHANGE DETECTED\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("SESSION CHANGE DETECTED\r\n");
             #endif
 
             // Power up the USB module
@@ -447,7 +379,8 @@ void USBDeviceTasks(void)
             USBCheckCable();
 
             // Clear SESVD flag
-            U1OTGIR |= _U1OTGIR_SESVDIF_MASK;
+            //U1OTGIR |= _U1OTGIR_SESVDIF_MASK;
+            U1OTGIRbits.SESVDIF = 1;
         }
     }
 
@@ -465,58 +398,62 @@ void USBDeviceTasks(void)
 
     #if 1
     // If the USB became active then wake up from suspend
-    //if ( (U1OTGIRbits.ACTVIF) && (U1OTGIEbits.ACTVIE) )
+    //if (U1OTGIRbits.ACTVIF && U1OTGIEbits.ACTVIE)
     if (U1OTGIE & _U1OTGIE_ACTVIE_MASK)
     {
         if (U1OTGIR & _U1OTGIR_ACTVIF_MASK)
         {
-            #ifdef DEBUG
-            //SerialPrint("USB DEV. WOKE UP\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. WOKE UP\r\n");
             #endif
 
             // Enable USB reset and idle interrupts
             // because once the USUSPEND is clear
             // the URSTIF bit will be asserted.
-            U1IE = _U1IE_URSTIE_MASK | _U1IE_IDLEIE_MASK;
-            U1IR = _U1IR_URSTIF_MASK | _U1IR_IDLEIF_MASK;
+            // NB : for an interrupt to propagate to the USBIF bit (IFS1<25>),
+            // the UERRIE bit (U1IE<1>) must be set.
+            U1IE = _U1IE_URSTIE_MASK | _U1IE_IDLEIE_MASK | _U1IE_UERRIE_MASK;
+            U1IR = _U1IR_URSTIF_MASK | _U1IR_IDLEIF_MASK | _U1IR_UERRIF_MASK;
 
             // Exit from supsend mode
-            //U1PWRCbits.USUSPEND = 0;
-            U1PWRCCLR = _U1PWRC_USUSPEND_MASK;
+            //U1PWRCCLR = _U1PWRC_USUSPEND_MASK;
+            U1PWRCbits.USUSPEND = 0;
 
-            U1OTGIR |= _U1OTGIR_ACTVIF_MASK;
+            //U1OTGIR |= _U1OTGIR_ACTVIF_MASK;
+            U1OTGIRbits.ACTVIF = 1;
         }
     }
     #endif
 
-    #if 0
+    #if 1
     //if (U1IRbits.RESUMEIF && U1IEbits.RESUMEIE)
     if (U1IE & _U1IE_RESUMEIE_MASK)
     {
         if (U1IR & _U1IR_RESUMEIF_MASK)
         {
-            #ifdef DEBUG
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("USB DEV. RESUMED\r\n");
             #endif
 
             // Exit from supsend mode
+            //U1PWRCCLR = _U1PWRC_USUSPEND_MASK;
             U1PWRCbits.USUSPEND = 0;
 
             // Clear RESUME interrupt
-            U1IR |= _U1IR_RESUMEIF_MASK;
+            //U1IR |= _U1IR_RESUMEIF_MASK;
+            U1IRbits.RESUMEIF = 1;
         }
     }
     #endif
 
     #if 1
     // Pointless to continue servicing if the device is in suspend mode.
+    //if (U1PWRCbits.USUSPEND)
     if (U1PWRC & _U1PWRC_USUSPEND_MASK)
     {
-        #ifdef DEBUG
-        SerialPrint("> USB module suspended\r\n");
+        #if 0//(_DEBUG_ENABLE_)
+        SerialPrint("> USB DEV. STILL SUSPENDED\r\n");
         #endif
-
-        //IFS1CLR = _IFS1_USBIF_MASK;
         return;
     }
     #endif
@@ -535,20 +472,33 @@ void USBDeviceTasks(void)
      * When bus reset is received during suspend, ACTVIF will be set first,
      * once the UCONbits.SUSPND is clear, then the URSTIF bit will be asserted.
      * This is why URSTIF is checked after ACTVIF.
+     *
+     * As a device, the USB OTG module will assert the URSTIF bit
+     * interrupt when it has detected Reset signaling for 2.5 μs.
+     * Software must perform any Reset initialization processing at this
+     * time. This includes setting the Address register to 0x00 and
+     * enabling Endpoint 0 (cf. USBDeviceInit()).
+     * The URSTIF interrupt will not be set again until the Reset
+     * signaling has gone away and then has been detected again for 2.5 μs.
      */
-
+     
     //if (U1IRbits.URSTIF && U1IEbits.URSTIE)
     if (U1IE & _U1IE_URSTIE_MASK)
     {
         if (U1IR & _U1IR_URSTIF_MASK)
         {
-            #ifdef DEBUG
-            //SerialPrint("USB DEV. RESETED\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. RESETED\r\n");
             #endif
 
             // Sets the device to its default unconfigured state.
-            USBDeviceInit();
+            // This includes setting the Address register to 0x00 and
+            // enabling Endpoint 0 
+            //USBDeviceInit();
 
+            // Reset to default address
+            U1ADDR = 0x00;
+            
             // Initialize EP0 as a Ctrl EP
             U1EP0 = EP_CTRL | USB_HANDSHAKE_ENABLED;
 
@@ -558,34 +508,49 @@ void USBDeviceTasks(void)
             BDT[EP0_OUT_EVEN].STAT.Val = _USIE|_DAT0|_BSTALL;
 
             // Flush any pending transactions
-            while (U1IR & _U1IR_TRNIF_MASK)
-                U1IR |= _U1IR_TRNIF_MASK;
+            // Clearing the TRNIF bit cause the STAT FIFO to advance.
+            //while (U1IR & _U1IR_TRNIF_MASK)
+            //    U1IR |= _U1IR_TRNIF_MASK;
+            while (U1IRbits.TRNIF)
+                U1IRbits.TRNIF = 1;
 
             // Enable packet processing (PKTDIS=0)
             // Stop trying to reset ping pong buffer pointers
             // *** MUST BE CLEARED ***
-            U1CONCLR = _U1CON_PKTDIS_MASK | _U1CON_PPBRST_MASK; // | _U1CON_RESUME_MASK;
+            //U1CONCLR = _U1CON_PKTDIS_MASK | _U1CON_PPBRST_MASK; // | _U1CON_RESUME_MASK;
+            U1CONbits.PKTDIS = 0;
+            U1CONbits.PPBRST = 0;
 
             // Interrupts we want to check
-            U1IE = _U1IE_IDLEIE_MASK    | _U1IE_TRNIE_MASK  |
-                   _U1IE_STALLIE_MASK   | _U1IE_UERRIE_MASK;
+            U1IE = _U1IE_IDLEIE_MASK|_U1IE_TRNIE_MASK|_U1IE_UERRIE_MASK;
+                   //_U1IE_STALLIE_MASK  |
+                   //_U1IE_RESUMEIE_MASK |
+                   //_U1IE_SOFIE_MASK    |
                    //_U1IE_URSTIE_MASK;
-                   //_U1IE_SOFIE_MASK;
-                   //_U1IE_RESUMEIE_MASK;
-            U1IR = _U1IR_IDLEIF_MASK    | _U1IR_TRNIF_MASK  |
-                   _U1IR_STALLIF_MASK   | _U1IR_UERRIF_MASK;
+                    
+            U1IR = _U1IR_IDLEIF_MASK|_U1IR_TRNIF_MASK|_U1IR_UERRIF_MASK;
+                   //_U1IR_STALLIF_MASK  |
+                   //_U1IR_RESUMEIF_MASK |
+                   //_U1IR_SOFIF_MASK    |
                    //_U1IR_URSTIF_MASK;
-                   //_U1IR_SOFIF_MASK;
-                   //_U1IR_RESUMEIF_MASK;
 
+            // Enable all USB Error Interrupts
             U1EIE   = 0xFF;
             U1EIR   = 0xFF;
 
+            // Disable session interrupt
+            U1OTGIE = 0;    //_U1OTGIE_SESVDIE_MASK;
+            U1OTGIR = 0xFF; //_U1OTGIR_SESVDIF_MASK;
+    
             // Move to default state
             USBDeviceState = DEFAULT_STATE;
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. IN DEFAULT STATE\r\n");
+            #endif
 
             // Clear RESET interrupt
-            U1IR |= _U1IR_URSTIF_MASK;
+            //U1IR |= _U1IR_URSTIF_MASK;
+            //U1IRbits.URSTIF = 1;
         }
     }
 
@@ -599,18 +564,20 @@ void USBDeviceTasks(void)
     {
         if (U1IR & _U1IR_IDLEIF_MASK)
         {
-            #ifdef DEBUG
-            //SerialPrint("USB DEV. SUSPENDED\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. SUSPENDED\r\n");
             #endif
 
             // At this point the PIC can also go into sleep, idle
             // or switch to a slower clock.
-            U1PWRC |= _U1PWRC_USUSPEND_MASK;
+            //U1PWRC |= _U1PWRC_USUSPEND_MASK;
+            U1PWRCbits.USUSPEND = 1;
 
             // Interrupts we want to check
             U1IE = _U1IE_URSTIE_MASK; // | _U1IE_IDLEIE_MASK;
-            U1IR = 0xFF;
+            U1IR = _U1IR_URSTIF_MASK; // 0xFF;
 
+            // Bus Activity and Session Valid Interrupts
             U1OTGIE = _U1OTGIE_ACTVIE_MASK | _U1OTGIE_SESVDIE_MASK;
             U1OTGIR = _U1OTGIR_ACTVIF_MASK | _U1OTGIR_SESVDIF_MASK;
 
@@ -621,15 +588,17 @@ void USBDeviceTasks(void)
     }
     #endif
 
-    #if 0
+    #if 1
+    //if (U1IRbits.SOFIF && U1IEbits.SOFIE)
     if (U1IR & _U1IR_SOFIF_MASK)
     {
         if (U1IE & _U1IE_SOFIE_MASK)
         {
-            #ifdef DEBUG
-            //SerialPrint("USB START OF FRAME\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB START OF FRAME\r\n");
             #endif
-            U1IR |= _U1IR_SOFIF_MASK;
+            //U1IR |= _U1IR_SOFIF_MASK;
+            U1IRbits.SOFIF = 1;
         }
     }
     #endif
@@ -640,11 +609,11 @@ void USBDeviceTasks(void)
     {
         if (U1IR & _U1IR_STALLIF_MASK)
         {
-            #ifdef DEBUG
-            //SerialPrint("USB DEV. STALLED\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            SerialPrint("USB DEV. STALLED\r\n");
             #endif
 
-            if(U1EP0 & _U1EP0_EPSTALL_MASK)
+            if (U1EP0 & _U1EP0_EPSTALL_MASK)
             {
                 // UOWN - if 0, owned by CPU, if 1, owned by SIE
                 if ( (pBDTEntryEP0OutCurrent->STAT.Val == _USIE)  &&
@@ -654,21 +623,22 @@ void USBDeviceTasks(void)
                     pBDTEntryEP0OutCurrent->STAT.Val = _USIE|_DAT0|_DTSEN|_BSTALL;
                 }
                 // Clear stall status
-                U1EP0CLR = _U1EP0_EPSTALL_MASK;
+                //U1EP0CLR = _U1EP0_EPSTALL_MASK;
+                U1EP0bits.EPSTALL = 0;
             }
-            U1IR |= _U1IR_STALLIF_MASK;
+            //U1IR |= _U1IR_STALLIF_MASK;
+            U1IRbits.STALLIF = 1;
         }
     }
     #endif
 
     #if 1
-    //if(USBErrorIF && USBErrorIE)
     //if (U1IRbits.UERRIF && U1IEbits.UERRIE)
     if (U1IE & _U1IE_UERRIE_MASK)
     {
-        if ( U1IR & _U1IR_UERRIF_MASK)
+        if (U1IR & _U1IR_UERRIF_MASK)
         {
-            #ifdef DEBUG
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("ERROR CODE 0x");
             SerialPrintNumber(U1EIR, 2);
             SerialPrint("\r\n");
@@ -676,7 +646,8 @@ void USBDeviceTasks(void)
 
             // Clear Error interrupt
             U1EIR = 0xFF;               // This clears UERRIF
-            U1IR |= _U1IR_UERRIF_MASK;
+            //U1IR |= _U1IR_UERRIF_MASK;
+            U1IRbits.UERRIF = 1;
         }
     }
     #endif
@@ -685,27 +656,25 @@ void USBDeviceTasks(void)
      * Pointless to continue servicing if the host has not sent a bus reset.
      */
 
-    if(USBDeviceState < DEFAULT_STATE)
-    {
-        //IFS1CLR = _IFS1_USBIF_MASK;
+    if (USBDeviceState < DEFAULT_STATE)
         return;
-    }
 
     /*
      * Task D: Servicing USB Transaction Complete Interrupt
      */
 
+    //if (U1IRbits.TRNIF && U1IEbits.TRNIE)
     if (U1IE & _U1IE_TRNIE_MASK)
     {
         //Drain or deplete the USAT FIFO entries.
         //If the USB FIFO ever gets full, USB bandwidth utilization can be compromised,
         //and the device won't be able to receive SETUP packets.
-        //for(i = 0; i < 4; i++)
+        //for (i = 0; i < 4; i++)
         //{
             if (U1IR & _U1IR_TRNIF_MASK)
             {
-                #ifdef DEBUG
-                //SerialPrint("USB TRANSACTION COMPLETED\r\n");
+                #if 0//(_DEBUG_ENABLE_)
+                SerialPrint("USB TRANSACTION COMPLETED\r\n");
                 #endif
 
                 //Save and extract USTAT register info.  Will use this info later.
@@ -721,17 +690,16 @@ void USBDeviceTasks(void)
 
                 //USBCtrlEPService only services transactions over EP0.
                 //It ignores all other EP transactions.
-                if(endpoint_number == 0)
+                if (endpoint_number == 0)
                     USBCtrlEPService();
 
                 // Clear the TRNIF interrupt
-                U1IR |= _U1IR_TRNIF_MASK;
+                U1IR = _U1IR_TRNIF_MASK | _U1IR_URSTIF_MASK;
+                //U1IRbits.TRNIF = 1;
+                U1IE = _U1IE_TRNIE_MASK | _U1IE_URSTIE_MASK;
             }
         //}
     }
-
-    //IFS1CLR = _IFS1_USBIF_MASK;
-
 }//end of USBDeviceTasks()
 
 /********************************************************************
@@ -755,25 +723,26 @@ static void USBCtrlEPService(void)
     //control transfer, so we should re-initialize our timeout counter.
 
     //Check if the last transaction was on EP0 OUT endpoint
-    if((USTATcopy.Val & USTAT_EP0_PP_MASK) == USTAT_EP0_OUT_EVEN)
+    if ((USTATcopy.Val & USTAT_EP0_PP_MASK) == USTAT_EP0_OUT_EVEN)
     {
         //Point to the EP0 OUT buffer of the buffer that arrived
         pBDTEntryEP0OutCurrent = (volatile BDT_ENTRY*)&BDT[(USTATcopy.Val & USTAT_EP_MASK)>>2];
-	//Set the next out to the current out packet
+        //Set the next out to the current out packet
         pBDTEntryEP0OutNext = pBDTEntryEP0OutCurrent;
-	//Toggle it to the next ping pong buffer (if applicable)
+        //Toggle it to the next ping pong buffer (if applicable)
         ((BYTE_VAL*)&pBDTEntryEP0OutNext)->Val ^= USB_NEXT_EP0_OUT_PING_PONG;
 
         //If the current EP0 OUT buffer has a SETUP packet
-        if(pBDTEntryEP0OutCurrent->STAT.PID == PID_SETUP)
+        if (pBDTEntryEP0OutCurrent->STAT.PID == PID_SETUP)
         {
             UINT8 setup_cnt;
 
-            //The SETUP transaction data may have gone into the the CtrlTrfData
-            //buffer, or elsewhere, depending upon how the BDT was prepared
-            //before the transaction.  Therefore, we should copy the data to the
-            //SetupPkt buffer so it can be processed correctly by USBCtrlTrfSetupHandler().
-            for(setup_cnt = 0; setup_cnt < 8; setup_cnt++) //SETUP data packets always contain exactly 8 bytes.
+            // The SETUP transaction data may have gone into the the CtrlTrfData
+            // buffer, or elsewhere, depending upon how the BDT was prepared
+            // before the transaction.  Therefore, we should copy the data to the
+            // SetupPkt buffer so it can be processed correctly by USBCtrlTrfSetupHandler().
+            // SETUP data packets always contain exactly 8 bytes.
+            for (setup_cnt = 0; setup_cnt < 8; setup_cnt++)
             {
                 *(UINT8*)((UINT8*)&SetupPkt + setup_cnt) = *(UINT8*)ConvertRAMToVirtualAddress(pBDTEntryEP0OutCurrent->ADR);
                 pBDTEntryEP0OutCurrent->ADR++;
@@ -789,7 +758,7 @@ static void USBCtrlEPService(void)
             USBCtrlTrfOutHandler();
         }
     }
-    else if((USTATcopy.Val & USTAT_EP0_PP_MASK) == USTAT_EP0_IN)
+    else if ((USTATcopy.Val & USTAT_EP0_PP_MASK) == USTAT_EP0_IN)
     {
         //Otherwise the transmission was and EP0 IN so take care of the IN transfer
         USBCtrlTrfInHandler();
@@ -834,8 +803,8 @@ static void USBCtrlEPService(void)
 
 static void USBCtrlTrfSetupHandler(void)
 {
-    #if defined(DEBUG)
-    //SerialPrint("> USBCtrlTrfSetupHandler\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("> CONTROL TRANSFER SETUP\r\n");
     #endif
 
     //--------------------------------------------------------------------------
@@ -908,15 +877,20 @@ static void USBCtrlTrfSetupHandler(void)
 
 static void USBCtrlTrfOutHandler(void)
 {
-    #if defined(DEBUG)
-    //SerialPrint("> USBCtrlTrfOutHandler\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("> CONTROL TRANSFER OUT\r\n");
     #endif
 
+    // Copies the newly received data into the appropriate buffer and
+    // configures EP0 OUT for next transaction.
     if(controlTransferState == CTRL_TRF_RX)
     {
-        USBCtrlTrfRxService();	//Copies the newly received data into the appropriate buffer and configures EP0 OUT for next transaction.
+        USBCtrlTrfRxService();
     }
-    else //In this case the last OUT transaction must have been a status stage of a CTRL_TRF_TX (<setup><in><in>...<OUT>  <-- this last OUT just occurred as the status stage)
+
+    // The last OUT transaction waa status stage of a CTRL_TRF_TX
+    // <setup><in><in>...<OUT>  <-- this last OUT just occurred as the status stage
+    else
     {
         //If the status stage is complete, this means we are done with the
         //control transfer.  Go back to the idle "WAIT_SETUP" state.
@@ -960,8 +934,8 @@ static void USBCtrlTrfInHandler(void)
 {
     UINT8 lastDTS;
 
-    #if defined(DEBUG)
-    //SerialPrint("> USBCtrlTrfInHandler\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("> CONTROL TRANSFER IN\r\n");
     #endif
 
     lastDTS = pBDTEntryIn[0]->STAT.DTS;
@@ -976,13 +950,13 @@ static void USBCtrlTrfInHandler(void)
     if (USBDeviceState == ADR_PENDING_STATE)
     {
         U1ADDR = SetupPkt.bDevADR.Val;
-        if(U1ADDR != 0)
+        if (U1ADDR != 0)
             USBDeviceState = ADDRESS_STATE;
         else
             USBDeviceState = DEFAULT_STATE;
     }
 
-    if(controlTransferState == CTRL_TRF_TX)
+    if (controlTransferState == CTRL_TRF_TX)
     {
         // RB 07-10-2014 : CtrlTrfData to &CtrlTrfData
         pBDTEntryIn[0]->ADR = ConvertToPhysicalAddress(CtrlTrfData);
@@ -992,7 +966,7 @@ static void USBCtrlTrfInHandler(void)
         //the endpoint to STALL in response to any further IN tokens (in the
         //case that the host erroneously tries to receive more data than it
         //should).
-        if(shortPacketStatus == SHORT_PKT_SENT)
+        if (shortPacketStatus == SHORT_PKT_SENT)
         {
             // If a short packet has been sent, don't want to send any more,
             // stall next time if host is still trying to read.
@@ -1011,7 +985,7 @@ static void USBCtrlTrfInHandler(void)
         //if someone is still expecting data from the control transfer
         //  then make sure to terminate that request and let them know that
         //  they are done
-        if(outPipe.info.bits.busy == 1)
+        if (outPipe.info.bits.busy == 1)
         {
             if(outPipe.pFunc != 0)
                 outPipe.pFunc();
@@ -1034,14 +1008,14 @@ static void USBCtrlTrfInHandler(void)
 
 static void USBCheckStdRequest(void)
 {
-    if(SetupPkt.RequestType != USB_SETUP_TYPE_STANDARD_BITFIELD)
+    if (SetupPkt.RequestType != USB_SETUP_TYPE_STANDARD_BITFIELD)
         return;
 
-    switch(SetupPkt.bRequest)
+    switch (SetupPkt.bRequest)
     {
         #if 0
         case USB_REQUEST_GET_STATUS:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("GET_STATUS\r\n");
             #endif
             USBStdGetStatusHandler();
@@ -1049,7 +1023,7 @@ static void USBCheckStdRequest(void)
 
         case USB_REQUEST_CLEAR_FEATURE:
         case USB_REQUEST_SET_FEATURE:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_FEATURE\r\n");
             #endif
             USBStdFeatureReqHandler();
@@ -1057,7 +1031,7 @@ static void USBCheckStdRequest(void)
         #endif
 
         case USB_REQUEST_SET_ADDRESS:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_ADDRESS\r\n");
             #endif
             // Generate a zero length packet
@@ -1067,14 +1041,14 @@ static void USBCheckStdRequest(void)
             break;
 
         case USB_REQUEST_GET_DESCRIPTOR:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("GET_DESCRIPTOR\r\n");
             #endif
             USBStdGetDscHandler();
             break;
 
         case USB_REQUEST_GET_CONFIGURATION:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("GET_CONFIGURATION\r\n");
             #endif
             // Set Source
@@ -1087,7 +1061,7 @@ static void USBCheckStdRequest(void)
             break;
 
         case USB_REQUEST_SET_CONFIGURATION:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_CONFIGURATION\r\n");
             #endif
             USBStdSetCfgHandler();
@@ -1095,14 +1069,14 @@ static void USBCheckStdRequest(void)
 
         #if 0
         case USB_REQUEST_SET_DESCRIPTOR:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_DESCRIPTOR\r\n");
             #endif
             //USB_SET_DESCRIPTOR_HANDLER(EVENT_SET_DESCRIPTOR,0,0);
             break;
 
         case USB_REQUEST_GET_INTERFACE:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("interface.\r\n");
             #endif
             // Set source
@@ -1115,7 +1089,7 @@ static void USBCheckStdRequest(void)
             break;
 
         case USB_REQUEST_SET_INTERFACE:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_INTERFACE\r\n");
             #endif
             inPipe.info.bits.busy = 1;
@@ -1123,13 +1097,13 @@ static void USBCheckStdRequest(void)
             break;
 
         case USB_REQUEST_SYNCH_FRAME:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SYNCH_FRAME\r\n");
             #endif
             break;
             
         default:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("UNKNOWN\r\n");
             #endif
             break;
@@ -1171,7 +1145,7 @@ void USBCheckHIDRequest(void)
         switch (SetupPkt.bDescriptorType)
         {
             case DSC_HID: //HID Descriptor
-                #if defined(DEBUG)
+                #if 0//(_DEBUG_ENABLE_)
                 SerialPrint("HID descriptor.\r\n");
                 #endif
                 if (USBActiveConfiguration == 1)
@@ -1179,14 +1153,15 @@ void USBCheckHIDRequest(void)
                     //USBEP0SendROMPtr((const UINT8*)&configDescriptor1 + 18, sizeof(USB_HID_DSC)+3, USB_EP0_INCLUDE_ZERO);
                     //18 is the offset from start of the configuration descriptor
                     //to the start of the HID descriptor.
-                    inPipe.pSrc.bRom = (const UINT8*)&configDescriptor1 + 18;
+                    //inPipe.pSrc.bRom = (const UINT8*)&usb_config_descriptor + 18;
+                    inPipe.pSrc.bRom = (const UINT8*)&usb_config_descriptor.hid;
                     inPipe.wCount.Val = sizeof(USB_HID_DESCRIPTOR);
                     inPipe.info.Val = USB_EP0_INCLUDE_ZERO | USB_EP0_BUSY | USB_EP0_ROM;
                 }
                 break;
 
             case DSC_RPT:  //Report Descriptor
-                #if defined(DEBUG)
+                #if 0//(_DEBUG_ENABLE_)
                 SerialPrint("Report descriptor.\r\n");
                 #endif
                 if (USBActiveConfiguration == 1)
@@ -1206,7 +1181,7 @@ void USBCheckHIDRequest(void)
     switch (SetupPkt.bRequest)
     {
         case GET_REPORT:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("GET_REPORT\r\n");
             #endif
             USBHIDCBGetReportHandler();
@@ -1214,7 +1189,7 @@ void USBCheckHIDRequest(void)
 
         #if 0
         case SET_REPORT:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_REPORT\r\n");
             #endif
             #if defined USER_SET_REPORT_HANDLER
@@ -1223,7 +1198,7 @@ void USBCheckHIDRequest(void)
             break;
 
         case GET_IDLE:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("GET_IDLE\r\n");
             #endif
             //USBEP0SendRAMPtr( (UINT8*)&idle_rate, 1, USB_EP0_INCLUDE_ZERO);
@@ -1234,7 +1209,7 @@ void USBCheckHIDRequest(void)
         #endif
 
         case SET_IDLE:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_IDLE\r\n");
             #endif
             //USBEP0Transmit(USB_EP0_NO_DATA);
@@ -1244,7 +1219,7 @@ void USBCheckHIDRequest(void)
 
         #if 0
         case GET_PROTOCOL:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("GET_PROTOCOL\r\n");
             #endif
             //USBEP0SendRAMPtr( (UINT8*)&active_protocol, 1, USB_EP0_NO_OPTIONS);
@@ -1254,7 +1229,7 @@ void USBCheckHIDRequest(void)
             break;
 
         case SET_PROTOCOL:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("SET_PROTOCOL\r\n");
             #endif
             //USBEP0Transmit(USB_EP0_NO_DATA);
@@ -1286,9 +1261,9 @@ static void USBStdFeatureReqHandler(void)
     }//end if
 
     //Check if the host sent a valid SET or CLEAR endpoint halt request.
-    if((SetupPkt.bFeature == USB_FEATURE_ENDPOINT_HALT)&&
-       (SetupPkt.Recipient == USB_SETUP_RECIPIENT_ENDPOINT_BITFIELD)&&
-       (SetupPkt.EPNum != 0) && (SetupPkt.EPNum <= USB_MAX_EP_NUMBER)&&
+    if((SetupPkt.bFeature == USB_FEATURE_ENDPOINT_HALT) &&
+       (SetupPkt.Recipient == USB_SETUP_RECIPIENT_ENDPOINT_BITFIELD) &&
+       (SetupPkt.EPNum != 0) && (SetupPkt.EPNum <= USB_MAX_EP_NUMBER) &&
        (USBDeviceState == CONFIGURED_STATE))
     {
         //The request was valid.  Take control of the control transfer and
@@ -1323,7 +1298,7 @@ static void USBStdFeatureReqHandler(void)
 
         //Update the BDT pointers with the new, next entry based on the feature
         //  request
-        if(SetupPkt.EPDir == OUT_FROM_HOST)
+        if (SetupPkt.EPDir == OUT_FROM_HOST)
         {
             pBDTEntryOut[SetupPkt.EPNum] = (volatile BDT_ENTRY *)p;
         }
@@ -1335,11 +1310,11 @@ static void USBStdFeatureReqHandler(void)
         //Check if it was a SET_FEATURE endpoint halt request
         if(SetupPkt.bRequest == USB_REQUEST_SET_FEATURE)
         {
-            if(p->STAT.UOWN == 1)
+            if (p->STAT.UOWN == 1)
             {
                 //Mark that we are terminating this transfer and that the user
                 //  needs to be notified later
-                if(SetupPkt.EPDir == 0)
+                if (SetupPkt.EPDir == 0)
                 {
                     ep_data_out[SetupPkt.EPNum].bits.transfer_terminated = 1;
                 }
@@ -1359,7 +1334,7 @@ static void USBStdFeatureReqHandler(void)
             //USBAdvancePingPongBuffer(&p);
             ((BYTE_VAL*)&p)->Val ^= USB_NEXT_PING_PONG;
 
-            if(p->STAT.UOWN == 1)
+            if (p->STAT.UOWN == 1)
             {
                 //Clear UOWN and set DTS state so it will be correct the next time
                 //the application firmware uses USBTransferOnePacket() on the EP.
@@ -1382,9 +1357,9 @@ static void USBStdFeatureReqHandler(void)
             //a transaction on the given endpoint.  If so, need to clear UOWN,
             //set DTS to the proper state, and call the application callback
             //function.
-            if((current_ep_data.bits.transfer_terminated != 0) || ((p->STAT.UOWN == 1) && (p->STAT.BSTALL == 0)))
+            if ((current_ep_data.bits.transfer_terminated != 0) || ((p->STAT.UOWN == 1) && (p->STAT.BSTALL == 0)))
             {
-                if(SetupPkt.EPDir == 0)
+                if (SetupPkt.EPDir == 0)
                 {
                     ep_data_out[SetupPkt.EPNum].bits.transfer_terminated = 0;
                 }
@@ -1438,22 +1413,22 @@ static void USBCtrlEPAllowStatusStage(void)
     //USBCtrlEPAllowStatusStage() can be called twice simultaneously (ex: once
     //in main loop context, while simultaneously getting an interrupt which
     //tries to call USBCtrlEPAllowStatusStage() again, at the same time).
-    if(USBStatusStageEnabledFlag1 == FALSE)
+    if (USBStatusStageEnabledFlag1 == FALSE)
     {
         USBStatusStageEnabledFlag1 = TRUE;
 
-        if(USBStatusStageEnabledFlag2 == FALSE)
+        if (USBStatusStageEnabledFlag2 == FALSE)
         {
             USBStatusStageEnabledFlag2 = TRUE;
 
             //Determine which endpoints (EP0 IN or OUT needs arming for the status
             //stage), based on the type of control transfer currently pending.
-            if(controlTransferState == CTRL_TRF_RX)
+            if (controlTransferState == CTRL_TRF_RX)
             {
                 pBDTEntryIn[0]->CNT = 0;
                 pBDTEntryIn[0]->STAT.Val = _USIE|_DAT1|_DTSEN;
             }
-            else if(controlTransferState == CTRL_TRF_TX)
+            else if (controlTransferState == CTRL_TRF_TX)
             {
                 BothEP0OutUOWNsSet = FALSE;	//Indicator flag used in USBCtrlTrfOutHandler()
 
@@ -1499,7 +1474,7 @@ static void USBCtrlEPAllowDataStage(void)
     USBDeferINDataStagePackets = FALSE;
     USBDeferOUTDataStagePackets = FALSE;
 
-    if(controlTransferState == CTRL_TRF_RX) //(<setup><out><out>...<out><in>)
+    if (controlTransferState == CTRL_TRF_RX) //(<setup><out><out>...<out><in>)
     {
         //Prepare EP0 OUT to receive the first OUT data packet in the data stage sequence.
         pBDTEntryEP0OutNext->CNT = USB_EP0_BUFF_SIZE;
@@ -1510,7 +1485,7 @@ static void USBCtrlEPAllowDataStage(void)
     {
         //Error check the data stage byte count.  Make sure the user specified
         //value was no greater than the number of bytes the host requested.
-        if(SetupPkt.wLength < inPipe.wCount.Val)
+        if (SetupPkt.wLength < inPipe.wCount.Val)
         {
             inPipe.wCount.Val = SetupPkt.wLength;
         }
@@ -1532,29 +1507,29 @@ static void USBCtrlEPAllowDataStage(void)
 
 static void USBStdGetDscHandler(void)
 {
-    if(SetupPkt.bmRequestType == 0x80)
+    if (SetupPkt.bmRequestType == 0x80)
     {
-        #if defined(DEBUG)
-        //SerialPrint("Device is sending ");
+        #if 0//(_DEBUG_ENABLE_)
+        SerialPrint("> sending ");
         #endif
 
         inPipe.info.Val = USB_EP0_ROM | USB_EP0_BUSY | USB_EP0_INCLUDE_ZERO;
 
-        switch(SetupPkt.bDescriptorType)
+        switch (SetupPkt.bDescriptorType)
         {
             case USB_DESCRIPTOR_DEVICE:
-                #if defined(DEBUG)
-                //SerialPrint("device descriptor. ");
+                #if 0//(_DEBUG_ENABLE_)
+                SerialPrint("device descriptor.\r\n");
                 #endif
-                inPipe.pSrc.bRom = (const UINT8*)&device_dsc;
-                inPipe.wCount.Val = sizeof(device_dsc);
+                inPipe.pSrc.bRom = (const UINT8*)&usb_device_descriptor;
+                inPipe.wCount.Val = sizeof(usb_device_descriptor);
                 break;
 
             case USB_DESCRIPTOR_CONFIGURATION:
-                #if defined(DEBUG)
-                //SerialPrint("configuration descriptor. ");
+                #if 0//(_DEBUG_ENABLE_)
+                SerialPrint("configuration descriptor.\r\n");
                 #endif
-                inPipe.pSrc.bRom = *(USB_CD_Ptr+SetupPkt.bDscIndex);
+                inPipe.pSrc.bRom = (const UINT8 *)(&usb_config_descriptor + SetupPkt.bDscIndex);
 
                 // This must be loaded using byte addressing.  The source pointer
                 // may not be word aligned for the 16 or 32 bit machines resulting
@@ -1564,16 +1539,19 @@ static void USBStdGetDscHandler(void)
                 break;
 
             case USB_DESCRIPTOR_STRING:
-                #if defined(DEBUG)
-                //SerialPrint("string descriptor. ");
+                #if 0//(_DEBUG_ENABLE_)
+                SerialPrint("string descriptor.\r\n");
                 #endif
                 //USB_NUM_STRING_DESCRIPTORS is the number of string descriptors.
                 if(SetupPkt.bDscIndex < USB_NUM_STRING_DESCRIPTORS)
                 {
                     //Get a pointer to the String descriptor requested
-                    inPipe.pSrc.bRom = *(USB_SD_Ptr + SetupPkt.bDscIndex);
-                    // Set data count
-                    inPipe.wCount.Val = *inPipe.pSrc.bRom;
+                    inPipe.pSrc.bRom = (const UINT8 *)(usb_string_descriptor[SetupPkt.bDscIndex]);
+                    // Set data count (first USB_STRING_DESCRIPTOR element is bLength)
+                    inPipe.wCount.Val = (UINT16)*inPipe.pSrc.bRom; 
+
+                    //inPipe.wCount.Val = USBGetString(SetupPkt.bDscIndex, (const void*)&inPipe.pSrc.bRom);
+
                 }
                 else
                 {
@@ -1582,8 +1560,8 @@ static void USBStdGetDscHandler(void)
                 break;
 
             default:
-                #if defined(DEBUG)
-                //SerialPrint("null descriptor. ");
+                #if 0//(_DEBUG_ENABLE_)
+                SerialPrint("null descriptor. ");
                 #endif
                 inPipe.info.Val = 0;
                 break;
@@ -1601,14 +1579,14 @@ static void USBStdGetStatusHandler(void)
     CtrlTrfData[0] = 0;                 // Initialize content
     CtrlTrfData[1] = 0;
 
-    #if defined(DEBUG)
-    //SerialPrint("Device is sending ");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("Device is sending ");
     #endif
 
-    switch(SetupPkt.Recipient)
+    switch (SetupPkt.Recipient)
     {
         case USB_SETUP_RECIPIENT_DEVICE_BITFIELD:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("USB_SETUP_RECIPIENT_DEVICE_BITFIELD\r\n");
             #endif
             inPipe.info.bits.busy = 1;
@@ -1617,26 +1595,22 @@ static void USBStdGetStatusHandler(void)
              *      bit1: RemoteWakeup        [0] Disabled    [1] Enabled
              */
             #if 0 // self_power is defined in hardware.h
-            if(self_power == 1)
-            {
+            if (self_power == 1)
                 CtrlTrfData[0]|=0x01;
-            }
             #endif
-            if(RemoteWakeup == TRUE)
-            {
+            if (RemoteWakeup == TRUE)
                 CtrlTrfData[0]|=0x02;
-            }
             break;
 
         case USB_SETUP_RECIPIENT_INTERFACE_BITFIELD:
-            #if defined(DEBUG)
-            SerialPrint("USB_SETUP_RECIPIENT_INTERFACE_BITFIELD\r\n");
+            #if 0//(_DEBUG_ENABLE_)
+            //SerialPrint("USB_SETUP_RECIPIENT_INTERFACE_BITFIELD\r\n");
             #endif
             inPipe.info.bits.busy = 1;     // No data to update
             break;
 
         case USB_SETUP_RECIPIENT_ENDPOINT_BITFIELD:
-            #if defined(DEBUG)
+            #if 0//(_DEBUG_ENABLE_)
             SerialPrint("USB_SETUP_RECIPIENT_ENDPOINT_BITFIELD\r\n");
             #endif
             inPipe.info.bits.busy = 1;
@@ -1658,7 +1632,7 @@ static void USBStdGetStatusHandler(void)
 
         }//end switch
 
-    if(inPipe.info.bits.busy == 1)
+    if (inPipe.info.bits.busy == 1)
     {
         // Set Source
         inPipe.pSrc.bRam = (UINT8*)&CtrlTrfData;
@@ -1701,22 +1675,23 @@ static void USBStdGetStatusHandler(void)
 
 static void USBCtrlEPServiceComplete(void)
 {
-    #if defined(DEBUG)
-    //SerialPrint("Done\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("Done\r\n");
     #endif
 
     // PKTDIS: Packet Transfer Disable bit
     // Clear to resume packet processing.
-    U1CONCLR = _U1CON_PKTDIS_MASK;
+    //U1CONCLR = _U1CON_PKTDIS_MASK;
+    U1CONbits.PKTDIS = 0;
 
     //Check the busy bits and the SetupPtk.DataDir variables to determine what type of
     //control transfer is currently in progress.  We need to know the type of control
     //transfer that is currently pending, in order to know how to properly arm the
     //EP0 IN and EP0 OUT endpoints.
 
-    if(inPipe.info.bits.busy == 0)
+    if (inPipe.info.bits.busy == 0)
     {
-        if(outPipe.info.bits.busy == 1)
+        if (outPipe.info.bits.busy == 1)
         {
             controlTransferState = CTRL_TRF_RX;
             /*
@@ -1729,10 +1704,8 @@ static void USBCtrlEPServiceComplete(void)
             //   RAM buffer wasn't available yet) by calling USBDeferDataStage().
             //   If it did so, it is then responsible for calling USBCtrlEPAllowDataStage(),
             //   once it is ready to begin receiving the data.
-            if(USBDeferOUTDataStagePackets == FALSE)
-            {
+            if (USBDeferOUTDataStagePackets == FALSE)
                 USBCtrlEPAllowDataStage();
-            }
 
             //2. IN endpoint 0 status stage will be armed by USBCtrlEPAllowStatusStage()
             //   after all of the OUT data has been received and consumed, or if a timeout occurs.
@@ -1769,10 +1742,8 @@ static void USBCtrlEPServiceComplete(void)
              *    is ready to begin sending the data, it should then call the
              *    USBCtrlEPAllowDataStage() function to start the data stage.
              */
-            if(USBDeferINDataStagePackets == FALSE)
-            {
+            if (USBDeferINDataStagePackets == FALSE)
                 USBCtrlEPAllowDataStage();
-            }
 
             // 2. (Optionally) allow the status stage now, to prepare for early termination.
             //    Note: If a class request handler decided to set USBDeferStatusStagePacket == TRUE,
@@ -1796,10 +1767,8 @@ static void USBCtrlEPServiceComplete(void)
             //    data that needs to be sent to the host, it should instead use the USBDeferDataStage() function.
             USBStatusStageEnabledFlag2 = FALSE;
             USBStatusStageEnabledFlag1 = FALSE;
-            if(USBDeferStatusStagePacket == FALSE)
-            {
+            if (USBDeferStatusStagePacket == FALSE)
                 USBCtrlEPAllowStatusStage();
-            }
         }
         else   // (SetupPkt.DataDir == USB_SETUP_DIRECTION_HOST_TO_DEVICE)
         {
@@ -1823,10 +1792,8 @@ static void USBCtrlEPServiceComplete(void)
             //2. Prepare for IN status stage of the control transfer
             USBStatusStageEnabledFlag2 = FALSE;
             USBStatusStageEnabledFlag1 = FALSE;
-            if(USBDeferStatusStagePacket == FALSE)
-            {
+            if (USBDeferStatusStagePacket == FALSE)
                 USBCtrlEPAllowStatusStage();
-            }
         }
     }//end if(ctrl_trf_session_owner == MUID_NULL)
 }
@@ -1848,15 +1815,15 @@ static void USBCtrlTrfTxService(void)
 {
     UINT8 byteToSend;
 
-    #if defined(DEBUG)
-    //SerialPrint("> USBCtrlTrfSetupHandler\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("> USBCtrlTrfSetupHandler\r\n");
     #endif
 
     //Figure out how many bytes of data to send in the next IN transaction.
     //Assume a full size packet, unless otherwise determined below.
     byteToSend = USB_EP0_BUFF_SIZE;
 
-    if(inPipe.wCount.Val < (UINT8)USB_EP0_BUFF_SIZE)
+    if (inPipe.wCount.Val < (UINT8)USB_EP0_BUFF_SIZE)
     {
         byteToSend = inPipe.wCount.Val;
 
@@ -1867,7 +1834,7 @@ static void USBCtrlTrfTxService(void)
         //packets, requesting more data than intended in the control transfer.
         if (shortPacketStatus == SHORT_PKT_NOT_USED)
             shortPacketStatus = SHORT_PKT_PENDING;
-        else if(shortPacketStatus == SHORT_PKT_PENDING)
+        else if (shortPacketStatus == SHORT_PKT_PENDING)
             shortPacketStatus = SHORT_PKT_SENT;
     }
 
@@ -1884,9 +1851,9 @@ static void USBCtrlTrfTxService(void)
     //which we will send to the host.
     pDst = (USB_VOLATILE UINT8*)CtrlTrfData;                // Set destination pointer
 
-    if(inPipe.info.bits.ctrl_trf_mem == USB_EP0_ROM)   // Determine type of memory source
+    if (inPipe.info.bits.ctrl_trf_mem == USB_EP0_ROM)   // Determine type of memory source
     {
-        while(byteToSend)
+        while (byteToSend)
         {
             *pDst++ = *inPipe.pSrc.bRom++;
             byteToSend--;
@@ -1894,7 +1861,7 @@ static void USBCtrlTrfTxService(void)
     }
     else  // RAM
     {
-        while(byteToSend)
+        while (byteToSend)
         {
             *pDst++ = *inPipe.pSrc.bRam++;
             byteToSend--;
@@ -1925,8 +1892,8 @@ static void USBCtrlTrfRxService(void)
     UINT8 byteToRead;
     UINT8 i;
 
-    #if defined(DEBUG)
-    //SerialPrint("> USBCtrlTrfRxService\r\n");
+    #if 0//(_DEBUG_ENABLE_)
+    SerialPrint("> USBCtrlTrfRxService\r\n");
     #endif
 
     //Load byteToRead with the number of bytes the host just sent us in the
@@ -1937,7 +1904,7 @@ static void USBCtrlTrfRxService(void)
     //of remaining bytes expected to be received from the host, in the control
     //transfer.  First check to see if the host sent us more bytes than the
     //application firmware was expecting to receive.
-    if(byteToRead > outPipe.wCount.Val)
+    if (byteToRead > outPipe.wCount.Val)
     {
         byteToRead = outPipe.wCount.Val;
     }
@@ -1947,14 +1914,14 @@ static void USBCtrlTrfRxService(void)
 
     //Copy the OUT DATAx packet bytes that we just received from the host,
     //into the user application buffer space.
-    for(i=0;i<byteToRead;i++)//while(byteToRead.Val)
+    for (i=0;i<byteToRead;i++)//while(byteToRead.Val)
     {
         *outPipe.pDst.bRam++ = CtrlTrfData[i];
     }
 
     //If there is more data to receive, prepare EP0 OUT so that it can receive
     //the next packet in the sequence.
-    if(outPipe.wCount.Val > 0)
+    if (outPipe.wCount.Val > 0)
     {
         pBDTEntryEP0OutNext->CNT = USB_EP0_BUFF_SIZE;
         pBDTEntryEP0OutNext->ADR = ConvertToPhysicalAddress(&CtrlTrfData);
@@ -1984,7 +1951,7 @@ static void USBCtrlTrfRxService(void)
         //Go ahead and call the user specified callback function, to use/consume
         //the control transfer data (ex: if the "void (*function)" parameter
         //was non-NULL when USBEP0Receive() was called).
-        if(outPipe.pFunc != 0)
+        if (outPipe.pFunc != 0)
         {
             outPipe.pFunc();
         }
@@ -2002,7 +1969,7 @@ static void USBCtrlTrfRxService(void)
         //means either 50ms, 500ms, or 5 seconds, depending on the type of
         //control transfer.  See the USB 2.0 specification section 9.2.6 for
         //more details.
-        if(USBDeferStatusStagePacket == FALSE)
+        if (USBDeferStatusStagePacket == FALSE)
         {
             USBCtrlEPAllowStatusStage();
         }
@@ -2029,20 +1996,21 @@ static void USBStdSetCfgHandler(void)
     U1EP1 = 0x00;
 
     //Clear all of the BDT entries
-    for(i=0;i<(sizeof(BDT)/sizeof(BDT_ENTRY));i++)
+    for (i=0;i<(sizeof(BDT)/sizeof(BDT_ENTRY));i++)
     {
         BDT[i].Val = 0;
     }
 
     // Assert reset request to all of the Ping Pong buffer pointers
     //USBPingPongBufferReset = 1;
-    U1CONSET = _U1CON_PPBRST_MASK;
+    //U1CONSET = _U1CON_PPBRST_MASK;
+    U1CONbits.PPBRST = 1;
 
     //clear the alternate interface settings
     //memset((void*)&USBAlternateInterface,0x00,USB_MAX_NUM_INT);
     //MemClear ((void*)&USBAlternateInterface, USB_MAX_NUM_INT);
     #if 0
-    for(i=0;i<USB_MAX_NUM_INT;i++)
+    for (i=0;i<USB_MAX_NUM_INT;i++)
     {
         USBAlternateInterface[i] = 0x00;
     }
@@ -2052,7 +2020,8 @@ static void USBStdSetCfgHandler(void)
 
     //Stop trying to reset ping pong buffer pointers
     //USBPingPongBufferReset = 0;
-    U1CONCLR = _U1CON_PPBRST_MASK;
+    //U1CONCLR = _U1CON_PPBRST_MASK;
+    U1CONbits.PPBRST = 0;
 
     pBDTEntryIn[0] = (volatile BDT_ENTRY*)&BDT[EP0_IN_EVEN];
 
@@ -2064,7 +2033,7 @@ static void USBStdSetCfgHandler(void)
     USBActiveConfiguration = SetupPkt.bConfigurationValue;
 
     //if the configuration value == 0
-    if(USBActiveConfiguration == 0)
+    if (USBActiveConfiguration == 0)
     {
         //Go back to the addressed state
         USBDeviceState = ADDRESS_STATE;

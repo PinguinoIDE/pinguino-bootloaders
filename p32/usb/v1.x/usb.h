@@ -1,11 +1,11 @@
 /*******************************************************************************
-	Title:	USB Pinguino Bootloader
-	File:	usb.h
-	Descr.: USB definitions
-	Author:	Régis Blanchot <rblanchot@gmail.com>
+    Title:  USB Pinguino Bootloader
+    File:   usb.h
+    Descr.: USB definitions
+    Author: Régis Blanchot <rblanchot@gmail.com>
 
-	This file is part of Pinguino (http://www.pinguino.cc)
-	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
+    This file is part of Pinguino (http://www.pinguino.cc)
+    Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
 *******************************************************************************/
 
 #ifndef _USB_H_
@@ -16,15 +16,15 @@
 #include "hardware.h"
 #include "boot.h"
 
-/*******************************************************************************
-********************************************************************************
-********************************************************************************
+/***********************************************************************
+************************************************************************
+************************************************************************
     This section contains implementation specific information that may vary
     between releases as the implementation needs to change.  This section is
     included for compilation reasons only.
-********************************************************************************
-********************************************************************************
-*******************************************************************************/
+************************************************************************
+************************************************************************
+***********************************************************************/
 
 #if defined(USB_POLLING)
     #define USB_VOLATILE
@@ -87,7 +87,7 @@
 #define HID_INT_OUT_EP_SIZE         HID_INT_EP_SIZE
 #define HID_INT_IN_EP_SIZE          HID_INT_EP_SIZE
 #define HID_NUM_OF_DSC              1
-#define HID_RPT01_SIZE              29 // 63
+#define HID_RPT01_SIZE              29
 #define HID_INPUT_REPORT            0x01
 #define HID_OUTPUT_REPORT           0x02
 #define HID_FEATURE_REPORT          0x03
@@ -677,7 +677,6 @@ typedef struct
     UINT8  index;
     UINT8  type;
     UINT16 language_id;
-
 } DESCRIPTOR_ID;
 
 // ******************************************************************
@@ -695,19 +694,21 @@ typedef struct
 // descriptor.  The actual data (either the language ID array or the
 // array of unicode characters making up the string, must be allocated
 // immediately following this header with no padding between them.
-
+/*
 typedef struct __attribute__ ((packed)) _USB_STRING_DESCRIPTOR
 {
     UINT8   bLength;             // Size of this descriptor
     UINT8   bDescriptorType;     // Type, USB_DSC_STRING
-
 } USB_STRING_DESCRIPTOR;
+*/
+#define USB_STRING_INIT(nchars)                                        \
+    struct                                                             \
+    {                                                                  \
+        UINT8  bLength;                                                \
+        UINT8  bDescriptorType;                                        \
+        UINT16 string[nchars];                                         \
+    }
 
-#define USB_STRING_INIT(nchars) struct {\
-    UINT8  bLength;          \
-    UINT8  bDescriptorType;  \
-    UINT16 string[nchars];  \
-}
 // ******************************************************************
 // Section: USB Device Qualifier Descriptor Structure
 // ******************************************************************
@@ -716,7 +717,7 @@ typedef struct __attribute__ ((packed)) _USB_STRING_DESCRIPTOR
 // supports "other" speeds.
 //
 // Note: A high-speed device may support "other" speeds (ie. full or low).
-// If so, it may need to implement the the device qualifier and other
+// If so, it may need to implement the device qualifier and other
 // speed descriptors.
 
 #if 0
@@ -751,27 +752,6 @@ typedef struct __attribute__ ((packed)) _USB_HID_DESCRIPTOR
     UINT8  bRDescriptorType;     //
     UINT16 wDescriptorLength;    //
 } USB_HID_DESCRIPTOR;
-
-#if 0
-typedef struct _USB_HID_DSC
-{
-    UINT8 bLength;		//offset 0
-    UINT8 bDescriptorType;	//offset 1
-    UINT16 bcdHID;		//offset 2
-    UINT8 bCountryCode;		//offset 4
-    UINT8 bNumDsc;		//offset 5
-
-    //USB_HID_DSC_HEADER hid_dsc_header[HID_NUM_OF_DSC];
-    /* HID_NUM_OF_DSC is defined in usbcfg.h */
-
-} USB_HID_DSC;
-
-typedef struct _USB_HID_DSC_HEADER
-{
-    UINT8 bDescriptorType;	//offset 9
-    UINT16 wDscLength;		//offset 10
-} USB_HID_DSC_HEADER;
-#endif
 
 // ******************************************************************
 // Section: USB Setup Packet Structure
@@ -929,7 +909,6 @@ and properties of the data transfer.
 </code>
 */
 
-
 typedef union
 {
     UINT8    bitmap;
@@ -993,13 +972,30 @@ typedef union __USTAT
 {
     struct
     {
-        unsigned filler1           :2;
+        unsigned filler1           :2;  // Bit 0-1, unimplemented
         unsigned ping_pong         :1;
         unsigned direction         :1;
         unsigned endpoint_number   :4;
     };
     UINT8 Val;
 } USTAT_FIELDS;
+
+// Pinguino own Configuration Descriptor
+typedef struct
+{
+    USB_CONFIGURATION_DESCRIPTOR  config;
+    USB_INTERFACE_DESCRIPTOR interface;
+    USB_HID_DESCRIPTOR hid;
+    USB_ENDPOINT_DESCRIPTOR ep_out;
+    USB_ENDPOINT_DESCRIPTOR ep_in;
+} USB_CONFIG_DESCRIPTOR;
+
+// Total length in chars of data returned
+#define CONFIGURATION_TOTAL_LENGTH (sizeof(USB_CONFIGURATION_DESCRIPTOR) + \
+                                    sizeof(USB_INTERFACE_DESCRIPTOR) + \
+                                    sizeof(USB_HID_DESCRIPTOR) +       \
+                                    sizeof(USB_ENDPOINT_DESCRIPTOR) +  \
+                                    sizeof(USB_ENDPOINT_DESCRIPTOR) )
 
 /*******************************************************************************
  Macros
@@ -1015,6 +1011,7 @@ typedef union __USTAT
 // transform decimal to bcd number
 #define BCD(x)   ((( x / 10 ) << 4) | ( x % 10 ))
 
+/*
 #define SetConfigurationOptions()   {\
     U1CNFG1 = 0;\
     U1EIE = 0x9F;\
@@ -1024,7 +1021,7 @@ typedef union __USTAT
 }
 
 #define USBSE0Event             0// U1IRbits.URSTIF//  U1CONbits.SE0
-
+*/
 /*******************************************************************************
  Function Prototypes
 *******************************************************************************/

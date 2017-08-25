@@ -13,11 +13,12 @@
 #include "typedefs.h"               // UINT8, UINT32, ...
 #include "config.h"                 // Config. bits
 #include "hardware.h"               // Pinguino boards hardware description
-#include "delay.h"                  // DelayUs
-#include "core.h"                   // Core Timer functions, FCPU, FCP0
+#include "delay.h"                  // Delayus, Delayms
+#include "core.h"                   // Core Timer functions, FCPU, FPB, FCP0
 #include "serial.h"                 // UART functions
 
-#define COREMARK100 769231          // counter value when FCPU=40MHz
+#define COREMARK100MIPS32 133334    // PIC32MX 40MHz MIPS32
+#define COREMARK100MIPS16 350878    // PIC32MX 40MHz MIPS16
 
 /***********************************************************************
  * MAIN PROGRAM ENTRY POINT
@@ -26,43 +27,54 @@
 int main(void)
 {
     UINT32 counter=0, sec=0;
-
+    
     mLED_Init();
+    
     SerialInit(9600);
     SerialPrintChar(12); // CLS
-    SerialPrint("RESET\r\n");
-
+    
     while(1)
     {
-        mLED_1_On();
-        Delayms(100);
         mLED_1_Off();
+        mLED_2_On();
+
+        Delayms(100);
+
+        mLED_1_On();
+        mLED_2_Off();
 
         // display current CPU frequency
-        SerialPrint("Fcpu = ");
+        SerialPrint("FCPU = ");
         SerialPrintNumber(FCPU/1000000, 10);
-        SerialPrint("MHz\r\n");
+        SerialPrint("MHz, ");
+
+        // display current peripheral frequency
+        SerialPrint("FPB = ");
+        SerialPrintNumber(FPB/1000000, 10);
+        SerialPrint("MHz, ");
 
         // increment counter for 1 sec.
-        #if 1
         counter = 0;
         ResetCoreTimer();
         while (ReadCoreTimer() < FCP0)
-        {
             counter++;
-        }
-        #else
-        Delayms(900);
-        #endif
         
         // display counter
-        SerialPrint("counter = ");
+        SerialPrint("Coremark = ");
         SerialPrintNumber(counter, 10);
-        SerialPrint("\r\n");
+        SerialPrint(", ");
 
-        SerialPrint("CoreMark = ");
-        SerialPrintNumber(100*counter/COREMARK100, 10);
-        SerialPrint("\r\n");
+        //SerialPrint("CoreMark = ");
+        SerialPrintNumber((UINT32)(100*counter/COREMARK100MIPS16-100), 10);
+        if (counter == COREMARK100MIPS16)
+            SerialPrint("%, same speed ");
+        else if (counter > COREMARK100MIPS16)
+            SerialPrint("% faster ");
+        else
+            SerialPrint("% slower ");
+        SerialPrint("than a PIC32MX @ 40MHz/MIPS16\r\n");
+
+        //Delayms(900);
     }
     
     return 0;

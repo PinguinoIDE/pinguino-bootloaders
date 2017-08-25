@@ -1,22 +1,28 @@
-/*******************************************************************************
-	Title:	USB Pinguino Bootloader
-	File:	core.c
-	Descr.: Core routine for MIPS processor
-	Author:	Régis Blanchot <rblanchot@gmail.com>
+/***********************************************************************
+    Title:  USB Pinguino Bootloader
+    File:   core.c
+    Descr.: Core routine for MIPS processor
+    Author:	Régis Blanchot <rblanchot@gmail.com>
 
-	This file is part of Pinguino (http://www.pinguino.cc)
-	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
-*******************************************************************************/
+    This file is part of Pinguino (http://www.pinguino.cc)
+    Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
+***********************************************************************/
 
 #ifndef __CORE_C
 #define __CORE_C
 
 #include <p32xxxx.h>
 #include "typedefs.h"
-#include "core.h"           // Core Timer functions, FCP0
+#include "core.h"           // Core Timer functions, FCPU, FCP0
+
+const UINT32 lookupFPLLIDIVvalue[8] = {1,2,3,4,5,6,10,12};
+const UINT32 lookupFPLLMULvalue[8] = {15,16,17,18,19,20,21,24};
+const UINT32 lookupFPLLODIVvalue[8] = {1,2,4,8,16,32,64,256};
+const UINT32 lookupFPBDIVvalue[4] = {1,2,4,8};
 
 /*******************************************************************
  * Triggers the software reset
+ * After that the bootloader will start again
  *******************************************************************/
 
 void SoftReset(void)
@@ -27,7 +33,8 @@ void SoftReset(void)
     //if (!(DMACON & _DMACON_SUSPEND_MASK) )
     if (!DMACONbits.SUSPEND)
     {
-        DMACONSET = _DMACON_SUSPEND_MASK;
+        //DMACONSET = _DMACON_SUSPEND_MASK;
+        DMACONbits.SUSPEND = 1;
         while (DMACON & _DMACON_DMABUSY_MASK);
     }
 
@@ -37,10 +44,11 @@ void SoftReset(void)
     SYSKEY = 0x556699AA;
 
     // Step 2 - Write a '1' to RSWRST.SWRST bit to arm the software reset
-    RSWRSTSET = _RSWRST_SWRST_MASK;
+    //RSWRSTSET = _RSWRST_SWRST_MASK;
+    RSWRSTbits.SWRST = 1;
 
     // Step 3 - Read of the RSWRST register triggers the software reset
-    RSWRST;
+    (void) RSWRST;
 
     // Note: The read instruction must be following with either 4 nop
     // instructions (fills the instruction pipe) or a while(1)loop to
@@ -84,33 +92,28 @@ void MemCopy (void *from, void *to, UINT32 nbytes)
  * Save the interrupt state into the supplied variable.
  *******************************************************************/
 
-#if 0
 UINT32 MIPS32 DisableInterrupt(void)
 {
     int status;
     asm volatile ("di	%0" : "=r" (status));
     return status;
 }
-#endif
 
 /*******************************************************************
  * Enable hardware interrupts.
  *******************************************************************/
 
-#if 0
 UINT32 MIPS32 EnableInterrupt(void)
 {
     int status;
     asm volatile ("ei	%0" : "=r" (status));
     return status;
 }
-#endif
 
 /*******************************************************************
  * Enable hardware interrupts.
  *******************************************************************/
 
-#if 0
 void MIPS32 EnableMultiVectoredInt(void)
 {
     unsigned int val;
@@ -122,18 +125,15 @@ void MIPS32 EnableMultiVectoredInt(void)
     // set the CP0 status IE bit high to turn on interrupts
     EnableInterrupt();
 }
-#endif
 
 /*******************************************************************
  * Reset the Core Timer
  *******************************************************************/
 
-#if (TEST==true)
 void MIPS32 ResetCoreTimer(void)
 {
     asm volatile("mtc0	%0, $9" : : "r" (0));
 }
-#endif
 
 /*******************************************************************
  * Read the Core Timer
@@ -144,6 +144,16 @@ UINT32 MIPS32 ReadCoreTimer(void)
     UINT32 timer;
     asm volatile("mfc0	%0, $9" : "=r" (timer));
     return timer;
+}
+
+/*******************************************************************
+ * Explicit hazard barrier.
+ *******************************************************************/
+
+static void inline __attribute__ ((always_inline))
+mips_ehb()
+{
+    asm volatile ("ehb");
 }
 
 #endif // __CORE_C

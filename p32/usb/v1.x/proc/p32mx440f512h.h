@@ -1,6 +1,10 @@
 /*-------------------------------------------------------------------------
- * PIC32MX440F256H processor header
+ * PIC32MX440F512H processor header
+ * Build date : May 01 2015
  *
+ * Copyright (c) 2015, Microchip Technology Inc. and its subsidiaries ("Microchip")
+ * All rights reserved.
+ * 
  * This software is developed by Microchip Technology Inc. and its
  * subsidiaries ("Microchip").
  * 
@@ -29,10 +33,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
- *-------------------------------------------------------------------------*/
+ */
 
-#ifndef __32MX440F256H_H
-#define __32MX440F256H_H
+#pragma once
+#ifndef __32MX440F512H_H
+#define __32MX440F512H_H
 
 #if defined (__LANGUAGE_C__) || defined (__LANGUAGE_C_PLUS_PLUS)
 
@@ -238,9 +243,7 @@ extern volatile unsigned int        PR1INV __attribute__((section("sfrs")));
 extern volatile unsigned int        T2CON __attribute__((section("sfrs")));
 typedef union {
   struct {
-    unsigned :1;
-    unsigned TCS:1;
-    unsigned :1;
+    unsigned :3;
     unsigned T32:1;
     unsigned TCKPS:3;
     unsigned TGATE:1;
@@ -280,9 +283,7 @@ extern volatile unsigned int        PR2INV __attribute__((section("sfrs")));
 extern volatile unsigned int        T3CON __attribute__((section("sfrs")));
 typedef union {
   struct {
-    unsigned :1;
-    unsigned TCS:1;
-    unsigned :2;
+    unsigned :4;
     unsigned TCKPS:3;
     unsigned TGATE:1;
     unsigned :5;
@@ -321,9 +322,7 @@ extern volatile unsigned int        PR3INV __attribute__((section("sfrs")));
 extern volatile unsigned int        T4CON __attribute__((section("sfrs")));
 typedef union {
   struct {
-    unsigned :1;
-    unsigned TCS:1;
-    unsigned :1;
+    unsigned :3;
     unsigned T32:1;
     unsigned TCKPS:3;
     unsigned TGATE:1;
@@ -363,9 +362,7 @@ extern volatile unsigned int        PR4INV __attribute__((section("sfrs")));
 extern volatile unsigned int        T5CON __attribute__((section("sfrs")));
 typedef union {
   struct {
-    unsigned :1;
-    unsigned TCS:1;
-    unsigned :2;
+    unsigned :4;
     unsigned TCKPS:3;
     unsigned TGATE:1;
     unsigned :5;
@@ -5275,10 +5272,6 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _T1CON_w_MASK                            0xFFFFFFFF
 #define _T1CON_w_LENGTH                          0x00000020
 
-#define _T2CON_TCS_POSITION                      0x00000001
-#define _T2CON_TCS_MASK                          0x00000002
-#define _T2CON_TCS_LENGTH                        0x00000001
-
 #define _T2CON_T32_POSITION                      0x00000003
 #define _T2CON_T32_MASK                          0x00000008
 #define _T2CON_T32_LENGTH                        0x00000001
@@ -5323,10 +5316,6 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _T2CON_w_MASK                            0xFFFFFFFF
 #define _T2CON_w_LENGTH                          0x00000020
 
-#define _T3CON_TCS_POSITION                      0x00000001
-#define _T3CON_TCS_MASK                          0x00000002
-#define _T3CON_TCS_LENGTH                        0x00000001
-
 #define _T3CON_TCKPS_POSITION                    0x00000004
 #define _T3CON_TCKPS_MASK                        0x00000070
 #define _T3CON_TCKPS_LENGTH                      0x00000003
@@ -5366,10 +5355,6 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _T3CON_w_POSITION                        0x00000000
 #define _T3CON_w_MASK                            0xFFFFFFFF
 #define _T3CON_w_LENGTH                          0x00000020
-
-#define _T4CON_TCS_POSITION                      0x00000001
-#define _T4CON_TCS_MASK                          0x00000002
-#define _T4CON_TCS_LENGTH                        0x00000001
 
 #define _T4CON_T32_POSITION                      0x00000003
 #define _T4CON_T32_MASK                          0x00000008
@@ -5414,10 +5399,6 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _T4CON_w_POSITION                        0x00000000
 #define _T4CON_w_MASK                            0xFFFFFFFF
 #define _T4CON_w_LENGTH                          0x00000020
-
-#define _T5CON_TCS_POSITION                      0x00000001
-#define _T5CON_TCS_MASK                          0x00000002
-#define _T5CON_TCS_LENGTH                        0x00000001
 
 #define _T5CON_TCKPS_POSITION                    0x00000004
 #define _T5CON_TCKPS_MASK                        0x00000070
@@ -8699,11 +8680,6 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _BMXCON_w_MASK                           0xFFFFFFFF
 #define _BMXCON_w_LENGTH                         0x00000020
 
-// 2017-06-01 - Definition was missing, added by Regis Blanchot
-#define _DMACON_DMABUSY_POSITION                 0x0000000B
-#define _DMACON_DMABUSY_MASK                     0x00000800
-#define _DMACON_DMABUSY_LENGTH                   0x00000001
-
 #define _DMACON_SUSPEND_POSITION                 0x0000000C
 #define _DMACON_SUSPEND_MASK                     0x00001000
 #define _DMACON_SUSPEND_LENGTH                   0x00000001
@@ -11513,6 +11489,8 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _BMX
 #define _CFG
 #define _CMP
+#define _CMP1
+#define _CMP2
 #define _CVR
 #define _DMAC
 #define _DMAC0
@@ -11565,13 +11543,15 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _ADC10_BASE_ADDRESS                      0xBF809000
 #define _BMX_BASE_ADDRESS                        0xBF882000
 #define _CFG_BASE_ADDRESS                        0xBF80F200
+#define _CMP1_BASE_ADDRESS                       0xBF80A000
+#define _CMP2_BASE_ADDRESS                       0xBF80A010
 #define _CMP_BASE_ADDRESS                        0xBF80A000
 #define _CVR_BASE_ADDRESS                        0xBF809800
-#define _DMAC_BASE_ADDRESS                       0xBF883000
 #define _DMAC0_BASE_ADDRESS                      0xBF883060
 #define _DMAC1_BASE_ADDRESS                      0xBF883120
 #define _DMAC2_BASE_ADDRESS                      0xBF8831E0
 #define _DMAC3_BASE_ADDRESS                      0xBF8832A0
+#define _DMAC_BASE_ADDRESS                       0xBF883000
 #define _I2C1_BASE_ADDRESS                       0xBF805000
 #define _I2C2_BASE_ADDRESS                       0xBF805200
 #define _ICAP1_BASE_ADDRESS                      0xBF802000
@@ -11589,21 +11569,21 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define _OSC_BASE_ADDRESS                        0xBF80F000
 #define _PCACHE_BASE_ADDRESS                     0xBF884000
 #define _PMP_BASE_ADDRESS                        0xBF807000
-#define _PORTB_BASE_ADDRESS                      0xBF886040
-#define _PORTC_BASE_ADDRESS                      0xBF886080
-#define _PORTD_BASE_ADDRESS                      0xBF8860C0
-#define _PORTE_BASE_ADDRESS                      0xBF886100
-#define _PORTF_BASE_ADDRESS                      0xBF886140
-#define _PORTG_BASE_ADDRESS                      0xBF886180
+#define _PORTB_BASE_ADDRESS                      0xBF886050
+#define _PORTC_BASE_ADDRESS                      0xBF886090
+#define _PORTD_BASE_ADDRESS                      0xBF8860D0
+#define _PORTE_BASE_ADDRESS                      0xBF886110
+#define _PORTF_BASE_ADDRESS                      0xBF886150
+#define _PORTG_BASE_ADDRESS                      0xBF886190
 #define _RCON_BASE_ADDRESS                       0xBF80F600
 #define _RTCC_BASE_ADDRESS                       0xBF800200
 #define _SPI2_BASE_ADDRESS                       0xBF805A00
 #define _TMR1_BASE_ADDRESS                       0xBF800600
-#define _TMR2_BASE_ADDRESS                       0xBF800800
 #define _TMR23_BASE_ADDRESS                      0xBF800800
+#define _TMR2_BASE_ADDRESS                       0xBF800800
 #define _TMR3_BASE_ADDRESS                       0xBF800A00
-#define _TMR4_BASE_ADDRESS                       0xBF800C00
 #define _TMR45_BASE_ADDRESS                      0xBF800C00
+#define _TMR4_BASE_ADDRESS                       0xBF800C00
 #define _TMR5_BASE_ADDRESS                       0xBF800E00
 #define _UART1_BASE_ADDRESS                      0xBF806000
 #define _UART2_BASE_ADDRESS                      0xBF806200
@@ -11614,8 +11594,70 @@ extern volatile __DEVCFG0bits_t DEVCFG0bits __asm__ ("DEVCFG0") __attribute__((s
 #define __DDPSTAT_BASE_ADDRESS                   0xBF880140
 #define __STRO_BASE_ADDRESS                      0xBF880170
 
+/*  The following device macros are predefined by the MPLAB XC32
+ *  compiler when compiling with the -mprocessor=<device> option.
+ *  We also define them here to help the MPLAB X editor evaluate
+ *  them correctly.
+ */
+#ifndef __32MX440F512H
+#  define __32MX440F512H 1
+#endif
+#ifndef __32MX440F512H__
+#  define __32MX440F512H__ 1
+#endif
+#ifndef __XC__
+#  define __XC__ 1
+#endif
+#ifndef __XC
+#  define __XC 1
+#endif
+#ifndef __XC32__
+#  define __XC32__ 1
+#endif
+#ifndef __XC32
+#  define __XC32 1
+#endif
+#ifndef __PIC32MX
+#  define __PIC32MX 1
+#endif
+#ifndef __PIC32MX__
+#  define __PIC32MX__ 1
+#endif
+#ifndef __PIC32_FEATURE_SET
+#  define __PIC32_FEATURE_SET 440
+#endif
+#ifndef __PIC32_FEATURE_SET__
+#  define __PIC32_FEATURE_SET__ 440
+#endif
+#ifndef __PIC32_MEMORY_SIZE
+#  define __PIC32_MEMORY_SIZE 512
+#endif
+#ifndef __PIC32_MEMORY_SIZE__
+#  define __PIC32_MEMORY_SIZE__ 512
+#endif
+#ifndef __PIC32_PIN_SET
+#  define __PIC32_PIN_SET 'H'
+#endif
+
+#ifndef __PIC32_PIN_SET__
+#  define __PIC32_PIN_SET__ 'H'
+#endif
+
+/*  The following device macros indicate which core features are
+ *  available on this device.
+ */
+#ifndef __PIC32_HAS_MIPS32R2
+# define __PIC32_HAS_MIPS32R2 1
+#endif
+#ifndef __PIC32_HAS_MIPS16
+# define __PIC32_HAS_MIPS16 1
+#endif
+
 /* include generic header file for backwards compatibility with old C32 v1.xx code */
+/* WARNING: Macros from this file are deprecated and should not be used in new     */
+/*          source code.                                                           */
 #include "ppic32mx.h"
+
 
 
 #endif

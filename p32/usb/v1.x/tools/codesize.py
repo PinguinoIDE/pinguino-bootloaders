@@ -44,6 +44,12 @@ BOOTLENGTH   = 0
 if (len(sys.argv) > 1):
 
     filename = sys.argv[1]
+    
+    if (len(sys.argv) > 2):
+        option = sys.argv[2]
+    else:
+        option = ""
+        
     fichier = open(filename, 'r')
     lines = fichier.readlines()
 
@@ -100,31 +106,35 @@ if (len(sys.argv) > 1):
 
     fichier.close()
 
-    # 4K align
-    BOOTEND = 4096 * (int(max_address/4096) + 1)
-    BOOTSTART = BOOTSTART | 0x80000000
-    BOOTEND   = BOOTEND   | 0x80000000
-    BOOTLENGTH = BOOTEND - BOOTSTART
-    IVTLENGTH = 0xA00
-    IVTSTART = BOOTEND
-    STARTUPSTART = BOOTEND + IVTLENGTH
-    STARTUPLENGTH = 0x200
-    RESETLENGTH = 0x10
-    RESETSTART = BOOTEND + 0x1000
-    APPSTART = RESETSTART + RESETLENGTH
-    
     print "Code size is : %d bytes (0x%X)" % (codesize, codesize)
-    print "In the bootloader linker script :"
-    print "    _ebase_address = 0x%X" % BOOTEND
-    print "    kseg0_program_mem    (rx)  : ORIGIN = 0x%X, LENGTH = 0x%X" % (BOOTSTART, BOOTLENGTH)
-    print "    exception_mem              : ORIGIN = 0x%X, LENGTH = 0x%X" % (IVTSTART, IVTLENGTH)
-    print "In the application linker script :"
-    print "    _ebase_address = 0x%X" % IVTSTART
-    print "    _RESET_ADDR = 0x%X" % RESETSTART
-    print "    exception_mem              : ORIGIN = 0x%X, LENGTH = 0x%X" % (BOOTEND, IVTLENGTH)
-    print "    kseg0_boot_mem             : ORIGIN = 0x%X  LENGTH = 0x%X" % (STARTUPSTART, STARTUPLENGTH)
-    print "    kseg1_boot_mem             : ORIGIN = 0x%X  LENGTH = 0x%X" % (RESETSTART, RESETLENGTH)
-    print "    kseg0_program_mem    (rx)  : ORIGIN = 0x%X, LENGTH = ???" % (APPSTART)
+
+    # 4K align
+    if (option <> ""):
+        BOOTEND = 4096 * (int(max_address/4096) + 1)
+        BOOTSTART = BOOTSTART | 0x80000000
+        BOOTEND   = BOOTEND   | 0x80000000
+        BOOTLENGTH = BOOTEND - BOOTSTART
+        IVTLENGTH = 0xA00
+        IVTSTART = BOOTEND
+        STARTUPSTART = BOOTEND + IVTLENGTH
+        STARTUPLENGTH = 0x200
+        RESETLENGTH = 0x10
+        RESETSTART = BOOTEND + 0x1000
+        APPSTART = RESETSTART + RESETLENGTH
+        
+        print "BEST CONFIG POSSIBLE :"
+        print
+        print "In the bootloader linker script :"
+        print "    _ebase_address = 0x%X" % BOOTEND
+        print "    kseg0_program_mem    (rx)  : ORIGIN = 0x%X, LENGTH = 0x%X" % (BOOTSTART, BOOTLENGTH)
+        print "    exception_mem              : ORIGIN = 0x%X, LENGTH = 0x%X" % (IVTSTART, IVTLENGTH)
+        print "In the application linker script :"
+        print "    _ebase_address = 0x%X" % IVTSTART
+        print "    _RESET_ADDR = 0x%X" % RESETSTART
+        print "    exception_mem              : ORIGIN = 0x%X, LENGTH = 0x%X" % (BOOTEND, IVTLENGTH)
+        print "    kseg0_boot_mem             : ORIGIN = 0x%X  LENGTH = 0x%X" % (STARTUPSTART, STARTUPLENGTH)
+        print "    kseg1_boot_mem             : ORIGIN = 0x%X  LENGTH = 0x%X" % (RESETSTART, RESETLENGTH)
+        print "    kseg0_program_mem    (rx)  : ORIGIN = 0x%X, LENGTH = ??? " % (APPSTART)
 
 else:
     print "No file to proceed"

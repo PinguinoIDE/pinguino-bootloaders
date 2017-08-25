@@ -9,8 +9,11 @@
     Pinguino Stand-alone Uploader for 32-bit Pinguino
 
     Author:          Regis Blanchot <rblanchot@gmail.com> 
-    Last release:    2014-09-09
-    
+    --------------------------------------------------------------------
+    CHANGELOG:
+    2017-08-04  Régis Blanchot  Added PyUSB Core support
+    2017-08-04  Régis Blanchot  Added PIC32MX440F256H support
+    --------------------------------------------------------------------
     This library is free software you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
@@ -38,6 +41,12 @@ import sys
 import os
 import usb
 import time
+import platform
+
+# PyUSB Core module switch
+# ------------------------------------------------------------------
+
+PYUSB_USE_CORE                  =    1  # (0=legacy, 1=core)
 
 # Globales
 #-----------------------------------------------------------------------
@@ -48,12 +57,12 @@ import time
 # Hex format record types
 # ----------------------------------------------------------------------
 
-Data_Record                     =     00
-End_Of_File_Record              =     01
-Extended_Segment_Address_Record =     02
-Start_Segment_Address_Record    =     03
-Extended_Linear_Address_Record  =     04
-Start_Linear_Address_Record     =     05
+Data_Record                     =    00
+End_Of_File_Record              =    01
+Extended_Segment_Address_Record =    02
+Start_Segment_Address_Record    =    03
+Extended_Linear_Address_Record  =    04
+Start_Linear_Address_Record     =    05
 
 # 32-bit Pinguino's ID
 #-----------------------------------------------------------------------
@@ -104,10 +113,12 @@ BOOT_LEN3                       =    26     # long = 4 bytes
 
 BOOT_TYPE_LEN                   =    9      # char + long + long = 9 bytes
 
-BOOT_DEVID1                     =    6
-BOOT_DEVID2                     =    7
-BOOT_DEVID3                     =    8
-BOOT_DEVID4                     =    9
+BOOT_DEVID1                     =    8
+BOOT_DEVID2                     =    60
+
+BOOT_VER_MAJOR                  =    22
+BOOT_VER_MINOR                  =    26
+BOOT_VER_DEVPT                  =    30
 
 # Sent packet structure
 # ----------------------------------------------------------------------
@@ -196,54 +207,94 @@ ERR_EOL                         =    16
 ERR_USB_ERASE                   =    17
 
 # Table with supported USB devices
-# device_id:[PIC name, flash size(in bytes), eeprom size (in bytes)] 
+# device_id:[PIC name, flash end address, Flash size (in bytes)] 
 #-----------------------------------------------------------------------
 
 devices_table = \
 {  
-    0x04A00053: ['32MX220F032B'    , 0x9D008000, 0x9D003180 ], #32K
-    0x04A04053: ['32MX220F032D'    , 0x9D008000, 0x9D003000 ], #32K
-    0x04D00053: ['32MX250F128B'    , 0x9D020000, 0x9D003180 ], #128K
-    0x06600053: ['32MX270F256B'    , 0x9D040000, 0x9D003180 ]  #256K
+    0x04A00053: ['32MX220F032B'],
+    0x04A04053: ['32MX220F032D'],
+    0x04D00053: ['32MX250F128B'],
+    0x06600053: ['32MX270F256B'],
+    0x00952053: ['32MX440F256H'],
+    0x0580A053: ['32MX470F512H'],
 }
 
 # ----------------------------------------------------------------------
 def getDevice(vendor, product):
 # ----------------------------------------------------------------------
     """ Search USB device and returns a DeviceHandle object """
-    busses = usb.busses()
-    for bus in busses:
-        for device in bus.devices:
-            if device.idVendor == vendor and device.idProduct == product:
-                return device
-    return ERR_DEVICE_NOT_FOUND
+
+    if PYUSB_USE_CORE:
+
+        device = usb.core.find(idVendor=vendor, idProduct=product)
+        if device is None :
+            return ERR_DEVICE_NOT_FOUND
+        else :
+            return device
+
+    else:
+
+        busses = usb.busses()
+        for bus in busses:
+            for device in bus.devices:
+                if device.idVendor == vendor and device.idProduct == product:
+                    return device
+        return ERR_DEVICE_NOT_FOUND
 
 # ----------------------------------------------------------------------
 def initDevice(device):
 # ----------------------------------------------------------------------
     """ Init pinguino device """
 
-    handle = device.open()
+    if platform.system() == 'Linux':
+        if device.idProduct == PRODUCT_ID: #self.P32_ID:
+            # make sure the hid kernel driver is not active
+            # functionality not available on Darwin or Windows
+            if PYUSB_USE_CORE:
+                if device.is_kernel_driver_active(INTERFACE_ID):
+                    try:
+                        device.detach_kernel_driver(INTERFACE_ID)
+                    except usb.core.USBError as e:
+                        print("Could not detach kernel driver: %s" % str(e))
+                        pass
+            else:
+                try:
+                    handle.detachKernelDriver(INTERFACE_ID)
+                except:
+                    print("Could not detach kernel driver")
+                    pass
 
-    if handle:
+    if PYUSB_USE_CORE:
         try:
-            handle.detachKernelDriver(INTERFACE_ID)
+            device.set_configuration(ACTIVE_CONFIG)
+        except usb.core.USBError as e:
+            sys.exit("Could not set configuration: %s" % str(e))
 
-        except usb.USBError as msg:
-            #print msg.message
-            pass
+        try:
+            usb.util.claim_interface(device, INTERFACE_ID)
+        except:
+            sys.exit("Could not claim the device: %s" % str(e))
 
-        handle.setConfiguration(ACTIVE_CONFIG)
-        handle.claimInterface(INTERFACE_ID)
+        return device
 
-        return handle
-    return ERR_USB_INIT1
+    else:
+        handle = device.open()
+        if handle:
+            handle.setConfiguration(ACTIVE_CONFIG)
+            handle.claimInterface(INTERFACE_ID)
+            return handle
+        return ERR_USB_INIT1
 
 # ----------------------------------------------------------------------
 def closeDevice(handle):
 # ----------------------------------------------------------------------
     """ Close currently-open USB device """
-    handle.releaseInterface()
+
+    if PYUSB_USE_CORE:
+        usb.util.release_interface(handle, INTERFACE_ID)
+    else:
+        handle.releaseInterface()
 
 # ----------------------------------------------------------------------
 def resetDevice(handle):
@@ -269,11 +320,19 @@ def getDeviceID(handle):
 
     usbBuf = readFlash(handle, 0xBF80F220, 4)
 
-    devid = (usbBuf[60]      ) | \
-            (usbBuf[61] <<  8) | \
-            (usbBuf[62] << 16) | \
-            (usbBuf[63] << 24)
+    devid1 = (usbBuf[BOOT_DEVID1 + 0]      ) | \
+             (usbBuf[BOOT_DEVID1 + 1] <<  8) | \
+             (usbBuf[BOOT_DEVID1 + 2] << 16) | \
+             (usbBuf[BOOT_DEVID1 + 3] << 24)
 
+    devid2 = (usbBuf[BOOT_DEVID2 + 0]      ) | \
+             (usbBuf[BOOT_DEVID2 + 1] <<  8) | \
+             (usbBuf[BOOT_DEVID2 + 2] << 16) | \
+             (usbBuf[BOOT_DEVID2 + 3] << 24)
+
+    # at least one is null
+    devid = devid1 + devid2
+    
     #print hex(devid)
     # mask device id to get revision number
     device_rev = ( ( devid >> 24 ) & 0xF0 ) >> 4
@@ -324,10 +383,29 @@ def getDeviceName(device_id):
     return ERR_DEVICE_NOT_FOUND
 
 # ----------------------------------------------------------------------
+def getVersion(handle):
+# ----------------------------------------------------------------------
+    """ get bootloader version """
+    usbBuf = [QUERY_DEVICE_CMD] * MAXPACKETSIZE
+    usbBuf = getResponse(handle, usbBuf)
+
+    major = usbBuf[BOOT_VER_MAJOR]
+    minor = usbBuf[BOOT_VER_MINOR]
+    devpt = usbBuf[BOOT_VER_DEVPT]
+    
+    if major == 0 and minor == 0:
+        return False
+    else:
+        return str(major) + "." + str(minor) + "." + str(devpt)
+
+# ----------------------------------------------------------------------
 def sendCMD(handle, usbBuf):
 # ----------------------------------------------------------------------
     """ Send a command to the bootloader """
-    sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
+    if PYUSB_USE_CORE:
+        sent_bytes = handle.write(OUT_EP, usbBuf, TIMEOUT)
+    else:
+        sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
     if sent_bytes == len(usbBuf):
         return ERR_NONE
     else:
@@ -337,14 +415,23 @@ def sendCMD(handle, usbBuf):
 def getResponse(handle, usbBuf):
 # ----------------------------------------------------------------------
     """ Send a command and get a response from the bootloader """
-    sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
+
+    if PYUSB_USE_CORE:
+        sent_bytes = handle.write(OUT_EP, usbBuf, TIMEOUT)
+    else:
+        sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
+
     if sent_bytes == len(usbBuf):
         try:
-            usbBuf = handle.interruptRead(IN_EP, MAXPACKETSIZE, TIMEOUT)
+            if PYUSB_USE_CORE:
+                usbBuf = handle.read(IN_EP, MAXPACKETSIZE, TIMEOUT)
+            else:
+                usbBuf = handle.interruptRead(IN_EP, MAXPACKETSIZE, TIMEOUT)
         except:
             print "Error: no response from the bootloader"
             closeDevice(handle)
             sys.exit(0)
+            
         #print usbBuf
         return usbBuf
     return ERR_USB_WRITE
@@ -487,7 +574,7 @@ def hexWrite(handle, filename, memstart, memend):
         elif record_type == Data_Record:
 
             address = address_Hi + address_Lo
-            print "0x%08X to be written" % address
+            #print "0x%08X to be written" % address
 
             # max address
             if (address > old_address) and (address < memend):
@@ -507,17 +594,25 @@ def hexWrite(handle, filename, memstart, memend):
                 #data.append(int(line[9 + (2 * i) : 11 + (2 * i)], 16))
                 data[address - memstart + i] = int(line[9 + (2 * i) : 11 + (2 * i)], 16)
 
+        # Reset Vector
+        # ----------------------------------------------------------
+
+        elif record_type == Start_Linear_Address_Record:
+            print("Reset Vector = 0x%08X" % int(line[9:17], 16))
+
         # end of file record
         # ----------------------------------------------------------
         elif record_type == End_Of_File_Record:
 
             break
-
+            
         # unsupported record type
         # ----------------------------------------------------------
         else:
 
-            print "ERR_HEX_RECORD"
+            print("Caution : unsupported record type (%d) in hex file" % record_type)
+            print("Line %s" % line)
+            #print "ERR_HEX_RECORD"
 
     # max_address must be divisible by DATABLOCKSIZE
     # --------------------------------------------------------------
@@ -580,6 +675,7 @@ def main(filename):
         sys.exit(0)
 
     elif handle == None:
+        print("... but device is not working properly.")
         sys.exit(0)
 
     #print "%s - %s" % (handle.getString(device.iProduct, 30), handle.getString(device.iManufacturer, 30))
@@ -604,20 +700,33 @@ def main(filename):
         return
     """
 
+    # --------------------------------------------------------------
+    #sys.exit(0)
+    # --------------------------------------------------------------
+    
     # find out flash memory size
     # ------------------------------------------------------------------
     
     memstart, memfree  = getDeviceFlash(handle)
+    if memstart >= 0xBD000000:
+        memstart = memstart - 0x20000000
+    memstart = memstart | 0x80000000
     memend   = memstart + memfree
-    memstart = memstart + 0x80000000
-    memend   = memend   + 0x80000000
+    #memstart = memstart + 0x80000000
+    #memend   = memend   + 0x80000000
     print " - with %d bytes free (%d KB)" % (memfree, memfree/1024)
     print " - from 0x%08X to 0x%08X" % (memstart, memend)
+
+    # find out bootloader version
+    # --------------------------------------------------------------
+
+    version = getVersion(handle)
+    print(" - with Pinguino USB HID Bootloader v%s" % version)
 
     # start erasing
     # --------------------------------------------------------------
 
-    #print "Erasing flash memory ..."
+    print "Erasing flash memory ..."
     status = eraseFlash(handle)
     if status != ERR_NONE:
         print "Erase Error!"

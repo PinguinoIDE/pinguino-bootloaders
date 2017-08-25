@@ -8,7 +8,7 @@
     <logicalFolder name="LoadableFiles"
                    displayName="Prebuilt Files"
                    projectFiles="true">
-      <itemPath>/home/regis/Dvpt/pinguino/git-copy/pinguino-bootloaders/p8/usb/v4.x/hex/Bootloader_v4.14_18f47j53_X8MHz.hex</itemPath>
+      <itemPath>/home/regis/Dvpt/pinguino/git-copy/pinguino-bootloaders/p8/usb/v4.x/hex/Bootloader_v4.17_16F1459_INTOSC.hex</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -24,7 +24,7 @@
     <conf name="default" type="4">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
-        <targetDevice>PIC18F47J53</targetDevice>
+        <targetDevice>PIC16F1459</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>

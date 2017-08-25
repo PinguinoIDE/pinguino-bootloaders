@@ -2,35 +2,110 @@ SHELL		=	cmd.exe
 
 ########################################################################
 #                                                                      #
-#	Pinguino Bootloader v0.x                                           #
-#	32-bit USB HID Bootloader                                          #
-#	Author : Régis Blanchot <rblanchot$(L)gmail.com>                      #
+#   Pinguino Bootloader v1.x                                           #
+#   32-bit USB HID Bootloader                                          #
+#   Author : Régis Blanchot <rblanchot@gmail.com>                      #
 #                                                                      #
-#	Usage ex. :                                                        #
-#   make --makefile=Makefile.windows PROC=32MX250F128B [DEBUG=yes]     #
+#   Usage :                                                            #
 #                                                                      #
-#	Supported CPU : 32MX250F128B                                       #
-#	                32MX270F256B                                       #
+#     make --makefile=Makefile.linux [PROC=32MX250F128B] \             #
+#                                    [MIPS16=true] \                   #
+#                                    [TEST=blink]|[TEST=serial] \      #
+#                                    [OVCLK=false] \                   #
+#                                    [DEBUG=true] \                    #
 #                                                                      #
-#	This file is part of Pinguino Project (http:\\www.pinguino.cc)     #
-#	Released under the LGPL license (www.gnu.org\licenses\lgpl.html)   #
+#     make --makefile=Makefile.linux PROC=32MX440F256H DEBUG=true      #
+#                                                                      #
+#   Supported CPU :                                                    #
+#     32MX220F032B                                                     #
+#     32MX250F128B                                                     #
+#     32MX270F256B                                                     #
+#                                                                      #
+#   Work in progress :                                                 #
+#     32MX440F256H                                                     #
+#     32MX470F512H                                                     #
+#                                                                      #
+#   This file is part of Pinguino Project (http://www.pinguino.cc)     #
+#   Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
 #                                                                      #
 ########################################################################
 
-_TEST_ENABLE_   = false
-_MIPS16_ENABLE_ = true
-_LOG_ENABLE_    = false
-
 # Where to find the gcc-mips-elf toolchain
-BINDIR		= C:\pinguino-11\compilers\p32\bin
+BINDIR		= "C:\Program Files\Pinguino\p32\bin"
+# Where to find the mplabx toolchain
+MPLDIR	    = "C:\Program Files (x86)\Microchip\MPLABX"
 
 # ----------------------------------------------------------------------
-# Version (will override boot.h #define)
+# Bootloader's version (will override boot.h #define)
 # ----------------------------------------------------------------------
 
-MAJ_VER		= 0
-MIN_VER		= 0
-DOT_VER		= 2
+MAJ_VER		= 1
+MIN_VER		= 4
+DEV_VER		= 4
+
+# ----------------------------------------------------------------------
+# On-board crystal's frequency
+# ----------------------------------------------------------------------
+
+CRYSTAL		= 8
+
+# ----------------------------------------------------------------------
+# PROGRAMMER
+# ----------------------------------------------------------------------
+
+PROGRAMMER	= PK3
+#PROGRAMMER	= PK2
+
+# ----------------------------------------------------------------------
+# MPLABX and Java version
+# ----------------------------------------------------------------------
+
+MPLABVER	= 3.65
+JAVAVER		= 1.8.0_121
+
+# ----------------------------------------------------------------------
+# Options management
+# ----------------------------------------------------------------------
+
+# Generates the full bootloader code or execute one of the test
+ifeq "$(TEST)" "blink"
+	# blink test
+	_TEST_ENABLE_	= 1
+else ifeq "$(TEST)" "serial"
+	# serial test
+	_TEST_ENABLE_	= 2
+else
+	# bootloader
+	_TEST_ENABLE_	= 0
+endif
+
+# Generates MIPS16 (slower but compacter) or MIPS32 (faster but bigger) code
+ifeq "$(MIPS16)" "false"
+	_MIPS16_ENABLE_	= 0
+else
+	_MIPS16_ENABLE_	= 1
+endif
+
+# Overclock the CPU to its max. freq.
+ifeq "$(OVCLK)" "true"
+	_OVCLK_ENABLE_	= 1
+else
+	_OVCLK_ENABLE_	= 0
+endif
+
+# Enable/disable serial output
+ifeq "$(DEBUG)" "true"
+	_DEBUG_ENABLE_ = 1
+else
+	_DEBUG_ENABLE_ = 0
+endif
+
+# Enable/disable verbose output
+ifeq "$(VERBOSE)" "true"
+	_VERBOSE_ENABLE_ = 1
+else
+	_VERBOSE_ENABLE_ = 0
+endif
 
 # ----------------------------------------------------------------------
 # Processor family
@@ -41,18 +116,44 @@ ifndef PROC
 	DEFAULT = YES
 endif 
 
-FAMILYMZ	= $(findstring 32MZ,  $(PROC))
+# Note : FAMILYMX1 doesn't have build-in USB
 FAMILYMX1	= $(findstring 32MX1, $(PROC))
 FAMILYMX2	= $(findstring 32MX2, $(PROC))
-FAMILY		= $(FAMILYMX1)$(FAMILYMX2)$(FAMILYMZ)
+FAMILYMX3	= $(findstring 32MX3, $(PROC))
+FAMILYMX4	= $(findstring 32MX4, $(PROC))
+FAMILYMX5	= $(findstring 32MX5, $(PROC))
+FAMILYMX6	= $(findstring 32MX6, $(PROC))
+FAMILYMX7	= $(findstring 32MX7, $(PROC))
+FAMILYMZ	= $(findstring 32MZ,  $(PROC))
+FAMILY		= $(FAMILYMX1)$(FAMILYMX2)$(FAMILYMX3)$(FAMILYMX4)$(FAMILYMX5)$(FAMILYMX6)$(FAMILYMX7)$(FAMILYMZ)
 
-CRYSTAL		= 8
+# ----------------------------------------------------------------------
+# Overclock
+# ----------------------------------------------------------------------
+
+ifeq "$(_OVCLK_ENABLE_)" "1"
+	ifeq "$(FAMILY)" "32MX2"
+		# [42, 48, 60, 64]
+		FCPU=64
+	else
+		# [84, 96, 120, 128, 136, 144, 152, 160 168]
+		FCPU=168
+	endif
+else
+	ifeq "$(FAMILY)" "32MX2"
+        # official max. freq. for this family is 40MHz
+		FCPU=40
+	else
+        # official max. freq. for this family is 80MHz
+		FCPU=80
+	endif
+endif
 
 # ----------------------------------------------------------------------
 # Verbose
 # ----------------------------------------------------------------------
 
-ifeq "$(_LOG_ENABLE_)" "true"
+ifeq "$(_VERBOSE_ENABLE_)" "0"
 	L=@
 endif
 
@@ -60,27 +161,13 @@ endif
 # Project's name
 # ----------------------------------------------------------------------
 
-ifeq "$(_TEST_ENABLE_)" "true"
+ifeq "$(_TEST_ENABLE_)" "1"
+	PRJ		= Blink
+else ifeq "$(_TEST_ENABLE_)" "2"
 	PRJ		= Test
 else
-	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DOT_VER)_$(PROC)_X$(CRYSTAL)MHz
-endif
-
-# ----------------------------------------------------------------------
-# Unsupported record in hex file \ Jean-pierre Mandon 2012
-# ----------------------------------------------------------------------
-#		04		 : 4 bytes
-#		0000	 : address
-#		05		 : record type = Start_Linear_Address_Record
-#		9D004000 : address where the user program should start
-#				 : _RESET_ADDR (see lkr\procdefs.ld)
-#		1A		 : checksum
-# ----------------------------------------------------------------------
-
-ifneq (,$(filter $(FAMILY),32MX1 32MX2))
-	BADRECORD   = '^:04000005BFC0000078'
-else
-	BADRECORD   = '^:040000059D006000FA'
+#	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER)_$(PROC)_$(FCPU)MHz
+	PRJ		= Bootloader_v$(MAJ_VER).$(MIN_VER).$(DEV_VER)_$(PROC)_X$(CRYSTAL)MHz
 endif
 
 # ----------------------------------------------------------------------
@@ -98,52 +185,78 @@ else
 endif
 
 # ----------------------------------------------------------------------
+# Colors
+# ----------------------------------------------------------------------
+
+RED=\033[31;1m
+GREEN=\033[32;1m
+YELLOW=\033[33;1m
+BLUE=\033[34;1m
+BOLD=\033[0;1;31m
+NORM=\033[0m
+
+WARNING=$(YELLOW)
+ERROR=$(RED)
+NORMAL=$(GREEN)
+END=$(NORM)
+
+# ----------------------------------------------------------------------
 # Directories
 # ----------------------------------------------------------------------
 
-#PWDGNU      = $(CURDIR)
-#PWDWIN      = $(subst /,\,$(PWDGNU))
-#ORIGIN      = $(subst Documents and Settings,'Documents and Settings',$(PWDWIN))
+MPLABDIR	= $(MPLDIR)\v$(MPLABVER)
+JAVADIR		= $(MPLABDIR)\sys\java\jre$(JAVAVER)\bin
 
-#SRCDIR		= $(ORIGIN)
-#HEXDIR		= $(ORIGIN)\hex
-#INCDIR		= $(ORIGIN)
-#LKRDIR		= $(ORIGIN)\lkr
-#OBJDIR		= $(ORIGIN)\obj\non-free
+PWDGNU      = $(CURDIR)
+PWDWIN      = $(subst /,\,$(PWDGNU))
+ORIGIN      = $(subst Documents and Settings,'Documents and Settings',$(PWDWIN))
 
-HEXDIR=hex
-LKRDIR=lkr
-OBJDIR=obj
+SRCDIR		= $(ORIGIN)
+HEXDIR		= $(ORIGIN)\hex
+INCDIR		= $(ORIGIN)
+LKRDIR		= $(ORIGIN)\lkr
+OBJDIR		= $(ORIGIN)\obj\non-free
 
 INCLUDEDIRS	= -I$(LKRDIR) \
 			  -I$(OBJDIR) \
-			  -I$(OBJDIR)\non-free
+			  -I$(INCDIR) \
+			  -I$(INCDIR)\non-free
 
-#-lm -lgcc -lc
-LIBS		=
+# -lc -lgcc -lm
+LIBS		= -lc
 LIBDIRS		=
 
 # ----------------------------------------------------------------------
 # Files
 # ----------------------------------------------------------------------
 
-ifeq "$(_TEST_ENABLE_)" "true"
-	SRCS	= test.c
+ifeq "$(_TEST_ENABLE_)" "1"
+	SRCS	= blink.c
+else ifeq "$(_TEST_ENABLE_)" "2"
+	SRCS	= test.c delay.c core.c serial.c
 else
 	ALLSRCS	= $(wildcard *.c)
-	SRCS	= $(filter-out test.c, $(ALLSRCS))
+	ifeq "$(_DEBUG_ENABLE_)" "1"
+		SRCS	= $(filter-out test.c blink.c, $(ALLSRCS))
+	else
+		SRCS	= $(filter-out test.c blink.c serial.c, $(ALLSRCS))
+	endif
 endif
 
-OBJS		= $(SRCS:%.c=$(OBJDIR)\%.o)
+OBJS		= $(SRCS:%.c=obj/%.o)
 
 # ----------------------------------------------------------------------
 # Commands
 # ----------------------------------------------------------------------
 
+JAVA		= $(JAVADIR)\java
+IPE			= $(MPLABDIR)\mplab_ipe\ipecmd.jar
+
 CC			= $(BINDIR)\p32-gcc
 OBJCOPY		= $(BINDIR)\p32-objcopy
 SIZE		= $(BINDIR)\p32-size
 OBJDUMP		= $(BINDIR)\p32-objdump
+
 RM			= del /f /q
 CP			= copy
 MV			= move
@@ -151,10 +264,10 @@ MV			= move
 # ----------------------------------------------------------------------
 # Flags
 # ----------------------------------------------------------------------
-# https:\\sourceware.org\binutils\docs\ld\Options.html#Options
+# https://sourceware.org/binutils/docs/ld/Options.html#Options
 
-ifeq "$(_MIPS16_ENABLE_)" "true"
-	# Generate MIPS16 code.
+ifeq "$(_MIPS16_ENABLE_)" "1"
+	# Generates MIPS16 code.
 	MIPS16_OPT=-mips16
 	# makes non-MIPS16 and MIPS16 code link-compatible.
 	MIPS16_INTER=-minterlink-mips16
@@ -180,22 +293,44 @@ ELF_FLAGS	= -march=$(CORE) \
 			  -Wl,--strip-all \
 			  -Wl,--gc-sections \
 			  -Wl,-L$(OBJDIR) \
-			  -Wl,-Map=output.map \
-			  -Wl,--script=$(LKRDIR)\$(PROC)\$(PROC).ld \
+			  -Wl,-Map=$(LKRDIR)\output.map \
 			  -D __P32GCC__ \
 			  -D __PIC32MX__ \
 			  -D __$(PROC)__ \
+			  -D CRYSTAL=$(CRYSTAL) \
+			  -D _TEST_ENABLE_=$(_TEST_ENABLE_) \
+			  -D _DEBUG_ENABLE_=$(_DEBUG_ENABLE_) \
+			  -D FCPUMHZ=$(FCPU) \
 			  -D USB_MAJOR_VER=$(MAJ_VER) \
 			  -D USB_MINOR_VER=$(MIN_VER) \
-			  -D USB_DOT_VER=$(DOT_VER)
+			  -D USB_DEVPT_VER=$(DEV_VER) \
+			  -T$(LKRDIR)\$(PROC).ld \
+			  -T$(LKRDIR)\elf32pic32mx.x
 
-#			  -T$(LKRDIR)\elf32pic32mx.x
+#			  -Wl,--script=$(LKRDIR)/$(PROC).ld
+
+# ----------------------------------------------------------------------
+# Unsupported record in hex file \ Jean-pierre Mandon 2012
+# ----------------------------------------------------------------------
+#		04		 : 4 bytes
+#		0000	 : address
+#		05		 : record type = Start_Linear_Address_Record
+#		9D004000 : address where the user program should start
+#				 : _RESET_ADDR (see lkr\procdefs.ld)
+#		1A		 : checksum
+# ----------------------------------------------------------------------
+
+#ifneq (,$(filter $(FAMILY), 32MX2))
+#	BADRECORD   = '^:04000005BFC0000078'
+#else
+#	BADRECORD   = '^:040000059D006000FA'
+#endif
 
 #-----------------------------------------------------------------------
 # Rules
 #-----------------------------------------------------------------------
 #
-#	$$(L) 	Le nom de la cible
+#	$@ 	Le nom de la cible
 #	$< 	Le nom de la première dépendance
 #	$^ 	La liste des dépendances
 #	$? 	La liste des dépendances plus récentes que la cible
@@ -203,44 +338,55 @@ ELF_FLAGS	= -march=$(CORE) \
 #
 #-----------------------------------------------------------------------
 
+#all: start clean copy $(PRJ).elf convert fix size upload
 all: start clean copy $(PRJ).elf convert fix size
+#all: start clean copy $(PRJ).elf convert size upload
+#all: start clean copy $(PRJ).elf convert size
+#all: start clean copy $(PRJ).elf convert
+#all: start clean copy $(PRJ).elf
+#all: start
+#all: upload
 
 start:
 ifeq ($(DEFAULT), YES)
 	@echo No Processor has been defined.
-	@echo Usage ex. : make --makefile=Makefile.windows PROC=32MX250F128B [DEBUG=yes]
+	@echo Usage ex. : make --makefile=Makefile.windows PROC=32MX270F128B [MIPS16=true] [TEST=false] [OVCLK=false] [DEBUG=false]
 	@echo Using 32MX270F256B as default processor
 endif
 	@echo Compiling $(PRJ)
+ifeq "$(_VERBOSE_ENABLE_)" "1"
+	@echo Files   : $(SRCS)
+	@echo Objects : $(OBJS)
+endif
 
 clean:
 	@echo Cleaning all build files
-	$(L)if exist $(OBJDIR)\non-free\processor.o $(L)$(RM) $(OBJDIR)\non-free\processor.o > NUL
-#	$(RM) $(OBJDIR)\*.o
-#	$(RM) $(OBJDIR)\*.S
-#	$(RM) $(HEXDIR)\*.elf
+	$(L)if exist $(OBJDIR)\processor.o $(L)$(RM) $(OBJDIR)\processor.o > NUL
+	$(L)if exist $(ORIGIN)\obj\*.o     $(L)$(RM) $(ORIGIN)\obj\*.o > NUL
+	$(L)if exist $(ORIGIN)\obj\*.S     $(L)$(RM) $(ORIGIN)\obj\*.S > NUL
+	$(L)if exist $(ORIGIN)\*.elf       $(L)$(RM) $(ORIGIN)\*.elf > NUL
 #	$(L)$(RM) $(HEXDIR)\*.hex			> NUL
 
 copy:
 	@echo Adding $(PROC) SFR definition
-	$(L)$(CP) $(OBJDIR)\non-free\$(PROC).o $(OBJDIR)\non-free\processor.o > NUL
+	$(L)$(CP) $(OBJDIR)\$(PROC).o $(OBJDIR)\processor.o > NUL
 
-$(OBJDIR)\%.o: \%.c
+obj/%.o: %.c
 	@echo Compiling $<
-	$(L)$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) $(MIPS16_OPT) -c $< -o $$(L)
-ifdef DEBUG
+	$(L)$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) $(MIPS16_OPT) -c $< -o $@
+ifeq "$(_VERBOSE_ENABLE_)" "1"
 	@echo Disassembling all files
-	$(L)$(OBJDUMP) -D -M intel -S $$(L) > obj\$*.S
+	$(L)$(OBJDUMP) -D -M intel -S $@ > obj\$*.S
 	cat obj\$*.S
 endif
 
 $(PRJ).elf: $(OBJS)
 	@echo Linking all the modules together
-	$(L)$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex\$$(L) $^ \
+	$(L)$(CC) $(ELF_FLAGS) $(LDFLAGS) $(CFLAGS) -o hex\$@ $^ \
 		$(LKRDIR)\crt0.S \
-		$(OBJDIR)\non-free\processor.o \
+		$(OBJDIR)\processor.o \
+		$(INCDIR)\p32xxxx.h \
 		$(LIBS)
-#		$(INCDIR)\p32xxxx.h \
 
 convert:
 	@echo Converting elf to hex
@@ -251,15 +397,30 @@ fix:
 	$(L)sed -i -e 's\:020000049D005D\:020000041D00DD\g' $(HEXDIR)\$(PRJ).hex
 	$(L)sed -i -e 's\:020000049FC09B\:020000041FC01B\g' $(HEXDIR)\$(PRJ).hex
 	$(L)sed -i -e 's\:02000004BFC07B\:020000041FC01B\g' $(HEXDIR)\$(PRJ).hex
-	$(L)sed -i -e '\$(BADRECORD)\d' $(HEXDIR)\$(PRJ).hex
+#	$(L)sed -i -e '\$(BADRECORD)\d' $(HEXDIR)\$(PRJ).hex
 
 size:
-ifdef DEBUG
-	$(L)tools\codesize.py $(HEXDIR)\$(PRJ).hex DEBUG=yes
+ifeq "$(_DEBUG_ENABLE_)" "1"
+#	$(L)python tools\codesize.py $(HEXDIR)\$(PRJ).hex DEBUG=yes
 	$(L)$(SIZE) $(HEXDIR)\$(PRJ).hex
 else
-	$(L)tools\codesize.py $(HEXDIR)\$(PRJ).hex
+#	$(L)tools\codesize.py $(HEXDIR)\$(PRJ).hex
 endif
 
-burn:
-	$(L)tools\pic32prog -S -p $(HEXDIR)\$(PRJ).hex
+# cf. IPECMD.txt
+# COMMAND		MEANING					DEFAULT
+# -TP<tool>		Tool Selection			None
+# -P<proc>		Processor Selection		None 
+# -F<file>		Hex File Selection		None 
+# -M			Program Device			Do Not Program 
+# -W			Externally power target	Power from PM3 
+
+upload:
+	@echo Uploading $(PRJ).hex file
+	$(L)$(JAVA) -jar $(IPE) \
+                -M \
+                -TP$(PROGRAMMER) \
+                -P$(PROC) \
+                -F$(HEXDIR)/$(PRJ).hex
+	$(L)$(RM) MPLABXLog.*
+	$(L)$(RM) log.*

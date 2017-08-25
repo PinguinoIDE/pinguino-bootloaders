@@ -3,8 +3,8 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>Bootloader_v4.14_18f45k50_INTOSC</name>
-            <creation-uuid>10754150-f0a2-4161-9a52-45da79de01dd</creation-uuid>
+            <name>Bootloader_v4.17_16F1459_INTOSC</name>
+            <creation-uuid>a45d6293-0a33-4ac9-8650-e9b634f11525</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions/>
             <cpp-extensions/>

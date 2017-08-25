@@ -40,9 +40,9 @@ if (len(sys.argv) > 1):
         checksum = checksum + (0x100 - int(line[i:i+2], 16) ) & 0xff # eq. to not(i)
         i = i + 2
 
-    print line,hex(checksum)
+    print "Checksum is", hex(checksum)
 
 else:
 
     print "No file to proceed"
-    print "usage: ./codesize.py filename (without .hex extension)"
+    print "usage ex: ./checksum.py :04000005BFC00000"

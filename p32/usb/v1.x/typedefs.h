@@ -4,10 +4,10 @@
  *
  *********************************************************************
  * FileName:        GenericTypeDefs.h
- * Dependencies:	None
+ * Dependencies:    None
  * Processor:       PIC18, PIC24F, PIC24H, dsPIC30F, dsPIC33F, PIC32
  * Complier:        Microchip C18, C30, C32
- *					HI-TECH PICC-18
+ *                  HI-TECH PICC-18
  * Company:         Microchip Technology, Inc.
  *
  * Software License Agreement
@@ -56,7 +56,7 @@
 
 #define ASSERT(x)  while(!x)
 
-typedef enum _BOOL { FALSE = 0, TRUE } BOOL;	// Undefined size
+typedef enum _BOOL { FALSE = 0, TRUE } BOOL;// Undefined size
 
 #ifndef NULL
 #define NULL    ((void *)0)
@@ -67,14 +67,14 @@ typedef enum _BOOL { FALSE = 0, TRUE } BOOL;	// Undefined size
 #define PROTECTED
 #define PRIVATE   static
 
-typedef unsigned char		BYTE;		// 8-bit unsigned
-typedef unsigned short int	WORD;		// 16-bit unsigned
-typedef unsigned long		DWORD;		// 32-bit unsigned
-typedef unsigned long long	QWORD;		// 64-bit unsigned
-typedef signed char		CHAR;		// 8-bit signed
-typedef signed short int	SHORT;		// 16-bit signed
-typedef signed long		LONG;		// 32-bit signed
-typedef signed long long	LONGLONG;	// 64-bit signed
+typedef unsigned char           BYTE;       // 8-bit unsigned
+typedef unsigned short int      WORD;       // 16-bit unsigned
+typedef unsigned long           DWORD;      // 32-bit unsigned
+typedef unsigned long long      QWORD;      // 64-bit unsigned
+typedef signed char             CHAR;       // 8-bit signed
+typedef signed short int        SHORT;      // 16-bit signed
+typedef signed long             LONG;       // 32-bit signed
+typedef signed long long        LONGLONG;   // 64-bit signed
 
 /* Alternate definitions */
 typedef void                    VOID;
@@ -95,7 +95,7 @@ typedef signed long long        INT64;
 typedef unsigned int            UINT;
 typedef unsigned char           UINT8;
 typedef unsigned short int      UINT16;
-typedef unsigned long int       UINT32;         // 32-bit integer
+typedef unsigned long int       UINT32;     // 32-bit integer
 typedef unsigned long long      UINT64;
 
 typedef union _BYTE_VAL
@@ -214,8 +214,8 @@ typedef union _DWORD_VAL
 typedef union _QWORD_VAL
 {
     QWORD Val;
-	DWORD d[2];
-	WORD w[4];
+    DWORD d[2];
+    WORD w[4];
     BYTE v[8];
     struct
     {
