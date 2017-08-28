@@ -182,7 +182,7 @@ OUT_EP                          =    0x01    # endpoint for Hid writes
 
 INTERFACE_ID                    =    0x00
 ACTIVE_CONFIG                   =    1
-TIMEOUT                         =    1000
+TIMEOUT                         =    10000
 
 # Error codes returned by various functions
 # ----------------------------------------------------------------------
@@ -217,7 +217,19 @@ devices_table = \
     0x04D00053: ['32MX250F128B'],
     0x06600053: ['32MX270F256B'],
     0x00952053: ['32MX440F256H'],
+    0x00956053: ['32MX440F512H'],
     0x0580A053: ['32MX470F512H'],
+}
+
+commands_table = \
+{  
+    QUERY_DEVICE_CMD: "QUERY_DEVICE",
+    UNLOCK_CONFIG_CMD: "UNLOCK_CONFIG",
+    ERASE_DEVICE_CMD: "ERASE_DEVICE",
+    PROGRAM_DEVICE_CMD: "PROGRAM_DEVICE",
+    PROGRAM_COMPLETE_CMD: "PROGRAM_COMPLETE",
+    GET_DATA_CMD: "GET_DATA_DEVICE",
+    RESET_DEVICE_CMD: "RESET_DEVICE",
 }
 
 # ----------------------------------------------------------------------
@@ -300,19 +312,66 @@ def closeDevice(handle):
 def resetDevice(handle):
 # ----------------------------------------------------------------------
     """ reset device """
-    usbBuf = [RESET_DEVICE_CMD] * MAXPACKETSIZE
-    #usbBuf[BOOT_CMD] = RESET_DEVICE_CMD
-    return sendCMD(handle, usbBuf)
+
+    return sendCommand(handle, RESET_DEVICE_CMD)
+
+# ----------------------------------------------------------------------
+def sendPacket(handle, usbBuf):
+# ----------------------------------------------------------------------
+    """ Send a packet to the bootloader """
+
+    #print("Command = %s" % commands_table[usbBuf[BOOT_CMD]])
+
+    try:
+        if PYUSB_USE_CORE:
+            sent_bytes = handle.write(OUT_EP, usbBuf, TIMEOUT)
+        else:
+            sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
+
+    except Exception as e:
+        print(e)
+        return ERR_USB_WRITE
+
+    if sent_bytes == len(usbBuf):
+        #print("%d bytes successfully sent." % sent_bytes)
+        return ERR_NONE
+
+    else:
+        #print("Sent %d/%d bytes" % (sent_bytes, len(usbBuf)))
+        return ERR_USB_WRITE
+
+# ----------------------------------------------------------------------
+def sendCommand(handle, command):
+# ----------------------------------------------------------------------
+    """ Send a command to the bootloader """
+
+    usbBuf = [command] * MAXPACKETSIZE
+    return sendPacket(handle, usbBuf)
+
+# ----------------------------------------------------------------------
+def getResponse(handle):
+# ----------------------------------------------------------------------
+    """ Send a command and get a response from the bootloader """
+
+    if PYUSB_USE_CORE:
+        usbBuf = handle.read(IN_EP, MAXPACKETSIZE, TIMEOUT)
+    else:
+        usbBuf = handle.interruptRead(IN_EP, MAXPACKETSIZE, TIMEOUT)
+
+    #print usbBuf
+    return usbBuf
 
 # ----------------------------------------------------------------------
 def getDeviceFamily(handle):
 # ----------------------------------------------------------------------
     """ get device info """
-    usbBuf = [QUERY_DEVICE_CMD] * MAXPACKETSIZE
-    #usbBuf[BOOT_CMD] = QUERY_DEVICE_CMD
-    usbBuf = getResponse(handle, usbBuf)
-    return usbBuf[BOOT_DEVICE_FAMILY]
-        
+
+    if sendCommand(handle, QUERY_DEVICE_CMD) ==  ERR_NONE:
+        usbBuf = getResponse(handle)
+        return usbBuf[BOOT_DEVICE_FAMILY]
+    else:
+        return ERR_USB_READ
+
 # ----------------------------------------------------------------------
 def getDeviceID(handle):
 # ----------------------------------------------------------------------
@@ -345,9 +404,11 @@ def getDeviceID(handle):
 def getDeviceFlash(handle):
 # ----------------------------------------------------------------------
     """ get size of program memory area """
-    usbBuf = [QUERY_DEVICE_CMD] * MAXPACKETSIZE
-    #usbBuf[BOOT_CMD] = QUERY_DEVICE_CMD
-    usbBuf = getResponse(handle, usbBuf)
+
+    if sendCommand(handle, QUERY_DEVICE_CMD) == ERR_USB_WRITE:
+        return ERR_USB_READ
+
+    usbBuf = getResponse(handle)
 
     """
     j=3
@@ -386,8 +447,11 @@ def getDeviceName(device_id):
 def getVersion(handle):
 # ----------------------------------------------------------------------
     """ get bootloader version """
-    usbBuf = [QUERY_DEVICE_CMD] * MAXPACKETSIZE
-    usbBuf = getResponse(handle, usbBuf)
+
+    if sendCommand(handle, QUERY_DEVICE_CMD) == ERR_USB_WRITE:
+        return ERR_USB_READ
+
+    usbBuf = getResponse(handle)
 
     major = usbBuf[BOOT_VER_MAJOR]
     minor = usbBuf[BOOT_VER_MINOR]
@@ -399,50 +463,11 @@ def getVersion(handle):
         return str(major) + "." + str(minor) + "." + str(devpt)
 
 # ----------------------------------------------------------------------
-def sendCMD(handle, usbBuf):
-# ----------------------------------------------------------------------
-    """ Send a command to the bootloader """
-    if PYUSB_USE_CORE:
-        sent_bytes = handle.write(OUT_EP, usbBuf, TIMEOUT)
-    else:
-        sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
-    if sent_bytes == len(usbBuf):
-        return ERR_NONE
-    else:
-        return ERR_USB_WRITE
-
-# ----------------------------------------------------------------------
-def getResponse(handle, usbBuf):
-# ----------------------------------------------------------------------
-    """ Send a command and get a response from the bootloader """
-
-    if PYUSB_USE_CORE:
-        sent_bytes = handle.write(OUT_EP, usbBuf, TIMEOUT)
-    else:
-        sent_bytes = handle.interruptWrite(OUT_EP, usbBuf, TIMEOUT)
-
-    if sent_bytes == len(usbBuf):
-        try:
-            if PYUSB_USE_CORE:
-                usbBuf = handle.read(IN_EP, MAXPACKETSIZE, TIMEOUT)
-            else:
-                usbBuf = handle.interruptRead(IN_EP, MAXPACKETSIZE, TIMEOUT)
-        except:
-            print "Error: no response from the bootloader"
-            closeDevice(handle)
-            sys.exit(0)
-            
-        #print usbBuf
-        return usbBuf
-    return ERR_USB_WRITE
-
-# ----------------------------------------------------------------------
 def eraseFlash(handle):
 # ----------------------------------------------------------------------
     """ erase the whole flash memory """
-    usbBuf = [ERASE_DEVICE_CMD] * MAXPACKETSIZE
-    #usbBuf[BOOT_CMD] = ERASE_DEVICE_CMD
-    return sendCMD(handle, usbBuf)
+
+    return sendCommand(handle, ERASE_DEVICE_CMD)
     
 # ----------------------------------------------------------------------
 def writeFlash(handle, address, block):
@@ -452,32 +477,32 @@ def writeFlash(handle, address, block):
 
     if length == 0:
         # Short data packets need flushing
-        usbBuf = [PROGRAM_COMPLETE_CMD] * MAXPACKETSIZE
-        #usbBuf[BOOT_CMD] = PROGRAM_COMPLETE_CMD
-        return sendCMD(handle, usbBuf)
+        return sendCommand(handle, PROGRAM_COMPLETE_CMD)
         
     # command code
     usbBuf = [PROGRAM_DEVICE_CMD] * MAXPACKETSIZE
-    #usbBuf[BOOT_CMD] = PROGRAM_DEVICE_CMD
+
     # block's address (0x12345678 => "12345678")
-    address = "%08X" % (address / BYTESPERADDRESS)
-    usbBuf[BOOT_ADDR + 0] = int(address[6:8], 16)
-    usbBuf[BOOT_ADDR + 1] = int(address[4:6], 16)
-    usbBuf[BOOT_ADDR + 2] = int(address[2:4], 16)
-    usbBuf[BOOT_ADDR + 3] = int(address[0:2], 16)
+    usbBuf[BOOT_ADDR + 0] = (address      ) & 0xFF
+    usbBuf[BOOT_ADDR + 1] = (address >> 8 ) & 0xFF
+    usbBuf[BOOT_ADDR + 2] = (address >> 16) & 0xFF
+    usbBuf[BOOT_ADDR + 3] = (address >> 24) & 0xFF
+
     # data's length
     usbBuf[BOOT_CMD_SIZE] = length
+
     # add data 'right justified' within packet
     for i in range(length):
         usbBuf[MAXPACKETSIZE - length + i] = block[i]
+
     # write data packet on usb device
-    status = sendCMD(handle, usbBuf)
+    status = sendPacket(handle, usbBuf)
 
     if status == ERR_NONE and length < DATABLOCKSIZE:
         # Short data packets need flushing
         #usbBuf = [PROGRAM_COMPLETE_CMD] * MAXPACKETSIZE
         usbBuf[BOOT_CMD] = PROGRAM_COMPLETE_CMD
-        status = sendCMD(handle, usbBuf)
+        status = sendPacket(handle, usbBuf)
 
     return status
 
@@ -496,10 +521,13 @@ def readFlash(handle, address, length):
     # size of block to read
     usbBuf[BOOT_CMD_SIZE] = length
     # send request to the bootloader
-    return getResponse(handle, usbBuf)
+    if sendPacket(handle, usbBuf) == ERR_NONE:
+        return getResponse(handle)
+    else:
+        return ERR_USB_READ
 
 # ----------------------------------------------------------------------
-def hexWrite(handle, filename, memstart, memend):
+def writeHex(handle, filename, memstart, memend):
 # ----------------------------------------------------------------------
     """ Parse the Hex File Format and send data to usb device """
 
@@ -514,22 +542,12 @@ def hexWrite(handle, filename, memstart, memend):
             03 + 00 + 30 + 00 + 02 + 33 + 7A = E2, 2's complement is 1E
     """
 
-    data        = []
-    old_address = 0
-    max_address = 0
-    address_Hi  = 0
-    codesize    = 0
-
-    bufLen      = 0
-    addrSave    = 0
-
-    # image of the whole PIC memory (above memstart)
-    # --------------------------------------------------------------
-
-    #print "board.memstart = %d" % board.memstart)
-    #print "board.memend = %d" % board.memend)
-    for i in range(memend - memstart):
-        data.append(0xFF)
+    program_memory = []
+    last_address = 0
+    max_address  = 0
+    min_address  = 0xFFFFFFFF
+    address_Hi   = 0
+    codesize     = 0
 
     # load hex file
     # ----------------------------------------------------------------------
@@ -537,6 +555,62 @@ def hexWrite(handle, filename, memstart, memend):
     hexfile = open(filename, 'r')
     lines = hexfile.readlines()
     hexfile.close()
+
+    # determine the range of flash used
+    # --------------------------------------------------------------
+
+    memstart = 0x9D000000
+
+    for line in lines:
+
+        byte_count = int(line[1:3], 16)
+        # lower 16 bits (bits 0-15) of the data address
+        address_Lo = int(line[3:7], 16)
+        record_type= int(line[7:9], 16)
+
+        # checksum calculation
+        # ----------------------------------------------------------
+        end = 9 + byte_count * 2 # position of checksum at end of line
+        checksum = int(line[end:end+2], 16)
+
+        cs = 0
+        i = 1
+        while i < end:
+            cs = cs + (0x100 - int(line[i:i+2], 16) ) & 0xff # eq. to not(i)
+            i = i + 2
+
+        if checksum != cs:
+            return ERR_HEX_CHECKSUM
+
+        # extended linear address record
+        # ----------------------------------------------------------
+        if record_type == Extended_Linear_Address_Record:
+
+            # upper 16 bits (bits 16-31) of the data address
+            address_Hi = int(line[9:13], 16) << 16
+
+        # data record
+        # ----------------------------------------------------------
+        elif record_type == Data_Record:
+
+            address = address_Hi + address_Lo
+
+            # min program address
+            if (address >= memstart) and (address < memend):
+                #print("0x%08X" % address)
+                if (min_address > address):
+                    min_address = address
+
+    memstart = min_address
+    
+    #print("memstart = 0x%08X" % memstart)
+    #print("memend   = 0x%08X" % memend)
+
+    # Flash image
+    # ----------------------------------------------------------------------
+
+    for i in range(memend - memstart):
+        program_memory.append(0xFF)
 
     # read each line in file
     # --------------------------------------------------------------
@@ -576,34 +650,40 @@ def hexWrite(handle, filename, memstart, memend):
             address = address_Hi + address_Lo
             #print "0x%08X to be written" % address
 
-            # max address
-            if (address > old_address) and (address < memend):
-                max_address = address + byte_count
-                old_address = address
-                #print "max_address = %d" % max_address
-
-            # code size
             if (address >= memstart) and (address < memend):
-                codesize = codesize + byte_count
-                #print "codesize = %d" % codesize
 
-            # data append
-            for i in range(byte_count):
-                #print "index=%d" % (address - memstart + i)
-                #Caution : addresses are not always contiguous
-                #data.append(int(line[9 + (2 * i) : 11 + (2 * i)], 16))
-                data[address - memstart + i] = int(line[9 + (2 * i) : 11 + (2 * i)], 16)
+                #print("0x%08X" % address)
+
+                # max program address
+                if (address > last_address): # and (address < memend):
+                    max_address = address + byte_count
+                    last_address = address
+                    #print "max_address = %d" % max_address
+
+                # code size
+                if (address >= memstart): # and (address < memend):
+                    codesize = codesize + byte_count
+                    #print "codesize = %d" % codesize
+
+                # data append
+                for i in range(byte_count):
+                    #print "index=%d" % (address - memstart + i)
+                    #Caution : addresses are not always contiguous
+                    #program_memory.append(int(line[9 + (2 * i) : 11 + (2 * i)], 16))
+                    program_memory[address - memstart + i] = int(line[9 + (2 * i) : 11 + (2 * i)], 16)
 
         # Reset Vector
         # ----------------------------------------------------------
 
         elif record_type == Start_Linear_Address_Record:
-            print("Reset Vector = 0x%08X" % int(line[9:17], 16))
-
+            #print("Reset Vector = 0x%08X" % int(line[9:17], 16))
+            #ivtstart = int(line[9:17], 16) - 0x1000;
+            #min_address = ivtstart
+            pass
+            
         # end of file record
         # ----------------------------------------------------------
         elif record_type == End_Of_File_Record:
-
             break
             
         # unsupported record type
@@ -614,35 +694,42 @@ def hexWrite(handle, filename, memstart, memend):
             print("Line %s" % line)
             #print "ERR_HEX_RECORD"
 
-    # max_address must be divisible by DATABLOCKSIZE
-    # --------------------------------------------------------------
-
-    #max_address = max_address + MAXPACKETSIZE - (max_address % MAXPACKETSIZE)
-    max_address = max_address + 64 - (max_address % 64)
-    #print "max_address = 0x%08X" % max_address
-
     # write blocks of DATABLOCKSIZE bytes
     # --------------------------------------------------------------
 
-    for addr in range(memstart, max_address, DATABLOCKSIZE):
-        index = addr - memstart
-        #print "index = %d" % index)
-        #print "data = %s" % data[index:index+DATABLOCKSIZE])
-        writeFlash(handle, addr, data[index:index+DATABLOCKSIZE])
+    #print("min address = 0x%X" % min_address);
+    #print("max address = 0x%X" % max_address);
 
-    usbBuf = [PROGRAM_COMPLETE_CMD] * MAXPACKETSIZE
-    #usbBuf[BOOT_CMD] = PROGRAM_COMPLETE_CMD
-    status = sendCMD(handle, usbBuf)
+    for addr in range(min_address, max_address, DATABLOCKSIZE):
+        index = addr - min_address
+        #print("0x%X : " % (index+memstart));
+        #print("data = %s" % program_memory[index:index+DATABLOCKSIZE])
+        status = writeFlash(handle, addr, program_memory[index:index+DATABLOCKSIZE])
+        if (status != ERR_NONE):
+            return status
 
-    print "%d bytes written" % codesize
+    # end
+    # --------------------------------------------------------------
 
-    #return status
-    return ERR_NONE
+    print("%d bytes written" % codesize)
+    status = sendCommand(handle, PROGRAM_COMPLETE_CMD)
+
+    return status
 
 # ----------------------------------------------------------------------
 def main(filename):
 # ----------------------------------------------------------------------
 
+    print
+    print("************************")
+    print("* Pinguino Uploader    *")
+    print("* Standalone version   *")
+    print("* 32-bit Pinguino only *")
+    print("* Regis Blanchot       *")
+    print("* rblanchot@gmail.com  *")
+    print("************************")
+    print
+    
     # check file to upload
     # ------------------------------------------------------------------
 
@@ -737,7 +824,7 @@ def main(filename):
     # --------------------------------------------------------------
 
     print "Uploading user program ..."
-    status = hexWrite(handle, filename, memstart, memend)
+    status = writeHex(handle, filename, memstart, memend)
     if status != ERR_NONE:
         print "Write Error!"
         closeDevice(handle)
