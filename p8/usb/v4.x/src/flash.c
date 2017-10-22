@@ -14,6 +14,9 @@
 #include "compiler.h"
 #include "flash.h"
 
+// Note1 : flash.c is not compiled (cf. Makefile.linux)
+// Note2 : WR=1 initiates a program memory erase cycle or write cycle
+
 /**********************************************************************/
 #if defined(__16f1459)
 /**********************************************************************/

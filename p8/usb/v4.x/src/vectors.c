@@ -126,8 +126,10 @@ stack) and your project will run only a short while.
      *  bank1 is always free.
      */
 
+    #ifndef __SDCC_pic14
     #pragma stack 0x100 0xFF
-
+    #endif
+    
     // 0x0000
 
     void reset_isr(void) __naked __interrupt 0
@@ -141,10 +143,12 @@ stack) and your project will run only a short while.
 
     void startup(void)
     {
+        #ifndef __SDCC_pic14
         __asm
         lfsr    1, _stack_end       ; initialize the stack pointer
-        lfsr    2, _stack_end
+        lfsr    2, _stack_end       ; Move _stack_end to FSR1 and FSR2
         __endasm;
+        #endif
         
         main();                     // start bootloader code
 
@@ -157,7 +161,8 @@ stack) and your project will run only a short while.
     #ifdef __SDCC_pic14
 
     // 0x0004
-    void PIC16F_isr(void) __naked __interrupt 1
+
+    void PIC16F_isr(void) __interrupt 1 //__naked 
     {
         __asm
         goto    APPSTART + PIC16F_ISR_OFFSET

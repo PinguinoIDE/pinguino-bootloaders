@@ -25,16 +25,20 @@
 
 // Prototypes (functions called in main.c)
 //u16  GetLinearAddress(void *);
+u16  UsbGetString(u8, const void **);
 void UsbUpdate(void);
 void UsbResetEvent(void);
 void UsbSuspendEvent(void);
-void UsbProcessEvents(void);
-void UsbTransEvent(void);
 void UsbErrorEvent(void);
+void UsbProcessEvents(void);
+void UsbTransferEvent(void);
+void UsbProcessStandardRequest(void);
+void UsbGetDescriptor(void);
+void UsbPrepareSetupStage(void);
+void UsbDataInStage(void);
+void UsbDataOutStage(void);
 //void UsbInitEP0(void);
-void UsbSetupStage(void);
 //void UsbInitEP1(void);
-void UsbInDataStage(void);
 
 
 // Endpoints
@@ -45,16 +49,20 @@ void UsbInDataStage(void);
 #endif
 
 #define NB_ENDPOINTS                2   // EP0 & EP1
-#define EP0_BUFFER_SIZE             MAX_PACKET_SIZE
+#define EP0_BUFFER_SIZE             8   // MAX_PACKET_SIZE
 #define EP1_BUFFER_SIZE             MAX_PACKET_SIZE
 
 // USB RAM / Buffer Descriptor Table
 
 #if   defined(__16f1459)
+
     // Datasheet 26.4 :
     // The address of BDnSTAT is accessible in linear data space at
-    // 2000h + (4n – 1) with n being the buffer descriptor number.
+    // 2000h + (4n - 1) with n being the buffer descriptor number.
     #define BD_ADDR                 0x2000
+    #define PA_ADDR                 0x2010 // (BD_ADDR + (2*NB_ENDPOINTS*sizeof(BufferDescriptorTable)) = 2*2*4
+    #define TR_ADDR                 0x2018 // (PA_ADDR + sizeof(setupPacketStruct)=EP0_BUFFER_SIZE) = 8
+    // Next free address            0x2020 // (TR_ADDR + sizeof(controlTransferBuffer)=EP0_BUFFER_SIZE) = 8
 
 #elif defined(__18f13k50) || defined(__18f14k50)
 
@@ -185,12 +193,7 @@ void UsbInDataStage(void);
 */
 
 // String Descriptor
-typedef struct
-{
-    u8  bLength;
-    u8  bDescriptorType;
-    u16 string[9];
-} USB_String_Descriptor;
+#define USB_String_Descriptor(n) struct { u8  bLength; u8  bDescriptorType; u16 string[n]; }
 
 // Buffer Descriptor Status Register
 typedef union
@@ -249,7 +252,7 @@ typedef union
 {
     struct
     {
-        BDStat STAT;                    // Buffer Descriptor Status Register
+        BDStat STAT;                    // Buffer Descriptor Status Register (1 byte)
         u8     CNT;                     // Number of bytes to send/sent/(that can be )received
         u16    ADDR;                    // Pointer in data RAM memory
     };

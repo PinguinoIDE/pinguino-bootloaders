@@ -76,7 +76,9 @@
     #else // SDCC
 
         #ifdef __SDCC_pic14
+            #define NO_BIT_DEFINES
             #include <pic16regs.h>
+            //#include <pic14regs.h>
         #else
             #include <pic18fregs.h>
         #endif
@@ -88,7 +90,7 @@
     #endif
 
     #ifdef __16f1459
-        #define SERIAL      {'1','6','F','1','4','5','9'}
+        #define SERIAL      {'1','6','F','1','4','5','9',' '}
     #endif
     #ifdef __18f13k50
         #define SERIAL      {'1','8','F','1','3','K','5','0'}
@@ -97,19 +99,19 @@
         #define SERIAL      {'1','8','F','1','4','K','5','0'}
     #endif
     #ifdef __18f2455
-        #define SERIAL      {'1','8','F','2','4','5','5'}
+        #define SERIAL      {'1','8','F','2','4','5','5',' '}
     #endif
     #ifdef __18f4455
-        #define SERIAL      {'1','8','F','4','4','5','5'}
+        #define SERIAL      {'1','8','F','4','4','5','5',' '}
     #endif
     #ifdef __18f2550
-        #define SERIAL      {'1','8','F','2','5','5','0'}
+        #define SERIAL      {'1','8','F','2','5','5','0',' '}
     #endif
     #ifdef __18lf2550
         #define SERIAL      {'1','8','L','F','2','5','5','0'}
     #endif
     #ifdef __18f4550
-        #define SERIAL      {'1','8','F','4','5','5','0'}
+        #define SERIAL      {'1','8','F','4','5','5','0',' '}
     #endif
     #ifdef __18lf4550
         #define SERIAL      {'1','8','L','F','4','5','5','0'}

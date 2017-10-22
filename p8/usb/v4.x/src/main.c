@@ -25,7 +25,7 @@
 #include "flash.h"
 #include "usb.h"
 #include "vectors.h"
-#if (BOOT_USE_DEBUG)
+#if (BOOT_USE_DEBUG)                    // cf. Makefile
 #include "serial.h"
 #endif
 
@@ -123,11 +123,11 @@ void UsbBootExit(void)
     while (counter--);              // Force timeout on USB
                                     // NB : if too short CDC won't work
 
-    LedOff();                       // Led Off
+    UserLedOff();                   // Led Off
 
-    #if 0 //(BOOT_USE_DEBUG)
-    SerialPrintLN("Bootloader disabled");
-    SerialPrintLN("Starting user app.");
+    #if 0//(BOOT_USE_DEBUG)
+    SerialPrint("Bootloader disabled\r\n");
+    SerialPrint("Starting user app.\r\n");
     #endif
     
     UserApp();                      // Jump to user app. (reset vector)
@@ -315,22 +315,24 @@ void main(void)
 
     #if (BOOT_USE_DEBUG)
     SerialInit(9600);
-    //SerialInit(115200);
-    SerialPrintLN("***");
-    /*
+    SerialPrintChar('\f');
+    //
     SerialPrint("*** PINGUINO BOOTLOADER v");
     SerialPrintNumber(MAJOR_VERSION, 10);
     SerialPrintChar('.');
     SerialPrintNumber(MINOR_VERSION, 10);
-    SerialPrintLN(" ***");
-    */
+    SerialPrintChar('.');
+    SerialPrintNumber(DEVPT_VERSION, 10);
+    SerialPrint(" ***\r\n");
+    //
     #endif
     
-    // Init. led
+    // Init. LED
     // -----------------------------------------------------------------
 
-    LedOut();                       // Led Pin Output
-    LedOn();                        // Led On
+    UserLedInit();                  // USERLED Pin Output
+    UserLedOn();                    // USERLED On
+
 
     // Detect VBUS
     // D+ and D- pins are input only, TRIS bits will always read as 1
@@ -338,7 +340,7 @@ void main(void)
 
     //VBUS_TRIS |= VBUS_MASK;         // VBUS Pin as Input
 
-    #if 0 //(BOOT_USE_DEBUG)
+    #if 0//(BOOT_USE_DEBUG)
     SerialPrint("VBUS = ");
     SerialPrintNumber(VBUS_PORT & VBUS_MASK, 2);
     SerialPrint("\r\n");
@@ -350,57 +352,45 @@ void main(void)
     // - USB is On
     // -----------------------------------------------------------------
 
-/**********************************************************************/
-    #if defined(__16F1459)
-/**********************************************************************/
-
-    if (UsbOff() || PCONbits.nRMCLR)// If not a MCLR Reset
-    {                               // Then it could be a POR or a BOR
-        PCONbits.nPOR = 1;          // POR and BOR flags must be cleared by
-        PCONbits.nBOR = 1;          // software to allow a new detection
-
-/**********************************************************************/
-    #else
-/**********************************************************************/
-
-    RCONbits.IPEN = 1;              // Enables priority levels on
-                                    // interrupts (cf. vectors.c/.h)
-                                    // MUST BE SET OR INT. WON'T WORK !
-                                    // NB: MCLR clears this bit
-
-    if (UsbOff() || !RCONbits.NOT_POR)// If Power-On-Reset
+    #if (!BOOT_USE_DEBUG)
+    //if (UsbOff() || ResetButtonNotPressed())
+    //if (UsbOn() && ResetButtonPressed())
+    if (ResetButtonNotPressed())
     {
-        RCONbits.NOT_POR = 1;
-        RCONbits.NOT_BOR = 1;
-        
-/**********************************************************************/
-    #endif
-/**********************************************************************/
+        // Jump to user app. (reset vector)
 
-        #if 0 //(BOOT_USE_DEBUG)
-        SerialPrintLN("Power-On-Reset detected");
-        SerialPrintLN("Starting user app.");
+        #if (BOOT_USE_DEBUG)
+        SerialPrint("Power-On Reset\r\n");
+        SerialPrint("Starting app.\r\n");
         #endif
 
-        UserApp();                  // Jump to user app. (reset vector)
+        UserApp();
 
-        #if 0 //(BOOT_USE_DEBUG)
-        SerialPrintLN("No user app.");
-        #endif
-        
+        /*
         #if (BOOT_USE_LOWPOWER)
-        userApp = FALSE;            // otherwise, go on with the bootloader
+        userApp = FALSE;            // Otherwise, go on with the bootloader
         #endif
-    }
+        */
 
+        #if (BOOT_USE_DEBUG)
+        SerialPrint("No app.\r\n");
+        #endif
+
+        // If it's not a MCLR then it could be because a POR or a BOR.
+        // Their flags must be cleared by software to allow a new detection.
+        // Note : When POR  RCON = 0b10111100
+        //        When MCLR RCON = 0b00111111
+        //        bit 7 : IPEN
+        //        bit 1 : POR
+        //        bit 0 : BOR
+
+        ResetButtonInit();                  // defined in hardware.h
+    }
+    #endif
+    
     // USB bootloader's code start here
     // -----------------------------------------------------------------
     
-    #if 0 //(BOOT_USE_DEBUG)
-    SerialPrintLN("Reset detected");
-    SerialPrintLN("Starting bootloader");
-    #endif
-
     /* bit 4   UPUEN    = 1  : USB On-Chip Pull-up Enable bit
      * bit 3   UTRDIS   = 0  : On-Chip Transceiver Disable bit
      * bit 2   FSEN     = 1  : Full-Speed Enable bit
@@ -451,15 +441,20 @@ void main(void)
     // Wait for request from host
     // -----------------------------------------------------------------
 
+    #if (BOOT_USE_DEBUG)
+    SerialPrint("Starting boot.\r\n");
+    #endif
+
+    UsbUpdate();                // Check the USB bus
+
     while (1)
     {
-        UsbUpdate();                // Check the USB bus
         UsbProcessEvents();         // Service USB interrupts
 
         if (PIR1bits.TMR1IF)        // If timer 1 has overflowed
         {
             PIR1bits.TMR1IF = 0;    // Allow interrupt source again
-            LedToggle();            // Toggle the led
+            UserLedToggle();        // Toggle the led
         }
     }
 }
@@ -490,11 +485,7 @@ void UsbBootCmd(void)
     #endif
 /**********************************************************************/
     
-    LedOn();                        // Whatever the command, keep Led On
-
-    //LedOn();
-    //while (1);
-
+    UserLedOn();                    // Whatever the command, keep Led On
     //T1CON = 0;                    // and disable timer 1
  
     EP_IN_BD(1).CNT = 0;            // Clears the number of byte(s) to return
@@ -569,7 +560,7 @@ void UsbBootCmd(void)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
-        SerialPrintLN("READ_VERSION");
+        SerialPrint("READ_VERSION\r\n");
         #endif
 
         bootCmd.buffer[2] = MINOR_VERSION;
@@ -581,7 +572,7 @@ void UsbBootCmd(void)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
-        SerialPrintLN("READ_FLASH");
+        SerialPrint("READ_FLASH\r\n");
         #endif
 
 /**********************************************************************/
@@ -649,7 +640,7 @@ void UsbBootCmd(void)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
-        SerialPrintLN("ERASE_FLASH");
+        SerialPrint("ERASE_FLASH\r\n");
         #endif
 
         #if defined(__16F1459)
@@ -672,7 +663,7 @@ void UsbBootCmd(void)
 ///---------------------------------------------------------------------
     {
         #if 0 //(BOOT_USE_DEBUG)
-        SerialPrintLN("WRITE_FLASH");
+        SerialPrint("WRITE_FLASH\r\n");
         #endif
 
 /**********************************************************************/
@@ -722,9 +713,10 @@ void UsbBootCmd(void)
         
         /// 1/
         /// The max. USB packet size is 64-byte long.
-        /// The bootloader command sequence is 5-byte long,
-        /// So we only have 59 bytes free and we can only write 32 bytes at a time.
+        /// But the bootloader command sequence is 5-byte long,
+        /// So we can only write 32 bytes at a time.
         /// 2/
+        /// The programming block is 64- or 2-byte at a time
         /// Blocks must be erased before written.
         /// uploader8.py erases the whole memory once at the begining of upload.
         /// We can write only one time at the same place.
@@ -733,9 +725,10 @@ void UsbBootCmd(void)
         /// 1   : write [address + 32]  + 64 bytes
         /// ...
         /// n   : write [address + 32n] + 64 bytes
-        /// which is not possible. That's why we use 2-byte write instead.
+        /// which is not possible.
+        /// That's why we use 2-byte write instead.
         
-        counter = bootCmd.len >> 1; // / WORDSIZE; //>> 1; // 1 word = 2 bytes
+        counter = bootCmd.len >> 1; // 2-byte write
         while (counter--)
         {
             TABLAT = *pdata++;      // load 1st value in the holding registers

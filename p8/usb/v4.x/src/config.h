@@ -8,6 +8,9 @@
 	Released under the LGPL license (http://www.gnu.org/licenses/lgpl.html)
 ***********************************************************************/
 
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
 #include "compiler.h"   // for SDCC and XC8 compatibility
 
 /***********************************************************************
@@ -64,7 +67,7 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config BOREN = OFF          // Brown Out
     #pragma config CP = OFF             // Code Protect
     #if (BOOT_USE_DEBUG)
-    #pragma config MCLRE = OFF          // MCLR
+    #pragma config MCLRE = OFF          // MCLR as digital pin
     #else
     #pragma config MCLRE = ON           // MCLR
     #endif
@@ -241,6 +244,103 @@ pull-up on RB5 and ensure the proper operation of the device.
     #endif
 
 /**********************************************************************/
+#elif defined(__18f25k50) || defined(__18f45k50)// Config. Words for Internal Crystal (16 MHz) use
+/**********************************************************************/
+
+    #pragma config CFGPLLEN = ON        // PLL Enable Configuration bit (PLL Enabled)
+    #pragma config CPUDIV = NOCLKDIV    // 1:1 mode (for 48MHz CPU)
+
+    #if (CRYSTAL == INTOSC)             // Internal 16 MHz Osc.
+        #pragma config PLLSEL = PLL3X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config FOSC = INTOSCIO  // Oscillator Selection (Internal oscillator)
+
+    #elif (CRYSTAL == 12)
+        #pragma config PLLSEL = PLL4X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
+
+    #elif (CRYSTAL == 16)
+        #pragma config PLLSEL = PLL3X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
+        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
+
+    #elif (CRYSTAL == 48)
+        #pragma config PLLSEL = PLL3X   // Oscillator used directly
+        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
+
+    #else    
+        #error "    ---------------------------------    "
+        #error "    Crystal Frequency Not supported.     "
+        #error "    ---------------------------------    "
+
+    #endif
+    
+    #pragma config LS48MHZ = SYS24X4    // USB Low-speed clock at 24 MHz, USB clock divider is set to 4
+
+    // CONFIG1H
+    #pragma config PCLKEN = ON          // Primary Oscillator Shutdown (Primary oscillator enabled)
+    #pragma config FCMEN = OFF          // Fail-Safe Clock Monitor (Fail-Safe Clock Monitor disabled)
+    #pragma config IESO = ON            // Internal/External Oscillator Switchover (Oscillator Switchover mode disabled)
+
+    // CONFIG2L
+    #pragma config PWRTEN = OFF         // Power-up Timer Enable (Power up timer disabled)
+    #pragma config BOREN = SBORDIS      // Brown-out Reset Enable (BOR enabled in hardware (SBOREN is ignored))
+    #pragma config BORV = 190           // Brown-out Reset Voltage (BOR set to 1.9V nominal)
+    #pragma config LPBOR = OFF          // Low-Power Brown-out Reset (Low-Power Brown-out Reset disabled)
+
+    // CONFIG2H
+    #pragma config WDTEN = SWON         // Watchdog Timer Enable bits (WDT controlled by firmware (SWDTEN enabled))
+    #pragma config WDTPS = 32768        // Watchdog Timer Postscaler (1:32768 = 1sec)
+
+    // CONFIG3H
+    #pragma config CCP2MX = RC1         // CCP2 MUX bit (CCP2 input/output is multiplexed with RC1)
+    #pragma config PBADEN = OFF         // PORTB A/D Enable bit (PORTB<5:0> pins are configured as digital I/O on Reset)
+    #pragma config T3CMX = RC0          // Timer3 Clock Input MUX bit (T3CKI function is on RC0)
+    #pragma config SDOMX = RC7          // SDO Output MUX bit (SDO function is on RC7)
+    #pragma config MCLRE = ON           // Master Clear Reset Pin Enable (MCLR pin enabled; RE3 input disabled)
+
+    // CONFIG4L
+    #pragma config STVREN = ON          // Stack Full/Underflow Reset (Stack full/underflow will cause Reset)
+    #if (VOLTAGE == 0)
+        #pragma config LVP = OFF		// High Voltage Programming
+    #else
+        // make certain that RB5/PGM is held low during entry into ICSP.
+        #pragma config LVP = ON 		// Low Voltage Programming
+    #endif
+    #pragma config XINST = OFF          // Extended Instruction Set Enable bit (Instruction set extension and Indexed Addressing mode disabled)
+    #if defined(__18f45k50)
+    #pragma config ICPRT = OFF          // ICP
+    #endif
+    
+    // CONFIG5L
+    #pragma config CP0 = OFF            // Block 0 Code Protect (Block 0 is not code-protected)
+    #pragma config CP1 = OFF            // Block 1 Code Protect (Block 1 is not code-protected)
+    #pragma config CP2 = OFF            // Block 2 Code Protect (Block 2 is not code-protected)
+    #pragma config CP3 = OFF            // Block 3 Code Protect (Block 3 is not code-protected)
+
+    // CONFIG5H
+    #pragma config CPB = OFF            // Boot Block Code Protect (Boot block is not code-protected)
+    #pragma config CPD = OFF            // Data EEPROM Code Protect (Data EEPROM is not code-protected)
+
+    // CONFIG6L
+    #pragma config WRT0 = OFF           // Block 0 Write Protect (Block 0 (0800-1FFFh) is not write-protected)
+    #pragma config WRT1 = OFF           // Block 1 Write Protect (Block 1 (2000-3FFFh) is not write-protected)
+    #pragma config WRT2 = OFF           // Block 2 Write Protect (Block 2 (04000-5FFFh) is not write-protected)
+    #pragma config WRT3 = OFF           // Block 3 Write Protect (Block 3 (06000-7FFFh) is not write-protected)
+
+    // CONFIG6H
+    #pragma config WRTC = OFF           // Configuration Registers Write Protect (Configuration registers (300000-3000FFh) are not write-protected)
+    #pragma config WRTB = OFF           // Boot Block Write Protect (Boot block (0000-7FFh) is not write-protected)
+    #pragma config WRTD = OFF           // Data EEPROM Write Protect (Data EEPROM is not write-protected)
+
+    // CONFIG7L
+    #pragma config EBTR0 = OFF          // Block 0 Table Read Protect (Block 0 is not protected from table reads executed in other blocks)
+    #pragma config EBTR1 = OFF          // Block 1 Table Read Protect (Block 1 is not protected from table reads executed in other blocks)
+    #pragma config EBTR2 = OFF          // Block 2 Table Read Protect (Block 2 is not protected from table reads executed in other blocks)
+    #pragma config EBTR3 = OFF          // Block 3 Table Read Protect (Block 3 is not protected from table reads executed in other blocks)
+
+    // CONFIG7H
+    #pragma config EBTRB = OFF          // Boot Block Table Read Protect (Boot block is not protected from table reads executed in other blocks)
+
+/**********************************************************************/
 #elif defined(__18f26j50) || defined(__18f46j50)
 /**********************************************************************/
 
@@ -314,103 +414,6 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config WPDIS = OFF          // WPFP, WPEND, and WPCFG bits ignored 
 
 /**********************************************************************/
-#elif defined(__18f25k50) || defined(__18f45k50)// Config. Words for Internal Crystal (16 MHz) use
-/**********************************************************************/
-
-    #pragma config CFGPLLEN = ON        // PLL Enable Configuration bit (PLL Enabled)
-    #pragma config CPUDIV = NOCLKDIV    // 1:1 mode (for 48MHz CPU)
-
-    #if (CRYSTAL == INTOSC)             // Internal 16 MHz Osc.
-        #pragma config PLLSEL = PLL3X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
-        #pragma config FOSC = INTOSCIO  // Oscillator Selection (Internal oscillator)
-
-    #elif (CRYSTAL == 12)
-        #pragma config PLLSEL = PLL4X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
-        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
-
-    #elif (CRYSTAL == 16)
-        #pragma config PLLSEL = PLL3X   // PLL Selection (3x clock multiplier) => 3 x 16 = 48 MHz
-        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
-
-    #elif (CRYSTAL == 48)
-        #pragma config PLLSEL = PLL3X   // Oscillator used directly
-        #pragma config FOSC = HSH //HSOSCIO   // Oscillator Selection (External oscillator)
-
-    #else    
-        #error "    ---------------------------------    "
-        #error "    Crystal Frequency Not supported.     "
-        #error "    ---------------------------------    "
-
-    #endif
-    
-    #pragma config LS48MHZ = SYS24X4    // USB Low-speed clock at 24 MHz, USB clock divider is set to 4
-
-    // CONFIG1H
-    #pragma config PCLKEN = ON          // Primary Oscillator Shutdown (Primary oscillator enabled)
-    #pragma config FCMEN = OFF          // Fail-Safe Clock Monitor (Fail-Safe Clock Monitor disabled)
-    #pragma config IESO = ON            // Internal/External Oscillator Switchover (Oscillator Switchover mode disabled)
-
-    // CONFIG2L
-    #pragma config nPWRTEN = OFF        // Power-up Timer Enable (Power up timer disabled)
-    #pragma config BOREN = SBORDIS      // Brown-out Reset Enable (BOR enabled in hardware (SBOREN is ignored))
-    #pragma config BORV = 190           // Brown-out Reset Voltage (BOR set to 1.9V nominal)
-    #pragma config nLPBOR = OFF         // Low-Power Brown-out Reset (Low-Power Brown-out Reset disabled)
-
-    // CONFIG2H
-    #pragma config WDTEN = SWON         // Watchdog Timer Enable bits (WDT controlled by firmware (SWDTEN enabled))
-    #pragma config WDTPS = 32768        // Watchdog Timer Postscaler (1:32768 = 1sec)
-
-    // CONFIG3H
-    #pragma config CCP2MX = RC1         // CCP2 MUX bit (CCP2 input/output is multiplexed with RC1)
-    #pragma config PBADEN = OFF         // PORTB A/D Enable bit (PORTB<5:0> pins are configured as digital I/O on Reset)
-    #pragma config T3CMX = RC0          // Timer3 Clock Input MUX bit (T3CKI function is on RC0)
-    #pragma config SDOMX = RC7          // SDO Output MUX bit (SDO function is on RC7)
-    #pragma config MCLRE = ON           // Master Clear Reset Pin Enable (MCLR pin enabled; RE3 input disabled)
-
-    // CONFIG4L
-    #pragma config STVREN = ON          // Stack Full/Underflow Reset (Stack full/underflow will cause Reset)
-    #if (VOLTAGE == 0)
-        #pragma config LVP = OFF		// High Voltage Programming
-    #else
-        // make certain that RB5/PGM is held low during entry into ICSP.
-        #pragma config LVP = ON 		// Low Voltage Programming
-    #endif
-    #pragma config XINST = OFF          // Extended Instruction Set Enable bit (Instruction set extension and Indexed Addressing mode disabled)
-    #if defined(__18f45k50)
-    #pragma config ICPRT = OFF          // ICP
-    #endif
-    
-    // CONFIG5L
-    #pragma config CP0 = OFF            // Block 0 Code Protect (Block 0 is not code-protected)
-    #pragma config CP1 = OFF            // Block 1 Code Protect (Block 1 is not code-protected)
-    #pragma config CP2 = OFF            // Block 2 Code Protect (Block 2 is not code-protected)
-    #pragma config CP3 = OFF            // Block 3 Code Protect (Block 3 is not code-protected)
-
-    // CONFIG5H
-    #pragma config CPB = OFF            // Boot Block Code Protect (Boot block is not code-protected)
-    #pragma config CPD = OFF            // Data EEPROM Code Protect (Data EEPROM is not code-protected)
-
-    // CONFIG6L
-    #pragma config WRT0 = OFF           // Block 0 Write Protect (Block 0 (0800-1FFFh) is not write-protected)
-    #pragma config WRT1 = OFF           // Block 1 Write Protect (Block 1 (2000-3FFFh) is not write-protected)
-    #pragma config WRT2 = OFF           // Block 2 Write Protect (Block 2 (04000-5FFFh) is not write-protected)
-    #pragma config WRT3 = OFF           // Block 3 Write Protect (Block 3 (06000-7FFFh) is not write-protected)
-
-    // CONFIG6H
-    #pragma config WRTC = OFF           // Configuration Registers Write Protect (Configuration registers (300000-3000FFh) are not write-protected)
-    #pragma config WRTB = OFF           // Boot Block Write Protect (Boot block (0000-7FFh) is not write-protected)
-    #pragma config WRTD = OFF           // Data EEPROM Write Protect (Data EEPROM is not write-protected)
-
-    // CONFIG7L
-    #pragma config EBTR0 = OFF          // Block 0 Table Read Protect (Block 0 is not protected from table reads executed in other blocks)
-    #pragma config EBTR1 = OFF          // Block 1 Table Read Protect (Block 1 is not protected from table reads executed in other blocks)
-    #pragma config EBTR2 = OFF          // Block 2 Table Read Protect (Block 2 is not protected from table reads executed in other blocks)
-    #pragma config EBTR3 = OFF          // Block 3 Table Read Protect (Block 3 is not protected from table reads executed in other blocks)
-
-    // CONFIG7H
-    #pragma config EBTRB = OFF          // Boot Block Table Read Protect (Boot block is not protected from table reads executed in other blocks)
-
-/**********************************************************************/
 #elif defined(__18f26j53) || defined(__18f46j53) || \
       defined(__18f27j53) || defined(__18f47j53)
 /**********************************************************************/
@@ -446,8 +449,8 @@ pull-up on RB5 and ensure the proper operation of the device.
     #endif
     
     // CONFIG1L
-    //#pragma config DEBUG = OFF			// Background Debugging
-    #pragma config XINST = OFF			// Ext CPU Instruction Set
+    //#pragma config DEBUG = OFF          // Background Debugging
+    #pragma config XINST = OFF          // Ext CPU Instruction Set
     #pragma config STVREN = ON          // Stack Full/Underflow Reset (Stack full/underflow will cause Reset)
     #pragma config CFGPLLEN = ON        // PLL Enable Configuration bit (PLL Enabled)
     #pragma config WDTEN = OFF          // WDT disabled (enabled by SWDTEN bit)
@@ -488,7 +491,7 @@ pull-up on RB5 and ensure the proper operation of the device.
     #pragma config WPFP = PAGE_0        // Write Protect Program Flash Page 0
 
     // CONFIG4H
-    #pragma config LS48MHZ = SYS24X4// USB Low-speed clock at 24 MHz, USB clock divider is set to 4
+    #pragma config LS48MHZ = SYS24X4    // USB Low-speed clock at 24 MHz, USB clock divider is set to 4
     #pragma config WPEND = PAGE_0       // Start protection at page 0
     #pragma config WPDIS = OFF          // WPFP[5:0], WPEND, and WPCFG bits ignored 
 
@@ -512,3 +515,5 @@ pull-up on RB5 and ensure the proper operation of the device.
     #error "    -------------------------------    "
     
 #endif
+
+#endif // _CONFIG_H

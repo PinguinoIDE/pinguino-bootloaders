@@ -41,6 +41,7 @@
     Current version
  **********************************************************************/
     Version 4.18 (24-08-2016)
+        * updated (4.18.7)
         * started PIC16F support for SDCC
         * fixed Reset detection (4.18.6)
         * added 18f1xk50 and 18lfx550 support (4.18.5)

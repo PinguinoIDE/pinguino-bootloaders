@@ -1,52 +1,54 @@
 ########################################################################
 #                                                                      #
-#	Pinguino Bootloader v4.x                                           #
-#	Microchip 8-bit PIC USB Bootloader                                 #
-#	Author:	Régis Blanchot <rblanchot@gmail.com>                       #
+#   Pinguino Bootloader v4.x                                           #
+#   Microchip 8-bit PIC USB Bootloader                                 #
+#   Author: Régis Blanchot <rblanchot@gmail.com>                       #
 #           André Gentric                                              #
 #                                                                      #
-#	Usage : make --makefile=Makefile PROC=18f45k50                     #
-#           make --makefile=Makefile PROC=18f2550 OSC=20               #
-#           make --makefile=Makefile PROC=16F1459 OSC=INTOSC           #
-#           make --makefile=Makefile COMP=XC8  PROC=18F47J53 OSC=8     #
-#           make --makefile=Makefile COMP=SDCC PROC=18F26J50 OSC=8     #
+#   Usage: make --makefile=Makefile.linux PROC=18f45k50                #
+#          make --makefile=Makefile.linux PROC=18f2550 OSC=20          #
+#          make --makefile=Makefile.linux PROC=16F1459 OSC=INTOSC      #
+#          make --makefile=Makefile.linux COMP=XC8 PROC=18F47J53 OSC=8 #
+#          make --makefile=Makefile.linux COMP=SDCC PROC=18F26J50 OSC=8#
 #                                                                      #
-#	This file is part of Pinguino Project (http://www.pinguino.cc)     #
-#	Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
-#                                                                      #
-########################################################################
-#	Supported PICs                                                     #
-########################################################################
-#                                                                      #
-#	16F1459                                                            #
-#	18F13k50	18F14k50                                               #
-#	18F2455		18F4455                                                #
-#	18F2550		18F4550                                                #
-#	18F25k50	18F45k50                                               #
-#	18F26j50	18F46j50                                               #
-#	18F26J53	18F46J53                                               #
-#	18F27J53	18F47J53                                               #
+#   This file is part of Pinguino Project (http://www.pinguino.cc)     #
+#   Released under the LGPL license (www.gnu.org/licenses/lgpl.html)   #
 #                                                                      #
 ########################################################################
-#	TODO                                                   #
+#   Supported PICs                                                     #
+########################################################################
+#                                                                      #
+#   16F1459                                                            #
+#   18F13k50    18F14k50                                               #
+#   18F2455     18F4455                                                #
+#   18F2550     18F4550                                                #
+#   18F25k50    18F45k50                                               #
+#   18F26j50    18F46j50                                               #
+#   18F26J53    18F46J53                                               #
+#   18F27J53    18F47J53                                               #
+#                                                                      #
+########################################################################
+#   TODO                                                               #
 ########################################################################
 #                                                                      #
 ########################################################################
 
 ########################################################################
-#	PROGRAMMER                                       #
+#   PROGRAMMER                                                         #
 ########################################################################
 
 PROGRAMMER	= PK3
 #PROGRAMMER	= PK2
 
 ########################################################################
-#	COMPILERS TOOLCHAIN LOCATION                                       #
+#   COMPILERS TOOLCHAIN LOCATION                                       #
 ########################################################################
 
-XC8VER		= 1.38
+XC8VER		= 1.43
 MPLABVER	= 3.40
 JAVAVER		= 1.8.0_91
+
+########################################################################
 
 SDCCDIR		= /opt/pinguino/p8/bin
 XC8DIR		= /opt/microchip/xc8/v$(XC8VER)/bin
@@ -56,24 +58,32 @@ JAVA		= $(JAVADIR)/java
 IPE			= $(MPLABDIR)/mplab_ipe/ipecmd.jar
 
 ########################################################################
-#	INTERNAL OPTIONAL CONFIGURATION OPTIONS                            #
+#   INTERNAL OPTIONAL CONFIGURATION OPTIONS                            #
 ########################################################################
 
-BOOT_USE_DEBUG=0
+#BOOT_USE_TEST=0
+#BOOT_USE_DEBUG=1
 BOOT_USE_LOWPOWER=0
-BOOT_USE_LARGE_EP=0
+BOOT_USE_LARGE_EP=1
 BOOT_USE_HID=0
 BOOT_USE_UART=0
 BOOT_USE_CDC=0
 BOOT_USE_BULK=1
 
 ########################################################################
-#	CONFIGURATION OPTIONS                                              #
+#   CONFIGURATION OPTIONS                                              #
 ########################################################################
 
 LOW_SPEED	= 1
 HIGH_SPEED	= 0
 ONE			= 1
+
+# Microchip PIC (PIC18F47J53 by default)
+ifeq ("x${PROC}", "x")
+	CPU			= 18f47j53
+else
+	CPU			= $(shell echo $(PROC) | tr '[:upper:]' '[:lower:]')
+endif
 
 # Compiler (XC8 by default)
 ifeq ("x${COMP}", "x")
@@ -82,11 +92,18 @@ else
 	COMPILER	= $(shell echo $(COMP) | tr '[:lower:]' '[:upper:]')
 endif
 
-# Microchip PIC (PIC18F47J53 by default)
-ifeq ("x${PROC}", "x")
-	CPU			= 18f47j53
+# Debug mode (off by default)
+ifeq ("x${DEBUG}", "x")
+	BOOT_USE_DEBUG	= 0
 else
-	CPU			= $(shell echo $(PROC) | tr '[:upper:]' '[:lower:]')
+	BOOT_USE_DEBUG	= 1
+endif
+
+# Test mode (off by default)
+ifeq ("x${TEST}", "x")
+	BOOT_USE_TEST	= 0
+else
+	BOOT_USE_TEST	= 1
 endif
 
 # external crystal frequency (internal osc. used by default)
@@ -124,7 +141,7 @@ endif
 # bootloader version (cf. CHANGELOG file)
 MAJ_VER		= 4
 MIN_VER		= 18
-SUB_VER		= 6
+DEV_VER		= 7
 
 # Microchip Vendor ID / Pinguino Product ID (Microchip sublicense)
 VID			= 0x04D8
@@ -139,13 +156,19 @@ PID			= 0xFEAA
 FAM			= $(findstring 16f, $(CPU))
 
 ifeq ($(FAM), 16f)
-	APPSTART= 0x500
-	#APPSTART= 0x800
+	ifeq "$(BOOT_USE_DEBUG)" "0"
+		APPSTART= 0x500
+		#APPSTART= 0x800
+	else
+		APPSTART= 0x800
+	endif
 	ifeq ($(COMPILER), SDCC)
 		ARCH	= pic14
 		OPTIMIZ	=
 	else
-		USBRAM	= 2080h-21FFh
+		USBRAM	= 2000h-21FFh
+		#USBRAM	= 2020h-21FFh
+		#USBRAM	= 2080h-21FFh
 		#COMPILER= XC8
 		OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
 	endif
@@ -160,7 +183,7 @@ else
 		else
 			USBRAM	= 500h-57Fh
 		endif
-		OPTIMIZ	= --opt=default,+asm,+asmfile,-speed,+space,-debug
+		OPTIMIZ		= --opt=default,+asm,+asmfile,-speed,+space,-debug
 	endif
 endif
 
@@ -169,14 +192,31 @@ BOOTENDDEC	= $(shell echo $(APPSTARTDEC)-$(ONE)|bc)
 BOOTEND		= $(shell printf "%x" $(BOOTENDDEC))
 
 # Project name
-ifeq ($(CRYSTAL), INTOSC)
-	PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_$(CRYSTAL)
+ifeq "$(BOOT_USE_TEST)" "1"
+	PRJ		= Test_$(COMPILER)_$(CPU)
 else
-	PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(SUB_VER)_$(COMPILER)_$(CPU)_X$(CRYSTAL)MHz
+	ifeq ($(CRYSTAL), INTOSC)
+		PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(DEV_VER)_$(COMPILER)_$(CPU)_$(CRYSTAL)
+	else
+		PRJ		= Pinguino_Bootloader_v$(MAJ_VER).$(MIN_VER).$(DEV_VER)_$(COMPILER)_$(CPU)_X$(CRYSTAL)MHz
+	endif
 endif
 
 # C files
-SRCS		= $(wildcard src/*.c)
+ifeq "$(BOOT_USE_TEST)" "1"
+	ifeq "$(BOOT_USE_DEBUG)" "0"
+		SRCS	= src/test.c src/vectors.c
+	else
+		SRCS	= src/test.c src/vectors.c src/serial.c
+	endif
+else
+	ALLSRCS	= $(wildcard src/*.c)
+	ifeq "$(BOOT_USE_DEBUG)" "1"
+		SRCS	= $(filter-out src/test.c src/flash.c, $(ALLSRCS))
+	else
+		SRCS	= $(filter-out src/test.c src/flash.c src/serial.c, $(ALLSRCS))
+	endif
+endif
 
 # SDCC compiler
 ifeq ($(COMPILER), SDCC)
@@ -196,13 +236,14 @@ else
 
 	PFLAGS	= --CHIP=$(CPU) \
 			  -P -N64 -M -Q -G \
-			  --warn=0 \
-			  --asmlist \
-			  --addrqual=reject \
-			  --mode=pro \
-			  --ERRATA=none \
-			  --output=-mcof,+elf:multilocs \
-			  --stack=compiled:auto:auto
+			  --asmlist
+
+#			  --stack=compiled:auto:auto
+#			  --output=-mcof,+elf:multilocs \
+#			  --warn=0 \
+#			  --mode=pro \
+#			  --ERRATA=default \
+#			  --addrqual=reject \
 
 endif
 
@@ -220,6 +261,7 @@ CFLAGS		= $(PFLAGS) $(OPTIMIZ) \
 			  -DCRYSTAL=$(CRYSTAL) \
 			  -DMAJOR_VERSION=$(MAJ_VER) \
 			  -DMINOR_VERSION=$(MIN_VER) \
+			  -DDEVPT_VERSION=$(DEV_VER) \
 			  -DBOOT_USE_DEBUG=$(BOOT_USE_DEBUG) \
 			  -DBOOT_USE_LOWPOWER=$(BOOT_USE_LOWPOWER) \
 			  -DBOOT_USE_LARGE_EP=$(BOOT_USE_LARGE_EP) \
@@ -247,32 +289,27 @@ ifeq ($(COMPILER), SDCC)
 LDFLAGS		= -Wl-uAPPSTART=$(APPSTART),-slkr/boot4.$(CPU).lkr \
 			  --no-crt
 
+# XC8
 else
 
 # --rom=0-7FF : limit the bootloader to a specified ROM range
 #LDFLAGS		= --runtime=+init,+clib,+clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
 
-	ifeq ($(FAM), 16f)
-		LDFLAGS		= --runtime=-init,+clib,-clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
-					  --double=24 --float=24 \
-					  --output=intel \
-					  --summary=default,+psect,+class,+mem,-hex,-file \
-					  --rom=0-$(BOOTEND) \
-					  -L-AUSB=$(USBRAM) \
-					  -L-pusbram=USB
-	else
-		LDFLAGS		= --runtime=-init,+clib,-clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
-					  --double=24 --float=24 \
-					  --output=intel \
-					  --summary=default,+psect,+class,+mem,-hex,-file \
-					  --rom=0-$(BOOTEND) \
-					  -L-AUSB=$(USBRAM) \
-					  -L-ASMALLCONST=0h-$(BOOTEND)h \
-					  -L-AMEDIUMCONST=0h-$(BOOTEND)h \
-					  -L-pusbram=USB \
-					  -L-psmallconst=SMALLCONST \
-					  -L-pmediumconst=MEDIUMCONST
-	endif
+LDFLAGS		= --output=intel \
+			  --summary=default,+psect,+class,+mem,-hex,-file \
+			  --rom=0-$(BOOTEND) \
+			  -L-AUSBRAM=$(USBRAM) \
+			  -L-pusbram=USBRAM
+
+			  #--double=24 --float=24 \
+			  #--runtime=-init,+clib,-clear,-config,-download,-flp,-no_startup,-osccal,-keep,-plib,-resetbits,-stackcall \
+			  
+#ifneq ($(FAM), 16f)
+#LDFLAGS	   += \
+#			  -L-ABOOTCONST=b00h-$(BOOTEND)h \
+#			  -L-pbootconst=BOOTCONST
+#endif
+
 endif
 
 ########################################################################
@@ -287,7 +324,8 @@ endif
 #                                                                      #
 ########################################################################
 
-all: titre $(PRJ).hex clean
+#all: titre $(PRJ).hex clean
+all: titre $(PRJ).hex
 
 titre:
 	@echo "***********************************************"
@@ -296,11 +334,12 @@ titre:
 
 clean:
 	@find hex -maxdepth 1 -not -regex ".*hex" -type f -exec rm -f {} \;
-
+	@rm -rf obj/*.*
+	
 ifeq ($(COMPILER),XC8)
 
 $(PRJ).hex: $(SRCS)
-	@$(CC) $(CFLAGS) $(LDFLAGS) $^ -Ohex/$@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -Ohex/$@
 
 else
 

@@ -11,19 +11,21 @@
 #ifndef _FLASH_H
 #define _FLASH_H
 
+//void Unlock();
+
 /**********************************************************************/
 #if defined(__16f1459)
 /**********************************************************************/
 
-    #define FLASHBLOCKSIZE          32      // 32 words
+    #define FLASHBLOCKSIZE      32      // 32 words
     
-    #define Unlock()                {                       \
-                                      PMCON2 = 0x55;        \
-                                      PMCON2 = 0xAA;        \
-                                      PMCON1bits.WR = 1;    \
-                                      NOP();                \
-                                      NOP();                \
-                                    }
+    #define Unlock()            {                         \
+                                    PMCON2 = 0x55;        \
+                                    PMCON2 = 0xAA;        \
+                                    PMCON1bits.WR = 1;    \
+                                    NOP();                \
+                                    NOP();                \
+                                }
 
     /*
     #define Unlock()    { \
@@ -48,9 +50,9 @@
     asm("                        ; Add W and Carry Bit to F         ");\
     }
     
-    #define EraseOn()               { PMCON1bits.FREE = 1; }
-    #define EraseOff()              { PMCON1bits.FREE = 0; }
-    
+    #define EraseOn()           { PMCON1bits.FREE = 1; }
+    #define EraseOff()          { PMCON1bits.FREE = 0; }
+
 /**********************************************************************/
 #elif defined(__18f13k50) || defined(__18f14k50) || \
       defined(__18f2455)  || defined(__18f4455)  || \
@@ -59,14 +61,14 @@
       defined(__18f25k50) || defined(__18f45k50)
 /**********************************************************************/
 
-    #define FLASHBLOCKSIZE          64      // the erase block is 64-byte long
+    #define FLASHBLOCKSIZE      64      // the erase block is 64-byte long
     
-    #define Unlock()                {                       \
-                                      EECON2 = 0x55;        \
-                                      EECON2 = 0xAA;        \
-                                      EECON1bits.WR = 1;    \
-                                    }
-    
+    #define Unlock()            {                         \
+                                    EECON2 = 0x55;        \
+                                    EECON2 = 0xAA;        \
+                                    EECON1bits.WR = 1;    \
+                                }
+
     #ifdef __XC8__
 
     #define NextBlock() { \
@@ -93,8 +95,8 @@
 
     #endif
 
-    #define EraseOn()               { EECON1bits.FREE = 1; }
-    #define EraseOff()              { EECON1bits.FREE = 0; }
+    #define EraseOn()           { EECON1bits.FREE = 1; }
+    #define EraseOff()          { EECON1bits.FREE = 0; }
 
 /**********************************************************************/
 #elif defined(__18f26j50) || defined(__18f46j50) || \
@@ -102,14 +104,14 @@
       defined(__18f27j53) || defined(__18f47j53)
 /**********************************************************************/
 
-    #define FLASHBLOCKSIZE          1024    // the erase block is 1024-byte long
+    #define FLASHBLOCKSIZE      1024    // the erase block is 1024-byte long
     
-    #define Unlock()                {                       \
-                                      EECON2 = 0x55;        \
-                                      EECON2 = 0xAA;        \
-                                      EECON1bits.WR = 1;    \
-                                    }
-    
+    #define Unlock()            {                       \
+                                    EECON2 = 0x55;        \
+                                    EECON2 = 0xAA;        \
+                                    EECON1bits.WR = 1;    \
+                                }
+
     #ifdef __XC8__
 
     #define NextBlock() { \
@@ -121,6 +123,7 @@
     asm("ADDWFC  TBLPTRU, F      ;  (W) + (TBLPTRU) + (C) -> TBLPTRU");\
     asm("                        ; Add W and Carry Bit to F         ");\
     }
+
     #else
 
     #define NextBlock() { \
@@ -135,8 +138,8 @@
 
     #endif
 
-    #define EraseOn()               { EECON1bits.FREE = 1; }
-    #define EraseOff()              { EECON1bits.FREE = 0; }
+    #define EraseOn()           { EECON1bits.FREE = 1; }
+    #define EraseOff()          { EECON1bits.FREE = 0; }
 
 /**********************************************************************/
 #endif

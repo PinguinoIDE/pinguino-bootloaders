@@ -57,9 +57,9 @@ void SerialInit(u32 baudrate)
     BAUDCONbits.BRG16 = 1;      // Use 16-bit baud rate generator
     
     // Enable the Serial port
-    TXSTAbits.TXEN = 1;         // Transmit Enabled
-    RCSTAbits.CREN = 1;         // Receiver Enabled
-    RCSTAbits.SPEN = 1;         // Serial Port Enabled (RX/TX pins as input/output)
+    TXSTAbits.TXEN = 1;         // Transmit enabled
+    //RCSTAbits.CREN = 0;         // Receiver disabled (useless when debugging)
+    RCSTAbits.SPEN = 1;         // Serial Port enabled (RX/TX pins as input/output)
 
     #elif defined(__18f1220)  || defined(__18f1320) || \
           defined(__18f14k22) || defined(__18lf14k22)
@@ -76,9 +76,9 @@ void SerialInit(u32 baudrate)
     BAUDCTLbits.BRG16=1;        // set 16 bits SPBRG
 
     // Enable the Serial port
-    TXSTAbits.TXEN = 1;         // Transmit Enabled
-    RCSTAbits.CREN = 1;         // Receiver Enabled
-    RCSTAbits.SPEN = 1;         // Serial Port Enabled (RX/TX pins as input/output)
+    TXSTAbits.TXEN = 1;         // Transmit enabled
+    //RCSTAbits.CREN = 0;         // Receiver disabled (useless when debugging)
+    RCSTAbits.SPEN = 1;         // Serial Port enabled (RX/TX pins as input/output)
 
     #elif defined(__18f2455)  || defined(__18f4455) || \
           defined(__18f2550)  || defined(__18f4550) || \
@@ -100,32 +100,32 @@ void SerialInit(u32 baudrate)
     BAUDCONbits.BRG16 = 1;      // set 16 bits SPBRG
 
     // Enable the Serial port
-    TXSTAbits.TXEN = 1;         // Transmit Enabled
-    RCSTAbits.CREN = 1;         // Receiver Enabled
-    RCSTAbits.SPEN = 1;         // Serial Port Enabled (RX/TX pins as input/output)
+    TXSTAbits.TXEN = 1;         // Transmit enabled
+    //RCSTAbits.CREN = 0;         // Receiver disabled (useless when debugging)
+    RCSTAbits.SPEN = 1;         // Serial Port enabled (RX/TX pins as input/output)
 
     #elif defined(__18f26j50) || defined(__18f46j50) || \
           defined(__18f26j53) || defined(__18f46j53) || \
           defined(__18f27j53) || defined(__18f47j53)
 
     // 8-bit asynchronous operation
-    RCSTA = 0;                  // 8-bit RX (RX9=0)
-    TXSTA = 0;                  // 8-bit TX (TX9=0), asynchronous (SYNC=0)
-    BAUDCON = 0;                // polarity : non-inverted
+    RCSTA1 = 0;                 // 8-bit RX (RX9=0)
+    TXSTA1 = 0;                 // 8-bit TX (TX9=0), asynchronous (SYNC=0)
+    BAUDCON1 = 0;               // polarity : non-inverted
 
     // IO's
     //TRISCbits.TRISC7= 1;        // RX1    set input
 
     // Baud Rate
-    SPBRGH = highByte(spbrg);  // set UART speed SPBRGH
-    SPBRG  = lowByte(spbrg);   // set UART speed SPBRGL
-    TXSTA1bits.BRGH = 1;       // set BRGH bit
-    BAUDCON1bits.BRG16 = 1;    // set 16 bits SPBRG
+    SPBRGH1 = highByte(spbrg);  // set UART speed SPBRGH
+    SPBRG1 = lowByte(spbrg);    // set UART speed SPBRGL
+    TXSTA1bits.BRGH = 1;        // set BRGH bit
+    BAUDCON1bits.BRG16 = 1;     // set 16 bits SPBRG
 
     // Enable the Serial port
-    TXSTA1bits.TXEN = 1;        // Transmit Enabled
-    RCSTA1bits.CREN = 1;        // Receiver Enabled
-    RCSTA1bits.SPEN = 1;        // Serial Port Enabled (RX/TX pins as input/output)
+    TXSTA1bits.TXEN = 1;        // Transmit enabled
+    RCSTA1bits.CREN = 1;        // Receiver disabled (useless when debugging)
+    RCSTA1bits.SPEN = 1;        // Serial Port enabled (RX/TX pins as input/output)
 
     #endif
 }
@@ -146,7 +146,7 @@ void SerialInit(u32 baudrate)
 
 #endif
 
-void SerialPrintChar(char c)
+void SerialPrintChar(u8 c)
 {
     #if defined(__18f26j50) || defined(__18f46j50) || \
         defined(__18f26j53) || defined(__18f46j53) || \
@@ -164,73 +164,66 @@ void SerialPrintChar(char c)
     #endif
 }
 
-void SerialPrint(const char *s)
+void SerialPrint(const u8 *s)
 {
     //for (; *s; ++s)
-    while (*s)
+    while (*s != 0)
         SerialPrintChar(*s++);
 }
 
-void SerialPrintLN(const char *s)
+/*
+void SerialPrintLN(const u8 *s)
 {
     //for (; *s; ++s)
-    while (*s)
+    while (*s != 0)
         SerialPrintChar(*s++);
     SerialPrintChar('\r');
     SerialPrintChar('\n');
 }
+*/
 
 // Note : max. signed value = 32768 = 5 digits
 void SerialPrintNumber(s16 value, u8 base)
 {
-    u8 sign;
+    u8 tmp[8];
+    u8 *tp = tmp;               // pointer on tmp
+    u8 i, sign;
+    u32 v;                      // absolute value
 
-    s16 i;
-    u16 v;    // absolute value
+    //pn_printChar = func;
 
-    u8 tmp[5];
-    u8 *tp = tmp;       // pointer on tmp
-
-    u8 string[5];
-    u8 *sp = string;    // pointer on string
-
-    if (value==0)
+    if (value == 0)
     {
         SerialPrintChar('0');
         return;
     }
-
+    
     sign = ( (base == 10) && (value < 0) );
 
     if (sign)
+    {
+        SerialPrintChar('-');
         v = -value;
+    }
     else
-        v = (u16)value;
-
-    //while (v || tp == tmp)
+    {
+        v = (u32)value;
+    }
+    
     while (v)
     {
         i = v % base;
         v = v / base;
-
+        
         if (i < 10)
             *tp++ = i + '0';
         else
             *tp++ = i + 'A' - 10;
     }
 
-    // start of string
-    if (sign)
-        *sp++ = '-';
-
-    // backwards writing
+    // backwards writing 
     while (tp > tmp)
-        *sp++ = *--tp;
-
-    // end of string
-    *sp = 0;
-
-    SerialPrint(string);
+        SerialPrintChar(*--tp);
 }
 
 #endif // BOOT_USE_DEBUG
